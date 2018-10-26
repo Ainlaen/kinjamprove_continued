@@ -1,0 +1,297 @@
+@import url('https://fonts.googleapis.com/css?family=Noto+Serif:400,400i,700,700i');
+@import url('https://fonts.googleapis.com/css?family=Roboto:400,400i,700,700i');
+.editor .editor-inner blockquote,
+.editor .editor-inner dl,
+.editor .editor-inner ol,
+.editor .editor-inner p,
+.editor .editor-inner ul,
+.post-content blockquote,
+.post-content dl,
+.post-content ol,
+.post-content p,
+.post-content ul,
+.curation-main-container .curation__wrapper--whoomp .featured-items .featured-item .curation-item-placeholder--sub-item-4 .headline__excerpt,
+.postlist__item .excerpt,
+.postlist__item .excerpt p {
+	font-family: "Noto Serif", Georgia, "Times New Roman", Times, serif !important;
+}
+/* 
+.pe_newlayout .sidebar {
+	display: none !important;
+}
+ */
+
+
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.headline,
+.headline a,
+.headline a:active,
+.headline a:focus,
+.headline a:hover,
+.above-headline-image .featured-post__caption,
+.above-headline-image .video-embed__caption,
+.above-headline-image figcaption,
+.editor .editor-inner .featured-post__caption,
+.editor .editor-inner .video-embed__caption,
+.editor .editor-inner figcaption,
+.featured-post__asset .featured-post__caption,
+.featured-post__asset .video-embed__caption,
+.featured-post__asset figcaption,
+.post-content .featured-post__caption,
+.post-content .video-embed__caption,
+.post-content figcaption,
+.reply__byline,
+a.reply__count span,
+a.reply__link span,
+.reply .unapproved-msg,
+.reply__pending-label,
+.reply__publish-time,
+.reply__to-author,
+.button,
+button,
+.reply-filter,
+.reply-footer-bar,
+.reply__flagged-indicator,
+.reply__recommend .like-count,
+.reply__tools,
+.unapproved-filter .button-container a,
+a.button--pagination,
+a.commentlist__filter-button,
+a.reply-to-post--mobile,
+.storytype__filled .storytype-type,
+.storytype__filled .storytype-vertical,
+.storytype__outlined .storytype-type,
+.storytype__outlined .storytype-vertical,
+.storytype__text .storytype-type,
+.storytype__text .storytype-vertical,
+.reply__content p {
+	font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
+}
+.reply__content p {
+	font-weight: normal !important;
+	line-height: 1.5 !important;
+}
+.avatar img,
+img.avatar:not(.blog-avatar) {
+	border-radius: 3px !important;
+}
+.replies-wrapper .reply {
+	border-top: none !important;
+}
+.reply {
+	padding: 0px 0px 15px 5px !important;
+}
+.reply__header>.avatar img {
+	width: 36px !important;
+	height: 36px !important;
+}
+
+.reply__header>.avatar {
+	margin-right: 12px !important;
+}
+
+.replies-wrapper .reply__content {
+	padding-left: 48px !important;
+}
+
+.reply__content p,
+.reply__content blockquote {
+	margin: 0 !important;
+}
+
+.reply__pending-label,
+.reply__pending-label.hide-for-small {
+	font-size: 12px !important;
+}
+.svg-reply-right {
+	display: none !important;
+}
+
+.reply__pending-label.hide-for-small,
+.kinjamprove-creator-label {
+	-webkit-transform: rotate(90deg);
+	top: 50px !important;
+	left: 150px !important;
+	position: relative;
+	width: 10%;
+	word-wrap: normal;
+}
+
+
+/*
+article.reply--unapproved ~ .js_region--warning:before {
+	transform: rotate(90deg) !important;
+	content: 'Pending Approval';
+	text-transform: uppercase;
+	display: inline-block;
+	display: none;
+	width: 10%;
+	font-size: 12px;
+	font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
+	position: relative;
+	top: -35px !important;
+	left: 800px !important;
+	margin: -50px !important;
+}
+*/
+
+
+article[depth="0"]:not(.collapsed, .kinjamprove-blockedUser) header:before {
+    content: ''; 
+	width: 30px; 
+	height: 30px;
+	top: -3px; 
+	left: -5px;
+	background: rgb(51, 153, 255); 
+	/*black;*/
+	position: absolute; 
+	z-index: -1;
+	opacity: 0.7; 
+	border-radius: 3px
+}
+
+article[depth="0"]:not(.collapsed, .kinjamprove-blockedUser) header:after {
+    content: ''; 
+	width: 30px; 
+	height: 30px;
+	background: orange;
+	position: absolute; 
+	top: 25px; 
+	left: 23px; 
+	z-index: -1;
+	opacity: 0.7;
+	border-radius: 3px
+}
+
+
+
+/* 
+article[depth="0"]:before {
+    content: ''; 
+	width: 30px; 
+	height: 30px;
+	top: -3px; 
+	left: 0px;
+	background: orange;
+	position: absolute; 
+	z-index: -1;
+	opacity: 0.7; 
+	border-radius: 3px
+}
+
+article[depth="0"]:after {
+    content: ''; 
+	width: 30px; 
+	height: 30px;
+	background: rgb(51, 153, 255); 
+	position: absolute; 
+	top: 25px; 
+	z-index: -1;
+	left: 28px; 
+	opacity: 0.7;
+	border-radius: 3px
+}
+ */
+
+
+
+
+/*
+article[depth="0"]:before {
+    content: ''; 
+	width: 40px; 
+	height: 3px;
+	background: gray; 
+	position: absolute; 
+	top: -1px; 
+}
+
+article[depth="0"]:after {
+    content:''; 
+	width: 36px; 
+	height: 3px; 
+	background:gray; 
+	position:absolute; 
+	top: 16px; 
+	left: -12px;
+	-webkit-transform: rotate(-90deg);
+	
+}
+*/
+
+.kinjamprove-followedUser, 
+.kinjamprove-staff,
+.kinjamprove-user-comment 
+{
+	border-left: 2px solid !important;
+	border-radius: 3px;
+}
+
+.kinjamprove-followedUser {
+	border-left-color: orange !important;
+}
+
+.kinjamprove-staff {
+	border-left-color: rgb(101, 229, 120) !important;
+}
+
+.kinjamprove-user-comment {
+	border-left-color: rgb(51, 153, 255) !important;
+}
+
+article[depth="0"]:not(.collapsed):not(.kinjamprove-blockedUser) .reply__header>.avatar img {
+	width: 48px !important;
+	height: 48px !important;
+}
+
+
+
+article[depth="0"] .reply__sidebar {
+    margin-left: 60px !important;
+ }
+ article[depth="0"] .reply__content {
+    padding-left: 60px !important;
+}
+
+article[depth="0"] .reply__header{
+	margin-bottom: -5px !important;
+}
+
+ 
+ .reply__header {
+	margin-bottom: 5px !important;
+	padding-bottom: 0px !important;	
+}
+ 
+ .reply__content.js_reply-content.post-content.blurable.whitelisted-links {
+ 	margin-top: 0px !important;	
+	padding-bottom: 0px !important;
+ }
+
+.reply__to-author {
+	color: rgb(170, 170, 170);
+}
+
+
+.instream-native-video.instream-permalink {
+	display: none !important;
+}
+
+
+.kinjamprove-blockedUser .reply__pending-label.hide-for-small {
+	top: 0px !important;
+}
+
+.kinjamprove-spinner-bounce {
+	background-color: rgb(101, 229, 120) !important;
+}
+
+.kinjamprove-hidden {
+	display: none;
+}
