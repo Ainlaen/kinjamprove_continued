@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kinjamprove Options</title>
+  <script src="options.js"></script>
+  <link rel="stylesheet" href="styles/options.css">
+  
+  <style>
+    
+
+
+  </style>
+</head>
+
+<body>
+	<p>
+		<b><u>Don't forget to click the 'save' button to save any changes!</u></b>
+	</p>
+	<!-- <br/> -->
+
+	Preferred Kinja Style: 
+	<select id="preferredStyle">
+		<option value="kinjamprove">Kinjamproved (Recommended)</option>
+		<option value="classic">Classic (I love giant text and tons of white space!)</option>
+	</select>
+	<hr/>
+	
+	<!-- By default, show 
+	<select id="defaultComments">
+		<option value="pending">all (including pending)</option>
+		<option value="community">only approved</option>
+		<option value="staff">staff</options>
+	</select>
+	comments
+	<hr/> -->
+
+	Sort comments by 
+	<select id="sortOrder">
+		<!-- <option value="popular">Best</option> -->
+		<option value="likes">Most Likes</option>
+		<option value="replies">Most Replies</option>
+		<option value="newest">Newest</options>	
+		<option value="oldest">Oldest</option>
+	</select>
+	<hr/>
+
+	<span id="timezoneSpan">
+		Display publish times adjusted for timezone differences
+		<input type="checkbox" id="localizePublishTime" value="localizePublishTime"/> 
+	</span>
+	<hr/>
+
+	<table id="hideElementsTable" >
+		<tr>
+			<th colspan="2">Hide...</th>
+		</tr>
+		<tr>
+			<td>...pending replies</td>
+			<td class="checkboxCol"><input type="checkbox" id="hidePendingReplies" value="hidePendingReplies"/></td>
+		</tr>
+		<tr>
+			<td>...sidebar</td>
+			<td class="checkboxCol"><input type="checkbox" id="hideSidebar" value="hideSidebar"/></td>
+		</tr>
+		<tr>
+			<td>...social media buttons</td>
+				<td class="checkboxCol"><input type="checkbox" id="hideSocialMediaButtons" value="hideSocialMediaButtons"/></td>
+		</tr>
+	</table>
+	
+	<hr/>
+
+<!-- 	Hide pending replies?
+	<span id="hidePendingReplies">
+		<input type="radio" name="hidePendingReplies" value="no">No</input>
+		<input type="radio" name="hidePendingReplies" value="yes">Yes</input>
+	</span>
+	<hr/>
+
+	Hide sidebar? 
+	<span id="hideSidebar">
+		<input type="radio" name="hideSidebar" value="no" >No</input>
+		<input type="radio" name="hideSidebar" value="yes">Yes</input>
+	</span> 
+	<hr/>
+	
+	Hide social media buttons? 
+	<span id="hideSocialMediaButtons">
+		<input type="radio" name="hideSocialMediaButtons" value="no">No</input>
+		<input type="radio" name="hideSocialMediaButtons" value="yes">Yes</input>
+	</span>
+	<hr/> -->
+
+	
+	
+
+	<table id="blockedUsersTable">
+		<tr>
+			<th colspan="2">Blocked Users</th>
+		</tr>
+	</table>
+	<hr/>
+
+	<div id="status">
+	</div>
+	<button id="save">Save</button>
+	<br/>
+
+	<input id="blockedUsers" type="hidden"/>
+	
+	<div id="blockedUsersContainer">
+		<span>Blocked Users</span>
+			<textarea id="blockedUsersText" cols="50" rows="10" ></textarea>
+	
+	</div>
+</body>
+</html>
