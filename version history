@@ -1,9 +1,13 @@
 0.0.1.8
 
+New:
+User comments should always appear whether they're pending or not.
+
 Fixed: 
 Should now work properly when not logged in.
-Updated API calls for dismiss comments.
+Updated API calls for dismissing comments.
+Various issues with pending comments displaying when they shouldn't.
 
 Known issues:
 Sorting does not take threading into account. 
-Various issues with pending comments.
+
