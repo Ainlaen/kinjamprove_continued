@@ -1,0 +1,9 @@
+0.0.1.8
+
+Fixed: 
+Should now work properly when not logged in.
+Updated API calls for dismiss comments.
+
+Known issues:
+Sorting does not take threading into account. 
+Various issues with pending comments.
