@@ -1,0 +1,6 @@
+This extension does not save any information related to your Kinja account. Requests for Kinja tokens and authorization are only made to 
+carry out functions of the Kinja comment interface, and these tokens and authorizations are only transmitted to the appropriate site for 
+the function to be completed. For example, to dismiss a comment on AV Club, a secure authorization token will be requested for your account
+from Kinja.com, and then will be transmitted to the AV Club site (avclub.com) to complete the request.
+
+No information is gathered by this extension for tranmission to the developer or any third party.
