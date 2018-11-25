@@ -558,10 +558,6 @@ var CommentPromiseFactory = (function() {
 			
 			req.setRequestHeader('Content-type', 'application/json; charset=UTF-8');
 			
-			if(secureToken){
-				req.setRequestHeader('Authorization', 'Bearer ' + secureToken);
-			}
-			
 	        req.onload = function() {
 	            // This is called even on 404 etc.
 	            // so check the status
@@ -587,7 +583,7 @@ var CommentPromiseFactory = (function() {
 	};
 
 	var postJSON = function(url, payload) {
-		return xhrPromisePost(url, payload, secureToken).then(JSON.parse);
+		return xhrPromisePost(url, payload).then(JSON.parse);
 	};
 	
 	var getItemsPromise = function(url) {
