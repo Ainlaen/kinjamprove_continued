@@ -8,6 +8,10 @@ Should now work properly when not logged in.
 Updated API calls for dismissing comments.
 Various issues with pending comments displaying when they shouldn't.
 
+Removed:
+Google Analytics code was removed as it wasn't being used.
+
 Known issues:
 Sorting does not take threading into account. 
+Need to add blog-specific dropdown items. (Follow for blog, block for blog)
 
