@@ -3,4 +3,4 @@ carry out functions of the Kinja comment interface, and these tokens and authori
 the function to be completed. For example, to dismiss a comment on AV Club, a secure authorization token will be requested for your account
 from Kinja.com, and then will be transmitted to the AV Club site (avclub.com) to complete the request.
 
-No information is gathered by this extension for transmission to the developer or any third party.
+No information is gathered by this extension for transmission to the developer or any third party. (Google Analytics removed pending update)
