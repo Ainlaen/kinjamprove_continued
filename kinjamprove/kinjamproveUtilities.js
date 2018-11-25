@@ -548,8 +548,8 @@ var CommentPromiseFactory = (function() {
 
 		return staffMap; 
 	};
-	// 0.0.1.8 Fix for dismiss post
-	var xhrPromisePost = function(url, payload, secureToken) {
+
+	var xhrPromisePost = function(url, payload) {
 		// Return a new promise.
 	    return new Promise(function(resolve, reject) {
 	        // Do the usual XHR stuff
@@ -585,8 +585,8 @@ var CommentPromiseFactory = (function() {
 	        req.send(payload);
 	    });
 	};
-	//0.0.1.8 
-	var postJSON = function(url, payload, secureToken = null) {
+
+	var postJSON = function(url, payload) {
 		return xhrPromisePost(url, payload, secureToken).then(JSON.parse);
 	};
 	
@@ -824,7 +824,7 @@ function getDeletePostURL(postId, kinjaToken) {
 
     return deletePostURL;
 }
-
+/*
 function getDismissPostURL(postId, defaultBlogId, kinjaToken) {
 	var origin = window.location.origin,
         apiPathname = '/ajax/post/' + postId + '/dismiss/' + defaultBlogId,
@@ -833,7 +833,7 @@ function getDismissPostURL(postId, defaultBlogId, kinjaToken) {
 
     return url;
 }
-
+*/
 
 function postUpdateComment(postId, $textEditor, parentCommentId) {
 	var url = CommentApiURLFactory.getUpdateCommentURL(postId),
@@ -872,6 +872,7 @@ function getCreateCommentPayload($textEditor, parentCommentId) {
 	});
 }
 // 0.0.1.8
+/*
 function postDismissComment(postId, defaultBlogId, kinjaToken) {
 	var url = 'https://kinja.com/api/profile/token/createSecure',
 		payload = {};
@@ -885,3 +886,4 @@ function postDismissComment(postId, defaultBlogId, kinjaToken) {
 			return CommentPromiseFactory.postJSON(url, payload, secureToken);
 		});
 }
+*/

@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	restoreState();
 	document.getElementById('pauseButton').addEventListener('click', togglePause);
 
-
+/*
 	(function(i,s,o,g,r,a,m) {
 		i['GoogleAnalyticsObject'] = r;
 		i[r] = i[r] || function() {
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	ga('set', 'checkProtocolTask', function(){}); // Removes failing protocol check. @see: http://stackoverflow.com/a/22152353/1958200
 	ga('require', 'displayfeatures');
 	ga('send', 'pageview', '/options.html');
-
+*/
 
 });
 

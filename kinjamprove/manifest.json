@@ -8,7 +8,7 @@
       "matches": [ "*://*.kinja.com/*", "*://*.avclub.com/*", "*://*.jezebel.com/*", "*://*.jalopnik.com/*", "*://*.gizmodo.com/*", "*://*.deadspin.com/*", "*://*.kotaku.com/*", "*://*.lifehacker.com/*", "*://*.theroot.com/*", "*://*.splinternews.com/*", "*://*.earther.com/*", "*://*.univision.com/*", "*://*.thetakeout.com/*", "*://*.clickhole.com/*", "*://*.theinventory.com/*" ],
       "run_at": "document_end"
    } ],
-   "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'",
+   "content_security_policy": "script-src 'self'; object-src 'self'",
    "description": "Kinja with threaded replies, manual comment sorting (newest, oldest, & most popular), user blocking, and other improvements.",
    "icons": {
       "128": "icons/kinjamproveLogoTransparentBackground.png",

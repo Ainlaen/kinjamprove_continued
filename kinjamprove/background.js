@@ -29,7 +29,7 @@ const PAUSED_ICON_PATH = ICON_PATH + PAUSED_ICON_NAME;
 	// Listen for any changes to the URL of tab
 chrome.tabs.onUpdated.addListener(checkForValidUrl);
 chrome.tabs.onActivated.addListener(handleActivated);
-
+/*
 (function(i,s,o,g,r,a,m) {
 	i['GoogleAnalyticsObject'] = r;
 	i[r] = i[r] || function() {
@@ -53,7 +53,7 @@ ga('create', 'UA-110201694-1', 'auto');  // Replace with your property ID.
 ga('set', 'checkProtocolTask', function(){}); // Removes failing protocol check. @see: http://stackoverflow.com/a/22152353/1958200
 ga('require', 'displayfeatures');
 ga('send', 'pageview', '/background.js');
-
+*/
 
 chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
 	console.log('Background received request:', request, 'sender:', sender);
@@ -121,7 +121,7 @@ chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
 
 function isValidUrl(url) {
 	const userProfilePattern = /^((https?:\/\/)?(www\.)?)?kinja\.com(\/[\w\-]*)?/i,
-		  urlPattern = /^((https?:\/\/)?(www\.)?)([\w\-.]*\.)?(kinja|jezebel|jalopnik|gizmodo|deadspin|splinternews|fusion|kotaku|lifehacker|theroot|avclub|earther)\.com\/[\w\-#?=]+$/i;
+		  urlPattern = /^((https?:\/\/)?(www\.)?)([\w\-.]*\.)?(kinja|jezebel|jalopnik|gizmodo|deadspin|splinternews|fusion|kotaku|lifehacker|theroot|avclub|earther|clickhole|theinventory)\.com\/[\w\-#?=]+$/i;
 
 	if (userProfilePattern.test(url)) {
 		return false;

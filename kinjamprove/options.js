@@ -149,7 +149,7 @@ function onToggleBlockButtonClick() {
 document.addEventListener('DOMContentLoaded', restore_options);
 document.addEventListener('DOMContentLoaded', function() {
 	document.getElementById('save').addEventListener('click', save_options);
-
+/*
 	(function(i,s,o,g,r,a,m) {
 			i['GoogleAnalyticsObject'] = r;
 			i[r] = i[r] || function() {
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	ga('set', 'checkProtocolTask', function(){}); // Removes failing protocol check. @see: http://stackoverflow.com/a/22152353/1958200
 	ga('require', 'displayfeatures');
 	ga('send', 'pageview', '/options.html');
-
+*/
 });
 
 

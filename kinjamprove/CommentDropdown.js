@@ -665,11 +665,57 @@ function onDismissDropdownClick() {
 		return;
 	}
 	
+	var authorizeRequest = confirm('In order to complete this action, a secure token tied to your account must be requested from Kinja.com. This token will only be used to complete this action, and will only be transmitted to the site you are currently viewing. Requesting this token requires transmitting site specific cookie data including Kinja session id. Do you consent to having this secure token requested from Kinja.com on your behalf?');
+	
+	if (!authorizeRequest) {
+		alert('Unable to complete request.');
+		return;
+	}
+	
 	var postId = $(this).closest('ul').attr('data-postid'),
 		defaultBlogId = Utilities.getUserDefaultBlogId(),
 		kinjaToken = Utilities.getKinjaToken();
-		
-	postDismissComment(postId, defaultBlogId, kinjaToken)
+		url = 'https://kinja.com/api/profile/token/createSecure',
+		payload = {};
+	//JSON.stringify({ token: kinjaToken });
+
+	 postJSON(url, payload)
+		.then(function(response) {
+			var secureToken = response.data.token;
+			payload = JSON.stringify({postId: postId});
+			url = CommentApiURLFactory.getDismissPostURL(postId, defaultBlogId, kinjaToken);
+			
+			return new Promise(function(resolve, reject) {
+
+				var req = new XMLHttpRequest();
+				req.open('POST', url);
+				
+				req.setRequestHeader('Content-type', 'application/json; charset=UTF-8');
+				req.setRequestHeader('Authorization', 'Bearer ' + secureToken);
+
+				req.onload = function() {
+					// This is called even on 404 etc.
+					// so check the status
+					if (req.status === 200) {
+						// Resolve the promise w/ the response text
+						resolve(req.response);
+					} else {
+						// Otherwise reject w/ the status text
+						// which will hopefully be a meaningful error
+						// reject(Error(req.statusText));
+						reject(req.responseText);
+					}
+				};
+				
+				// Handle network errors
+				req.onerror = function() {
+					reject(Error('Network Error'));
+				};
+				
+				// Make the request!
+				req.send(payload);
+			}).then(JSON.parse);
+		})
 		.then(function(dismissedComment) {		
 			// 0.0.1.8
 			var $dismissedComment = $('#reply_' + dismissedComment.data.postId),
