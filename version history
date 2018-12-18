@@ -19,13 +19,13 @@ Comments from the user are now marked blue, staff curated posts are purple, staf
 followed user posts are orange. Clicking on any post will highlight its border. This feature may be expanded
 in later versions to allow saving of highlighted posts.
 
-Additionally, the extension will now disable infinite scrolling on Kinja sites. Depending on feedback, a
+Additionally, the extension will now disable infinite scrolling on Kinja sites. Depending on feedback, an
 option to re-enable this may be added.
 
 If you have any questions, comments, bug reports, or ideas for new features, please contact me.
 
 Fixed: 
-Works with the Chrome 71+.
+Works with Chrome 71+.
 Should now work properly when not logged in.
 
 Removed:
