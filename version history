@@ -1,8 +1,31 @@
 0.0.1.8
 
-This version represents a major redesign for Kinjamprove. See the Chrome Webstore site for full details.
+This version represents a major redesign for Kinjamprove. Numerous changes and improvements have been made.
+
+New filters have been added for staff, user, followed, liked, and flagged comments. How these work is that
+they show threads up to the filtered comments. The pending switch will not be honored if, for instance, your 
+own replies to the thread are still pending. Replies not directly leading to the filtered comments will not 
+be displayed. In addition, when using the community filter, your own comments and those made by users you've
+followed will always be shown even if they are pending.
+
+If a comment has replies which are not shown due to the selected filter or pending comments being turned off,
+links will display at the bottom of the post which will allow you to expand hidden replies, one level at a time.
+
+The scrolling footer has been replaced with buttons on the bottom left which will scroll you to the top of the
+comments section or to the top of the post. This system will probably be expanded in the future to allow you
+to quickly scroll to the next filtered/marked post.
+
+Comments from the user are now marked blue, staff curated posts are purple, staff member posts are green, 
+followed user posts are orange. Clicking on any post will highlight its border. This feature may be expanded
+in later versions to allow saving of highlighted posts.
+
+Additionally, the extension will now disable infinite scrolling on Kinja sites. Depending on feedback, a
+option to re-enable this may be added.
+
+If you have any questions, comments, bug reports, or ideas for new features, please contact me.
 
 Fixed: 
+Works with the Chrome 71+.
 Should now work properly when not logged in.
 
 Removed:
