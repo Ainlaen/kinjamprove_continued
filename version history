@@ -1,17 +1,15 @@
 0.0.1.8
 
-New:
-User comments should always appear whether they're pending or not.
+This version represents a major redesign for Kinjamprove. See the Chrome Webstore site for full details.
 
 Fixed: 
 Should now work properly when not logged in.
-Updated API calls for dismissing comments.
-Various issues with pending comments displaying when they shouldn't.
 
 Removed:
 Google Analytics code was removed as it wasn't being used.
 
+
 Known issues:
-Sorting does not take threading into account. 
+Following doesn't update on the fly yet.
 Need to add blog-specific dropdown items. (Follow for blog, block for blog)
 
