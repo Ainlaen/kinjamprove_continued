@@ -70,6 +70,8 @@ a.reply-to-post--mobile,
 .storytype__outlined .storytype-vertical,
 .storytype__text .storytype-type,
 .storytype__text .storytype-vertical,
+.kinjamprove-filter-select-span,
+.kinjamprove-filter-select,
 .reply__content p {
 	font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
 }
@@ -81,8 +83,11 @@ a.reply-to-post--mobile,
 img.avatar:not(.blog-avatar) {
 	border-radius: 3px !important;
 }
-.replies-wrapper .reply {
+.replies-wrapper,.reply:not(.kinjamprove-marked-comment):not(.kinjamprove-curated-comment){
 	border-top: none !important;
+}
+li.commentlist__item.collapsed > article[depth="0"] {
+	padding: 0px 0px 22px 5px !important;
 }
 .reply {
 	padding: 0px 0px 15px 5px !important;
@@ -112,7 +117,42 @@ img.avatar:not(.blog-avatar) {
 .svg-reply-right {
 	display: none !important;
 }
+/* 0.0.1.8 */
+article[depth="0"]:not(.collapsed) .reply__pending-label.hide-for-small {
+	top: 50px !important;
+    left: -16px !important;
+}
+article[depth="1"]:not(.collapsed) .reply__pending-label.hide-for-small {
+    left: -19px !important;
+}
+article[depth="2"]:not(.collapsed) .reply__pending-label.hide-for-small {
+    left: -17px !important;
+}
+article[depth="3"]:not(.collapsed) .reply__pending-label.hide-for-small {
+    left: -14px !important;
+}
+article[depth="4"]:not(.collapsed) .reply__pending-label.hide-for-small {
+    left: -10px !important;
+}
+article[depth="5"]:not(.collapsed) .reply__pending-label.hide-for-small {
+    left: -8px !important;
+}
+article[depth="6"]:not(.collapsed) .reply__pending-label.hide-for-small {
+    left: -6px !important;
+}
+article:not(.collapsed) .reply__pending-label.hide-for-small {
+    top: 40px !important;
+    left: -4px !important;
+    position: absolute;
+    width: 10%;
+    word-wrap: normal;
+    font-size: 9px !important;
+    color: red;
+    font-weight: bold;
+    text-align: center;
+}
 
+/*
 .reply__pending-label.hide-for-small,
 .kinjamprove-creator-label {
 	-webkit-transform: rotate(90deg);
@@ -122,7 +162,7 @@ img.avatar:not(.blog-avatar) {
 	width: 10%;
 	word-wrap: normal;
 }
-
+*/
 
 /*
 article.reply--unapproved ~ .js_region--warning:before {
@@ -225,37 +265,119 @@ article[depth="0"]:after {
 }
 */
 
+.kinjamprove-marked-comment {
+	border-top: 2px solid !important;
+	border-right: 2px solid !important;
+	border-bottom: 2px solid !important;
+	border-radius: 5px;	
+	border-color: rgb(217, 234, 18);
+	margin-top: 1px;
+    margin-bottom: 1px;
+}
+
+.kinjamprove-staff-curated,
 .kinjamprove-followedUser, 
 .kinjamprove-staff,
-.kinjamprove-user-comment 
+.kinjamprove-user-comment,
+.kinjamprove-curated-comment,
+.kinjamprove-marked-comment
 {
 	border-left: 2px solid !important;
-	border-radius: 3px;
+	border-radius: 5px;
+}
+
+.kinjamprove-staff-curated {
+	border-color: #ea08ea !important;
 }
 
 .kinjamprove-followedUser {
-	border-left-color: orange !important;
+	border-color: orange !important;
 }
 
 .kinjamprove-staff {
-	border-left-color: rgb(101, 229, 120) !important;
+	border-color: rgb(101, 229, 120) !important;
 }
 
 .kinjamprove-user-comment {
-	border-left-color: rgb(51, 153, 255) !important;
+	border-color: rgb(51, 153, 255) !important;
+}
+
+.kinjamprove-curated-comment {
+	border-top: 2px solid !important;
+	border-right: 2px solid !important;
+	border-bottom: 2px solid !important;
+	margin-top: 1px;
+    margin-bottom: 1px;
+	border-color: red !important;
 }
 
 .kinjamprove-user-comment-editable {
 	border-bottom: 2px solid !important;
-	border-radius: 3px;	
+	border-radius: 5px;	
 	border-bottom-color: red !important;
 }
+
+
 
 article[depth="0"]:not(.collapsed):not(.kinjamprove-blockedUser) .reply__header>.avatar img {
 	width: 48px !important;
 	height: 48px !important;
 }
 
+/*vvv Just added vvv*/
+
+li.commentlist__item.collapsed > article[depth="0"] .reply__header > .avatar img {
+    width: 32px !important;
+    height: 32px !important;
+}
+
+li.commentlist__item.collapsed > article .reply__header > .avatar img {
+    width: 24px !important;
+    height: 24px !important;
+}
+/* ^^^ Just added ^^^*/
+
+/* 0.0.1.8 */
+li.commentlist__item.collapsed > article[depth="0"] .reply__pending-label.hide-for-small {
+	top: 34px !important;
+    left: -15px !important;
+	font-size: 8px !important;
+}
+li.commentlist__item.collapsed > article[depth="1"] .reply__pending-label.hide-for-small {
+    left: -17px !important;
+}
+li.commentlist__item.collapsed > article[depth="2"] .reply__pending-label.hide-for-small {
+    left: -14px !important;
+}
+li.commentlist__item.collapsed > article[depth="3"] .reply__pending-label.hide-for-small {
+    left: -12px !important;
+}
+li.commentlist__item.collapsed > article[depth="4"] .reply__pending-label.hide-for-small {
+    left: -10px !important;
+}
+li.commentlist__item.collapsed > article[depth="5"] .reply__pending-label.hide-for-small {
+    left: -8px !important;
+}
+li.commentlist__item.collapsed > article[depth="6"] .reply__pending-label.hide-for-small {
+    left: -6px !important;
+}
+li.commentlist__item.collapsed > article[depth="7"] .reply__pending-label.hide-for-small {
+    left: -4px !important;
+}
+li.commentlist__item.collapsed > article[depth="8"] .reply__pending-label.hide-for-small {
+    left: -2px !important;
+}
+li.commentlist__item.collapsed > article .reply__pending-label.hide-for-small {
+    top: 26px !important;
+    left: -2px !important;
+    position: absolute;
+    width: 8%;
+    word-wrap: normal;
+    font-size: 7px !important;
+    color: red;
+    font-weight: bold;
+    text-align: center;
+}
 
 
 article[depth="0"] .reply__sidebar {
@@ -293,6 +415,7 @@ article[depth="0"] .reply__header{
 .kinjamprove-blockedUser .reply__pending-label.hide-for-small {
 	top: 0px !important;
 }
+
 
 .kinjamprove-spinner-bounce {
 	background-color: rgb(101, 229, 120) !important;

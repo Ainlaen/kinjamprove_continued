@@ -1,5 +1,5 @@
 function onKinjamproveCancelButtonClick(elem) {
-	console.log('onKinjamproveCancelButtonClick called on elem:', elem);
+	// console.log('onKinjamproveCancelButtonClick called on elem:', elem);
 
 	var $this = $(elem),
 		$nativeCancelButton = $this.siblings('button[type="cancel"]'),
@@ -10,7 +10,7 @@ function onKinjamproveCancelButtonClick(elem) {
 		$kinjamproveAutoCancelButton = $editor.find('button.kinjamprove-auto-cancel-button');
 
 	if ($scribe.length && $scribe.text().length) {
-		console.log('scribe exists and has text in it: ', $scribe, $scribe.text());
+		console.log('Kinjamprove:scribe exists and has text in it: ', $scribe, $scribe.text());
 
 		setTimeout(function() {
 			var confirmClose = confirm('Kinjamprove: Are you sure you want to close the editor?');
@@ -31,12 +31,12 @@ function setWindowOnbeforeunload(callback) {
 }
 
 function onKinjamproveAutoCancelButtonClick(event) {
-    console.log('onKinjamproveAutoCancelButtonClick:', event);
+    // console.log('onKinjamproveAutoCancelButtonClick:', event);
 
     var $cancelButton = $('div.editor button[type="cancel"]');
     
     if (!$cancelButton.length) {
-    	console.log('$cancelButton not found; returning;');
+    	console.log('Kinjamprove: $cancelButton not found; returning;');
     	return;
     }
 
@@ -44,7 +44,7 @@ function onKinjamproveAutoCancelButtonClick(event) {
     Utilities.setWindowConfirmToAutomatic();
     // setWindowConfirmToAutomatic();
 
-    console.log('$cancelButton:', $cancelButton);
+    console.log('Kinjamprove: $cancelButton:', $cancelButton);
 
     $cancelButton[0].click();
 
@@ -52,11 +52,11 @@ function onKinjamproveAutoCancelButtonClick(event) {
     // setWindowConfirmToNormal();
 
     if (typeof commentEditorAPI !== 'undefined') {
-    	console.log('commentEditorAPI before reset:', commentEditorAPI);
+    	console.log('Kinjamprove: commentEditorAPI before reset:', commentEditorAPI);
     	commentEditorAPI.reset();
-    	console.log('commentEditorAPI after reset:', commentEditorAPI);
+    	console.log('Kinjamprove: commentEditorAPI after reset:', commentEditorAPI);
     } else {
-    	console.log('commentEditorAPI is undefined');
+    	console.log('Kinjamprove: commentEditorAPI is undefined');
     }
 }
 
@@ -71,7 +71,7 @@ function setWindowConfirmToAutomatic() {
 			style: 'display: none; '
 		})
 		.click(function() {
-			console.log('#kinjamprove-auto-confirm-button clicked:', $(this));
+			//console.log('#kinjamprove-auto-confirm-button clicked:', $(this));
 			// console.log('setWindowConfirmToAutomatic $confirmButton clicked; window.confirm', 
 				// window.confirm, 'window.realConfirm:', window.realConfirm);
 		});
@@ -103,7 +103,7 @@ function setWindowConfirmToNormal() {
 			onclick: 'Utilities.setWindowConfirmToNormal()',
 			style: 'display: none; '
 		}).click(function() {
-			console.log('#kinjamprove-normal-confirm-button clicked:', $(this));	
+			console.log('Kinjamprove: #kinjamprove-normal-confirm-button clicked:', $(this));	
 			// console.log('setWindowConfirmToNormal $confirmButton clicked; window.confirm', 
 				// window.confirm, 'window.realConfirm:', window.realConfirm);
 		});

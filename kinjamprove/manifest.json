@@ -4,7 +4,7 @@
       "scripts": [ "background.js" ]
    },
    "content_scripts": [ {
-      "js": [ "jquery-3.3.1.js", "mutation-summary.js", "CommentEditorAPI.js", "CommentEncoder.js", "XhrCommentTracker.js", "kinjamproveUtilities.js", "InlineFunctions.js", "CommentClass.js", "CommentDropdown.js", "CommentDomCreator.js", "kinjamprove.js" ],
+      "js": [ "jquery-3.3.1.js", "mutation-summary.js", "CommentEditorAPI.js", "CommentEncoder.js", "XhrCommentTracker.js", "kinjamproveUtilities.js", "InlineFunctions.js", "CommentClass.js", "CommentDropdown.js", "CommentDomCreator.js", "kinjamprove.js"],
       "matches": [ "*://*.kinja.com/*", "*://*.avclub.com/*", "*://*.jezebel.com/*", "*://*.jalopnik.com/*", "*://*.gizmodo.com/*", "*://*.deadspin.com/*", "*://*.kotaku.com/*", "*://*.lifehacker.com/*", "*://*.theroot.com/*", "*://*.splinternews.com/*", "*://*.earther.com/*", "*://*.univision.com/*", "*://*.thetakeout.com/*", "*://*.clickhole.com/*", "*://*.theinventory.com/*" ],
       "run_at": "document_end"
    } ],
@@ -31,7 +31,6 @@
       "default_title": "Kinjamprove"
    },
    "permissions": [ "declarativeContent", "activeTab", "storage", "*://*.avclub.com/*", "*://*.deadspin.com/*", "*://*.earther.com/*", "*://*.gizmodo.com/*", "*://*.jalopnik.com/*", "*://*.jezebel.com/*", "*://*.kinja.com/*", "*://*.kotaku.com/*", "*://*.lifehacker.com/*", "*://*.splinternews.com/*", "*://*.theroot.com/*", "*://*.univision.com/*", "*://*.thetakeout.com/*", "*://*.clickhole.com/*", "*://*.theinventory.com/*" ],
-   "update_url": "https://clients2.google.com/service/update2/crx",
    "version": "0.0.1.8",
-   "web_accessible_resources": [ "icons/*", "styles/*", "kinjamproveUtilities.js", "InlineFunctions.js", "CommentEditorAPI.js", "CommentEncoder.js", "XhrCommentTracker.js", "CommentClass.js", "CommentDropdown.js", "CommentDomCreator.js" ]
+   "web_accessible_resources": [ "icons/*", "styles/*", "kinjamproveUtilities.js", "InlineFunctions.js", "CommentEditorAPI.js", "CommentEncoder.js", "XhrCommentTracker.js", "CommentClass.js", "CommentDropdown.js", "CommentDomCreator.js", "kinjaPasser.js" ]
 }

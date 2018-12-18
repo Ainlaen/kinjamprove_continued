@@ -13,9 +13,9 @@ function save_options() {
 		blockedUsers = '{}';
 	}
 	
-	console.log('saving option "preferred style" =', style);
-	console.log('saving option hideSocialMedia =', hideSocialMediaButtons);
-	console.log('blockedUsers:', blockedUsers);
+	console.log('Kinjamprove: saving option "preferred style" =', style);
+	console.log('Kinjamprove: saving option hideSocialMedia =', hideSocialMediaButtons);
+	console.log('Kinjamprove: blockedUsers:', blockedUsers);
 	
 	chrome.storage.sync.set({
 		preferredStyle: style,
@@ -41,11 +41,6 @@ function save_options() {
 	}
 }
 
-/*
-MY BLOCKED USERS:
-{"562376079":"elkris","578441844":"notabigbang","1162121431":"jhota42","1224058084":"jjdebenedictis","1374577520":"walkerd","1436983725":"garland137","1451381255":"tipsyt-rex","1501614585":"calliaracle","1514615714":"oldwomanyellsatclods","1563330134":"simon-on-the-river3","1625590789":"the-guy-they-warned-you-about","5876237249237745904":"jekevejoy-01","5876237249237538716":"soverybored","5780744385189707111":"trent100","5876237249236158102":"billynoname","5876237249236444308":"chisicilian","5876237249237760155":"spaghettidotgov","5876237249236537310":"josephschmoe33","5876237249235692381":"rexryan301","5876237249237731071":"nabb","5876237249237657184":"johnoliver-watch","5876237249236924363":"pizzagateinvestigator","5876237249237215857":"jsnsnsj","5876237249237797182":"zorny","5876237249237806717":"donkeypuncabitch","5876237249237760043":"thekinjaplace","5876237249237683683":"mrmerrymaker"}
-*/
-
 function restore_options() {
 // 	chrome.storage.sync.clear();
 	
@@ -62,7 +57,7 @@ function restore_options() {
 	}, setValues);
 		
 	function setValues(items) { 
-		console.log('restored options: ', items);
+		console.log('Kinjamprove: restored options: ', items);
 		
 		document.getElementById('preferredStyle').value = items.preferredStyle;
 		// document.getElementById('defaultComments').value = items.defaultComments;
@@ -118,7 +113,7 @@ function onToggleBlockButtonClick() {
 	var blockedUsersElem = document.getElementById('blockedUsers'),
 		blockedUsersObj = JSON.parse(blockedUsersElem.value);
 
-	console.log('blockedUsersObj:', blockedUsersObj);
+	console.log('Kinjamprove: blockedUsersObj:', blockedUsersObj);
 
 	var id = this.id,
 		toggleState = this.dataset['toggleState'],

@@ -120,7 +120,6 @@ function createUnorderedCommentList(comments) {
 
 function createNestedCommentsListItem(comment) {
 	var commentListItem = createCommentListItem(comment);
-
 	if (!comment.replies.length) {
 		return commentListItem;
 	}
@@ -145,7 +144,15 @@ function createNestedCommentsListItem(comment) {
 
 
 function createCommentListItem(comment) {
-	var depth = isNaN(Number.parseInt(comment.depth)) ? 0 : comment.depth,
+	var tracker = kinjamprove.commentTrackers[comment.starterId],
+		$listItem = tracker.commentLis[comment.id];
+	
+	if($listItem){
+		return $listItem;
+	}
+
+	var $commentArticle = createCommentArticle(comment, tracker),
+		depth = isNaN(Number.parseInt(comment.depth)) ? 0 : comment.depth,
 		listItemClassArr = [
 			'commentlist-item',
 			'commentlist__item',
@@ -153,30 +160,26 @@ function createCommentListItem(comment) {
 			'commentlist__item--expandable',
 			comment.approved ? '' : 'kinjamprove-unapproved'
 		],
-		// listItemClass = 'commentlist__item commentlist__item--depth-' + depth + ' commentlist__item--expandable',
 		listItemClass = listItemClassArr.join(' ').trim(),
 		listItemObj = { 
 			'class': listItemClass,
-			'data-authorid': comment.authorId
-		};
-
-	// if (!comment.approved) {
-	// 	listItemObj['class'] += ' kinjamprove-unapproved';
-	// }
-
-	var $commentArticle = createCommentArticle(comment),
+			'depth': depth,
+			'data-authorid': comment.authorId,
+			'data-id': comment.id
+		},
 		$regionWarning = $('<div>', { 'class': 'js_region--warning' }),
-		$editorPlaceholder = $('<div>', { 'class': 'js_editor-placeholder', depth: depth }),
-		$listItem = $('<li>', listItemObj).append($commentArticle, $regionWarning, $editorPlaceholder);
+		$editorPlaceholder = $('<div>', { 'class': 'js_editor-placeholder', depth: depth });
 		
-	// if (!comment.approved) {
-	// 	$listItem.addClass('kinjamprove-unapproved');
-	// }
+	$listItem = $('<li>', listItemObj).append($commentArticle, $regionWarning, $editorPlaceholder);
+
+	// 0.0.1.8 Add Lis and articles to lists.
+	tracker.commentArticles[comment.id] = $commentArticle;
+	tracker.commentLis[comment.id] = $listItem;
 	
 	return $listItem;
 }
 
-function createCommentArticle(comment) {
+function createCommentArticle(comment, tracker) {
 	var blockedUsers = (kinjamprove && kinjamprove.options && kinjamprove.options.blockedUsers)
 		 ? JSON.parse(kinjamprove.options.blockedUsers) 
 		 : { };
@@ -184,60 +187,31 @@ function createCommentArticle(comment) {
 	 if (!blockedUsers) {
 	 	blockedUsers = { };
 	 }
-	// var kinjamprove = kinjamprove 
-	// 	? kinjamprove 
-	// 	: { 
-	// 		followingAuthor: function(authorId) { 
-	// 			return false;
-	// 		 },
-	// 		 userFlaggedPostIdsMap: { }
-		// };
-	
-	if (!comment.author) {
-		comment.author = { 
-			displayName: '',
-			screenName: '', 
-			avatar: { 
-				id: '17jcxp06aqnkmpng',
-				format: 'png'
-			}
-		}
-	} else if (!comment.author.avatar) {
-		comment.author.avatar = {
-			id: '17jcxp06aqnkmpng',
-			format: 'png'
-		};
-	}	
 
-	comment.author.displayName = comment.author.displayName || '';
-
-	if (!comment.author.displayName.length) {
-		var authorBlogId = comment.authorBlogId,
-			blogs = comment.blogs;
-		for (var i = 0; i < blogs.length; i++) {
-			if (blogs[i].id === authorBlogId) {
-				comment.author.displayName = blogs[i].displayName.length 
-					? blogs[i].displayName 
-					: blogs[i].name; 
-				break;
-			}
-		}
-	}
-
-	comment.author.screenName = comment.author.screenName || '';
-	
-	var articleClass = 'reply js_reply',
+	let numPending = comment.numOfDescendants - comment.numOfApprovedDescendants,
+		numPendingDirect = comment.directReplyCount - comment.directApprovedReplyCount,
+		numDirectApprovedMinusStaff = comment.directApprovedReplyCount - comment.directStaffReplyCount;
+		
+	var articleClass = comment.articleClass,
 		articleObj = { 
 			id: 'reply_'+comment.id,
+			depth: comment.depth,
+			descendants: comment.numOfDescendants,
+			adescendants: comment.numOfApprovedDescendants,
+			pdescendants: numPending,
+			sdescendants: comment.numOfStaffDescendants,
+			'd-replies': comment.directReplyCount,
+			'd-areplies': comment.directApprovedReplyCount,
+			'd-preplies': numPendingDirect,
+			'd-sreplies': comment.directStaffReplyCount,
 			'class': articleClass, 
 			'data-id': comment.id, 
 			'data-parentid': comment.parentId, 
 			'data-authorname': comment.author.screenName.toLowerCase(),
 			'data-authorId': comment.authorId,
-			 depth: comment.depth
-			 ,
-			 'data-newest': comment.newest
-			 , 'data-maxthreadlikes': comment.maxThreadLikes
+			'data-newest': comment.newest, 
+			'data-maxthreadlikes': comment.maxThreadLikes,
+			starterId: comment.starterId
 		},
 		$article,
 		commentAnchorHTML = '<a id="comment-' + comment.id + '" class="comment-anchor"></a>',
@@ -245,33 +219,33 @@ function createCommentArticle(comment) {
 		$replyContent,
 		$replySidebar, 
 		$replyToolsDiv,
+		$replyCountsDiv,
 		$flaggedIndicator;
-		
-	if (!comment.approved) {
-		articleObj['class'] += ' reply--unapproved kinjamprove-unapproved';
-	}
 	
-	if (Utilities.userIsCommentAuthor(comment)) {
-		articleObj['class'] += ' kinjamprove-user-comment';
-		if(Utilities.commentIsEditableByUser(comment)){
-			articleObj['class'] += ' kinjamprove-user-comment-editable';
-		}
+	if(comment.articleTitle){
+		articleObj['title'] = comment.articleTitle;
 	}
 
-	if (kinjamprove.followingAuthor(comment.authorId)) {
-		articleObj['class'] += ' kinjamprove-followedUser';
+	if(comment.isUserComment && Utilities.commentPublishedInLastFifteenMinutes(comment)){
+		articleObj['class'] += ' kinjamprove-user-comment-editable';
+		articleObj['title'] = 'Editable';
 	}
 	
-	if (comment.authorIsStaff) {
-		articleObj['class'] += ' kinjamprove-staff';
+	if (comment.numOfDescendants){
+		articleObj['class'] += ' has-descendants';
+		if(numPendingDirect){
+			articleObj['class'] += ' has-direct-pending';
+		}
+		if(numDirectApprovedMinusStaff){
+			articleObj['class'] += ' has-direct-delta';
+		}
 	}
 	
-	if (comment.curatedReply) {
-		articleObj['class'] += ' kinjamprove-curated';
-		articleObj.directReplyCount = comment.directReplyCount;
+	if (comment.curated){
+		tracker.curatedCommentLoaded = true;
 	}
-				
-	if (blockedUsers.hasOwnProperty(comment.authorId)) {		
+	
+	if (blockedUsers.hasOwnProperty(comment.authorId)) {
 		articleObj['class'] += ' kinjamprove-blockedUser';
 		
 		var $replyByline = $header.children('.reply__byline'),
@@ -287,141 +261,91 @@ function createCommentArticle(comment) {
 		
 		return $article;
 	}
-	
-		
+
 	$replyContent = createReplyContentDiv(comment);
 	$replySidebar = createReplySidebar(comment); 
-	$replyToolsDiv = createReplyToolsDiv(comment);
+	
+	// 0.0.1.8 Show replies stuff.
+	let divObj = {
+			'class': 'reply__tools js_reply-tools',
+			'data-analytics-target': 'groupChat'
+		},
+		linkArr = [{
+			'class': 'js_reply-to-selected-post reply__link readonly-hide',
+			'data-id': comment.id,
+			rel: 'nofollow',
+			title: 'Reply',
+		}],
+		nodeText = ["Reply"];
+	
+	$replyToolsDiv = createReplyDiv(divObj, linkArr, nodeText);
+	
+	let title = "Approved replies in thread: " + comment.numOfApprovedDescendants + "\nPending replies in thread: " + numPending,
+		activeFilter = tracker.$kinjamproveFilterSelect.val(),
+		linkObj = {
+			'class': 'kinjamprove-show-replies-text',
+			'data-id': comment.id,
+			descendants: comment.numOfDescendants,
+			adescendants: comment.numOfApprovedDescendants,
+			pdescendants: numPending,
+			sdescendants: comment.numOfStaffDescendants,
+			'd-replies': comment.directReplyCount,
+			'd-areplies': comment.directApprovedReplyCount,
+			'd-preplies': numPendingDirect,
+			'd-sreplies': comment.directStaffReplyCount,
+			'd-deltareplies': numDirectApprovedMinusStaff,
+			'data-parentid': comment.parentId, 
+			'data-authorId': comment.authorId,
+			'data-newest': comment.newest, 
+			rel: 'nofollow',
+			starterId: comment.starterId,
+			title: title	
+		};	
+		
+	divObj = {
+'class': 'reply__tools js_reply-tools kinjamprove-show-comment-replies-div' + ( ( (activeFilter == "staff" || tracker.hidePending) && (numDirectApprovedMinusStaff || numPendingDirect) ) ? '' : ' hide-show-replies')
+	};
+
+	linkArr = [
+		linkObj,
+		Object.defineProperty((JSON.parse(JSON.stringify(linkObj))), 'class', {value:'kinjamprove-show-replies-approved-link kinjamprove-show-comment-replies-a' + (numDirectApprovedMinusStaff ? '' : ' hide-show-replies-link')}),
+		Object.defineProperty((JSON.parse(JSON.stringify(linkObj))), 'class', {value: 'kinjamprove-show-replies-pending-link kinjamprove-show-comment-replies-a' + (numPendingDirect ? '' : ' hide-show-replies-link')}),
+		Object.defineProperty((JSON.parse(JSON.stringify(linkObj))), 'class', {value: 'kinjamprove-show-replies-all-link kinjamprove-show-comment-replies-a' + ( (numDirectApprovedMinusStaff && numPendingDirect) ? '' : ' hide-show-replies-link')})
+	];
+	
+	nodeText = [
+		"Show Replies: ",
+		"Approved (" + numDirectApprovedMinusStaff + ") ",
+		"Pending (" + numPendingDirect + ") ",
+		"All (" + (numPendingDirect + numDirectApprovedMinusStaff) +") "
+	];
+	
+	$replyCountsDiv = createReplyDiv(divObj, linkArr, nodeText);
+	
 	$flaggedIndicator = $('<div>', { 'class': 'js_reply-flagged reply__flagged-indicator' }).text('Flagged');
 	
-	if (kinjamprove.userFlaggedPostIdsMap.hasOwnProperty(comment.id)) {
+	if (comment.userFlagged) {
 		$flaggedIndicator.css('display', 'inline');
 	}
 			
 
 	$article = $('<article>', articleObj)
 		.append(commentAnchorHTML, $header, $replyContent, 
-				$replySidebar, $replyToolsDiv, $flaggedIndicator);
+				$replySidebar, $replyToolsDiv, $replyCountsDiv, $flaggedIndicator);
 
-	return $article;
-}
-
-function createCommentArticle2(comment) {
-	var blockedUsers = kinjamprove ? JSON.parse(kinjamprove.options.blockedUsers) : { };
-	// var kinjamprove = kinjamprove 
-	// 	? kinjamprove 
-	// 	: { 
-	// 		followingAuthor: function(authorId) { 
-	// 			return false;
-	// 		 },
-	// 		 userFlaggedPostIdsMap: { }
-	// 	};
-	
-	if (!comment.author) {
-		comment.author = { 
-			displayName: '',
-			screenName: '', 
-			avatar: { 
-				id: '',
-				format: ''
-			}
+	// 0.0.1.8 For show replies links.
+	if(comment.numOfDescendants){
+		// Type of replies: 0 = pending, 1 = approved, 2 = staff
+		let type = 2;
+		if(comment.numOfApprovedDescendants - comment.numOfStaffDescendants){
+			type = 1;
 		}
+		if(comment.numOfDescendants - comment.numOfApprovedDescendants){
+			type = 0;
+		}
+		tracker.commentListArticlesDescendantMap.set(comment.id, [type, $article]);
 	}
 	
-	var articleClass = 'reply js_reply',
-		articleObj = { 
-			id: 'reply_'+comment.id,
-			'class': articleClass, 
-			'data-id': comment.id, 
-			'data-parentid': comment.parentId, 
-			'data-authorname': comment.author.screenName.toLowerCase(),
-			'data-authorId': comment.authorId,
-			 depth: comment.depth 
-		},
-		article,// = document.createElement('article'),
-		commentAnchor = document.createElement('a');
-		$header = createCommentHeader(comment),
-		$replyContent,
-		$replySidebar, 
-		$replyToolsDiv,
-		$flaggedIndicator;
-
-	
-	commentAnchor.className = 'comment-anchor';
-	commentAnchor.id = 'comment-' + comment.id;
-		
-	if (!comment.approved) {
-		articleObj['class'] += ' reply--unapproved kinjamprove-unapproved';
-	}
-	
-	if (Utilities.userIsCommentAuthor(comment)) {
-		articleObj['class'] += ' kinjamprove-user-comment';
-	}
-
-	if (kinjamprove.followingAuthor(comment.authorId)) {
-		articleObj['class'] += ' kinjamprove-followedUser';
-	}
-	
-	if (comment.authorIsStaff) {
-		articleObj['class'] += ' kinjamprove-staff';
-	}
-
-	for (var prop in articleObj) {
-		article.setAttribute(prop, articleObj[prop]);
-	}
-				
-	if (blockedUsers.hasOwnProperty(comment.authorId)) {		
-		articleObj['class'] += ' kinjamprove-blockedUser';
-
-		
-		var $replyByline = $header.children('.reply__byline'),
-			blockedUserContainerHtml = '<div class="blockedUserMessage">This user is blocked with Kinjamprove.</div>';
-		
-		$header.nextAll().remove();
-		$replyByline.empty().nextAll().remove();
-		$replyByline.append(blockedUserContainerHtml).after(createCollapseThreadButton());
-		
-		
-		$header.find('.avatar img').attr('src', chrome.runtime.getURL('icons/kinjamprove_blocked_user_avatar.png'));
-		// $article = $('<article>', articleObj).append(commentAnchorHTML, $header);
-		
-		$article.appendChild(commentAnchor);
-		$article.appendChild($header[0]);
-
-		return $article;
-	}
-	
-		
-	replyContentDiv = createReplyContentDiv(comment);
-	$replySidebar = createReplySidebar(comment); 
-	$replyToolsDiv = createReplyToolsDiv(comment);
-	// $flaggedIndicator = $('<div>', { 'class': 'js_reply-flagged reply__flagged-indicator' }).text('Flagged');
-
-	$flaggedIndicator = document.createElement('div');
-	$flaggedIndicator.className = 'js_reply-flagged reply__flagged-indicator';
-	$flaggedIndicator.appendChild(document.createTextNode('Flagged'));
-
-	
-	if (kinjamprove.userFlaggedPostIdsMap.hasOwnProperty(comment.id)) {
-		$flaggedIndicator.style.display = 'inline';
-	}
-			
-
-	var childNodesArr = [ 
-			commentAnchor, 
-			$header, 
-			replyContentDiv, 
-			$replySidebar, 
-			$replyToolsDiv, 
-			$flaggedIndicator
-		];
-
-	for (var i = 0; i < childNodesArr.length; i++) {
-		var childNode = childNodesArr[i][0] ? childNodesArr[i][0] : childNodesArr[i];
-
-		$article.appendChild(childNode);
-	}
-
 	return $article;
 }
 
@@ -442,7 +366,7 @@ function createCommentHeader(comment) {
 
 	if (!comment.approved) {
 		var $pendingApprovalSpan = $('<span>', {'class': 'reply__pending-label hide-for-small'})
-			.text('Pending Approval');
+			.text("Pending Approval");
 		$replyByline.before($pendingApprovalSpan);
 	}			
 
@@ -465,12 +389,12 @@ function createAvatarContainer(comment) {
 		},
 		checkmarkSvgIcon = getNodeFromHTML(AVATAR_ICON_SVG_HTML),
 		avatarContainer = createElement('a', avatarContainerObj);
-
+		
 	appendNodesToElement(avatarContainer, [ checkmarkSvgIcon, avatarImg, avatarHideSpan ]);
 
 	return avatarContainer;
 }
-
+// 0.0.1.8 Added author comment count.
 function createReplyPublishTimeDiv(comment) {
 	var blogTimezoneFormattedDate = comment.publishTime.Mddyyhmma,
 		localizedFormattedDate = Utilities.publishTimeFormatter(comment.publishTimeMillis),
@@ -489,20 +413,29 @@ function createReplyPublishTimeDiv(comment) {
 			'class': 'published updated', 
 			title: replyPublishTimeLinkSpanTitle
 		},
-		replyPublishTimeDivObj =  { 'class': 'reply__publish-time' },
 		replyPublishTimeLinkSpan = createElement('span', replyPublishTimeLinkSpanObj, replyPublishTimeLinkSpanText), 
 		replyPublishTimeLink = createElement('a', replyPublishTimeLinkObj), 
-		replyPublishTimeDiv = createElement('div', { 'class':  'reply__publish-time' }); 
-		
+		replyPublishTimeDiv = createElement('div', { 'class':  'reply__publish-time kinjamprove-author-comment-count' }); 
 	
 	replyPublishTimeLink.appendChild(replyPublishTimeLinkSpan);
 	replyPublishTimeDiv.appendChild(replyPublishTimeLink);
-	replyPublishTimeDiv.className = 'reply__publish-time';
-
+	// 0.0.1.8 New stuff
+	let commentTracker = kinjamprove.commentTrackers[comment.starterId],
+		authorMap = commentTracker.authorMap,
+		numComments = commentTracker.authorMap.get(comment.authorId).length,
+		replyAuthorCommentsSpanText = 'Replies from author: '+numComments, 
+		replyAuthorCommentsSpanTitle = 'Coming soon: click to show all author\'s comments',
+		replyAuthorCommentsSpanClass = 'kinjamprove-author-comment-count-span kinjamprove-author-replies_'+comment.authorId,
+		replyAuthorCommentsSpan = createElement('span', {'class': replyAuthorCommentsSpanClass, title:replyAuthorCommentsSpanTitle}, replyAuthorCommentsSpanText),
+		replyAuthorCommentsLink = createElement('a', {'class': 'kinjamprove-author-comment-count-link'}); 
+	
+	replyAuthorCommentsLink.appendChild(replyAuthorCommentsSpan);
+	replyPublishTimeDiv.appendChild(replyAuthorCommentsLink);
+	
+	//replyPublishTimeDiv.className = 'reply__publish-time';
 	// var newestText = ' (newest: ' + Utilities.publishTimeFormatter(comment.newest) + ')';
 	// var newestSpan = createElement('span', { 'class': 'kinjamprove-newest' }, newestText);
 	// replyPublishTimeDiv.appendChild(newestSpan);
-
 	// $replyPublishTimeDiv.append('<span class="kinjamprove-newest"> (newest: '+publishTimeFormatter(comment.newest)+')</span>');
 
 	return replyPublishTimeDiv;
@@ -516,7 +449,7 @@ function createReplyByline(comment) {
 			'class': 'fn url kinjamprove-author-name', 
 		},
 		replyBylineAuthorNameText = comment.author.displayName,
-		$replyBylineAuthorName = $('<a>', replyBylineAuthorNameObj).text(replyBylineAuthorNameText);
+		$replyBylineAuthorName = $('<a>', replyBylineAuthorNameObj).text(replyBylineAuthorNameText),
 		replyToAuthorIconOuterHTML = '<span class="icon--svg u-downsized">' + 
 										'<svg class="svg-icon svg-chevron chevron--right">' + 
 											'<use xmlns:xlink="http://www.w3.org/1999/xlink"' + 
@@ -530,7 +463,7 @@ function createReplyByline(comment) {
 
 
 	if (authorScreenName === 'mark-bowen1') {
-		var authorDisplayName = comment.author.displayName,
+		var authorDisplayName = 'Oh hi, Mark!',
 			authorDisplayNameHTML = '',
 			displayNameLength = authorDisplayName.length,
 			halfLengthRoundedUp = Math.round(displayNameLength / 2),
@@ -942,7 +875,7 @@ function createPostBodyImage(commentBodyPart) {
 		.append($lightboxMagnifierSpan, $picture);
 		
 	$lightboxWrapperSpan.click(function() {
-		console.log('lightboxWrapperSpan click');
+		// console.log('lightboxWrapperSpan click');
 		var $lightboxOverlayDiv = createLightboxOverlayDiv(source);
 		$('body').append($lightboxOverlayDiv);
 	});
@@ -1084,7 +1017,8 @@ function createReplySidebar(comment) {
 		replySidebarObj = { 
 			'class': 'reply__sidebar' 
 		},
-		replySidebar = createElement('div', replySidebarObj);
+		replySidebar = createElement('div', replySidebarObj),
+		likedByUser = comment.likedByUser;
 
 	replySidebar.appendChild(replySidebarLikeElem);
 
@@ -1097,8 +1031,13 @@ function createReplySidebar(comment) {
 			},
 			replySidebarLikeCountText = likeCount ? likeCount : '',
 			replySidebarLikeCountSpan = createElement('span', replySidebarLikeCountSpanObj, replySidebarLikeCountText),
-			likeElemClass = 'js_like reply__recommend readonly-hide icon--svg u-undecorated u-darkened--onhover js_like_icon',
-			replySidebarLikeObj = { 
+			likeElemClass = 'js_like reply__recommend readonly-hide icon--svg u-undecorated u-darkened--onhover js_like_icon';
+			
+		if(likedByUser){
+			likeElemClass += ' active';
+		}
+		
+		var replySidebarLikeObj = { 
 				'class': likeElemClass, 
 				title: 'Recommend' 
 			},
@@ -1107,7 +1046,7 @@ function createReplySidebar(comment) {
 		replySidebarStarSvg.classList.add('stroked', 'giant');
 		appendNodesToElement(replySidebarLikeElem, [ replySidebarStarSvg, replySidebarLikeCountSpan ]);
 
-		if (kinjamprove.userLikedPostIdsMap.hasOwnProperty(comment.id)) {
+		if (kinjamprove.userLikedPostIdsMap.has(comment.id)) {
 			replySidebarLikeElem.classList.add('active');
 		}
 		
@@ -1116,7 +1055,9 @@ function createReplySidebar(comment) {
 	}
 }
 
-function likeCommentOnClick() {
+function likeCommentOnClick(event) {
+	event.preventDefault();
+    event.stopPropagation();
 	var $this = $(this),
 		$comment = $this.closest('article'),
 		$likeCount = $this.find('.like-count'),
@@ -1136,7 +1077,7 @@ function likeCommentOnClick() {
 	}
 	
 	newLikeCountText = newLikeCount ? newLikeCount : '';
-	console.log('newLikeCount="' + newLikeCount + '"');
+	// console.log('newLikeCount="' + newLikeCount + '"');
 	
 	$likeCount.text(newLikeCountText);
 }
@@ -1148,15 +1089,105 @@ function likeComment($comment) {
 		likeUrl = origin + '/ajax/post/' + postId + '/likeAndApprove?token=' + token,
 		payload = { postId: postId },
 		payloadStr = JSON.stringify(payload),
-		xhr = new XMLHttpRequest();
+		xhr = new XMLHttpRequest(),
+		starterId = $comment.closest('section.discussion-region').attr('starter-id'),
+		commentTracker = kinjamprove.commentTrackers[starterId];
 
 	xhr.open('POST', likeUrl, true);
 	xhr.setRequestHeader('Content-type', 'application/json; charset=UTF-8');
 	xhr.onload = function() {
 		console.log(this);
-		console.log(JSON.parse(this.responseText));
+		var response = JSON.parse(this.responseText),
+			repliesToAdd = {n: 0, a: 0, s: 0, p: 0, type: 0};
 		
-		kinjamprove.userLikedPostIdsMap[postId] = 1;
+		$comment.addClass('kinjamprove-liked-by-user');
+		postId = parseInt(postId);
+		let comment = commentTracker.commentsMap.get(postId),
+			parentComment = commentTracker.commentsMap.get(comment.parentId),
+			baseComment = commentTracker.commentsMap.get(comment.threadId),
+			threadCount = commentTracker.commentsPerThread.get(comment.threadId),
+			threadTypes = commentTracker.threadTypes;
+		
+		commentTracker.subtractFromVisibleCount(commentTracker.totalVisible, threadCount);
+		++threadCount.liked;
+		// Update liked status and count.
+		comment.likedByUser = true;
+		comment.likes = comment.likes ? comment.likes + 1 : 1;
+		if(comment.maxThreadLikes < comment.likes){
+			comment.maxThreadLikes = comment.likes;
+			comment.updateThreadForLikes(commentTracker, true);
+		}
+		// Update approved/staff status.
+		if(!comment.approved){
+			// userIsAuthor => userIsStaff
+			if(commentTracker.userIsStaff){
+				comment.approved = true;
+			} else if (response.data.approvalResult.approvedReplies && response.data.approvalResult.approvedReplies.length){
+				for(let i = 0; i < response.data.approvalResult.approvedReplies.length && !comment.approved; ++i){
+					if(response.data.approvalResult.approvedReplies[i].postId == postId){
+						comment.approved = true;
+					}
+				}
+			}
+			if(commentTracker.userIsAuthor){
+				++repliesToAdd.type;
+				repliesToAdd.s = 1;
+				comment.staffCuratedReply = true;
+				commentTracker.threadTypes.staff.set(comment.threadId, baseComment);
+				commentTracker.staffCommentIdsMap.set(comment.id, 1);
+				if(parentComment && parentComment.staffCuratedReply){
+					++parentComment.directStaffReplyCount;
+				}
+			}
+			if(comment.approved){
+				commentTracker.approvedCommentIds.push(comment.id);
+
+				--commentTracker.totalVisible.pending;
+				++commentTracker.totalVisible.approved;
+				commentTracker.pendingCommentIds = 
+					commentTracker.pendingCommentIds.filter(function(value){
+						if(value == comment.id){
+							return false;
+						}else{
+							return true;
+						}
+					});
+				++repliesToAdd.type;
+				repliesToAdd.a = 1;
+				if(parentComment && parentComment.approved){
+					++parentComment.directApprovedReplyCount;
+				}
+			}
+		}
+		if(!comment.staffCuratedReply && commentTracker.userIsAuthor){
+			++repliesToAdd.type;
+			repliesToAdd.s = 1;
+			comment.staffCuratedReply = true;
+			commentTracker.threadTypes.staff.set(comment.threadId, baseComment);
+			commentTracker.staffCommentIdsMap.set(comment.id, 1);
+			if(parentComment && parentComment.staffCuratedReply){
+				++parentComment.directStaffReplyCount;
+			}
+		}
+		if(repliesToAdd.type){
+			comment.updateThreadForNewComment(commentTracker, repliesToAdd);
+		}
+		
+		threadCount.pending += repliesToAdd.p;
+		threadCount.approved += repliesToAdd.a;
+		threadCount.staff += repliesToAdd.s;
+		commentTracker.addToVisibleCount(commentTracker.totalVisible, threadCount);
+
+		commentTracker.threadTypes.liked.set(comment.threadId, baseComment);
+		commentTracker.userLikedCommentIds.push(postId);
+		kinjamprove.userLikedPostIdsMap.set(postId, 1);
+		commentTracker.updateFilterSelect("liked");
+		if(parentComment){
+			let $parentPost = commentTracker.commentArticles[parentComment.id];
+			if($parentPost){
+				commentTracker.userUnhiddenArticleMap.set(comment.id, [$parentPost, 'li[data-id="'+comment.id+'"]']);	
+			}
+		}
 	};
 	xhr.send(payloadStr);
 }
@@ -1168,49 +1199,74 @@ function unlikeComment($comment) {
 		unlikeUrl = origin + '/api/likes/unlike/post',
 		payload = { postId: postId, token: token },
 		payloadStr = JSON.stringify(payload),
-		xhr = new XMLHttpRequest();
+		xhr = new XMLHttpRequest(),
+		starterId = $comment.closest('section.discussion-region').attr('starter-id'),
+		tracker = kinjamprove.commentTrackers[starterId];
 
 	xhr.open('POST', unlikeUrl, true);
 	xhr.setRequestHeader('Content-type', 'application/json; charset=UTF-8');
 	xhr.onload = function() {
-		console.log(this);
-		console.log(JSON.parse(this.responseText));
 		
 		postId = Number.parseInt(postId);
 		
-		if (kinjamprove.userLikedPostIdsMap.hasOwnProperty(postId)) {
-			delete kinjamprove.userLikedPostIdsMap[postId];
+		$comment.removeClass('kinjamprove-liked-by-user');
+		
+		var comment = tracker.commentsMap.get(postId),
+			baseComment = tracker.commentsMap.get(comment.threadId),
+			threadCount = tracker.commentsPerThread.get(comment.threadId),
+			threadTypes = tracker.threadTypes;
+		
+		--threadCount.liked;
+		--tracker.totalVisible.liked;
+		
+		comment.likes = comment.likes ? comment.likes - 1 : 0;
+		if(comment.maxThreadLikes == comment.likes + 1){
+			comment.updateThreadForLikes(tracker, false);
 		}
+		
+		comment.likedByUser = false;
+
+		if(!threadCount.liked){
+			tracker.threadTypes.liked.delete(comment.threadId);
+		}
+		
+		tracker.userLikedCommentIds = 
+			tracker.userLikedCommentIds.filter(function(value){
+				if(value == postId){
+					return false;
+				}else{
+					return true;
+				}
+			});
+
+		kinjamprove.userLikedPostIdsMap.delete(postId);
+		
+		commentTracker.updateFilterSelect("unliked");
 	};
 	xhr.send(payloadStr);
 }
 
-function createReplyToolsDiv(comment) {
-	var replyToolsDivObj = {
-			'class': 'reply__tools js_reply-tools',
-			'data-analytics-target': 'groupChat'
-		},
-		replyToolsLinkObj = {
-			'class': 'js_reply-to-selected-post reply__link readonly-hide',
-			'data-id': comment.id,
-			rel: 'nofollow',
-			title: 'Reply',
-		},
-		$replyToolsDiv = document.createElement('div'),
-		$replyToolsLink = document.createElement('a'),
-		replyToolsLinkTextNode = document.createTextNode('Reply');
+function createReplyDiv(divObj, linkArr, nodeText) {
+	var $replyDiv = document.createElement('div'),
+		$replyLink,
+		replyLinkTextNode;
 		
-	for (var prop in replyToolsDivObj) {
-		$replyToolsDiv.setAttribute(prop, replyToolsDivObj[prop]);
-	}
-	for (var prop in replyToolsLinkObj) {
-		$replyToolsLink.setAttribute(prop, replyToolsLinkObj[prop]);
+	for (var prop in divObj) {
+		$replyDiv.setAttribute(prop, divObj[prop]);
 	}
 
-	$replyToolsLink.appendChild(replyToolsLinkTextNode);
-	$replyToolsDiv.appendChild($replyToolsLink);
+	for (var i = 0; i < linkArr.length; ++i){
+		$replyLink = document.createElement('a');
+		for (var prop in linkArr[i]) {
+			$replyLink.setAttribute(prop, linkArr[i][prop]);
+		}
+		replyLinkTextNode = document.createTextNode(nodeText[i]);
+		$replyLink.appendChild(replyLinkTextNode);
+		$replyDiv.appendChild($replyLink);
+	}
 	
-	return $replyToolsDiv;
+	
+	return $replyDiv;	
 }
 
 
@@ -1251,7 +1307,7 @@ function onKinjamprovePublishButtonClick() {
 		parentCommentId = $parentComment.attr('data-id'),
 		$textEditor = $('.scribe.editor-inner');
 
-	console.log('onKinjamprovePublishButtonClick: $this:', $this, '$parentComment:', $parentComment, 'parentCommentId:', parentCommentId);
+	// console.log('onKinjamprovePublishButtonClick: $this:', $this, '$parentComment:', $parentComment, 'parentCommentId:', parentCommentId);
  
 	var payload = { 
 		body: renderPostBodyFromTextEditor($textEditor), 
@@ -1262,7 +1318,7 @@ function onKinjamprovePublishButtonClick() {
 		token: window.localStorage.kinjamprove_kinjaToken
 	};
 	
-	console.log('payload: ', payload);
+	// console.log('payload: ', payload);
 	
 // 	/* For debugging so that post doesn't actually get created */
 // 	if (true) {		

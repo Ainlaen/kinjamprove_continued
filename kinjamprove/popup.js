@@ -1,13 +1,13 @@
 var BG = chrome.extension.getBackgroundPage();
-console.log('background page (aka "BG"):', BG); 
-console.log('BG.sessionStorage:', BG.sessionStorage);
+// console.log('background page (aka "BG"):', BG); 
+// console.log('BG.sessionStorage:', BG.sessionStorage);
 
 function restoreState() {
 	chrome.storage.sync.get({
 		paused: false,
 		hideSidebar: false,
 	}, function(items) {
-		console.log('items:', items);
+		// console.log('items:', items);
 		
 		var isPaused = items.paused;
 
@@ -23,8 +23,8 @@ function restoreState() {
 		// 	// icon = '/icons/kinjamprove-logo-symmetrical-green-32.png';
 		// }
 
-		console.log('pauseButton.innerText:', pauseButton.innerText);
-		console.log('pauseButton.value:', pauseButton.value);
+		// console.log('pauseButton.innerText:', pauseButton.innerText);
+		// console.log('pauseButton.value:', pauseButton.value);
 	});
 }
 
@@ -44,7 +44,7 @@ function restorePauseState(isPaused) {
 
 
 function togglePause(event) {
-	console.log('togglePause button clicked; event:', event);
+	console.log('Kinjamprove: togglePause button clicked; event:', event);
 	
 	var isPaused = (this.value === 'paused'),
 		pauseButton = this,
@@ -60,7 +60,7 @@ function togglePause(event) {
 		value = 'paused';
 	}
 
-	ga('send', 'event', 'Button', 'click', value)//, 'opt_label', opt_value, {'nonInteraction': 1});
+	//ga('send', 'event', 'Button', 'click', value)//, 'opt_label', opt_value, {'nonInteraction': 1});
 	
 	message = value.charAt(0).toUpperCase()  + value.substring(1) + ' Kinjamprove';
 	chrome.storage.sync.set({
@@ -72,17 +72,15 @@ function togglePause(event) {
 		});
 	
 	var msgObj = { to: "background", key: "pausedState", val: value };
-	
-	chrome.extension.sendMessage(msgObj, function(response) {
-		console.log(response);
-	});
-	
+	// 0.0.1.8
+	chrome.runtime.sendMessage(msgObj);
+	/* Seems unused.
 	chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
 		chrome.tabs.sendMessage(tabs[0].id, { message: message }, function(response) {
 		//If you need a response, do stuff with it here
-		console.log('response:', response);
-	});
-});
+		});
+	
+	});*/
 }
 
 document.addEventListener('DOMContentLoaded', function() {

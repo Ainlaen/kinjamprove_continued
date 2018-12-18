@@ -25,7 +25,7 @@ div.reading-list section.sidebar {
 
 .reply__tools {
 	flex: none !important;
-	margin-top: 0 !important;
+	margin-top: 0px !important;
 	font-size: 13px !important;
 	align-self: center !important;
 	line-height: 24px !important;
@@ -57,7 +57,7 @@ div.reading-list section.sidebar {
 .reply__recommend .like-count,
 .reply__tools.js_reply-tools:before,
 .reply__recommend .svg-icon,
-.reply__link {
+.reply__link .kinjamprove-show-comment-replies{
 	vertical-align: middle !important;
 }
 .commentlist {
@@ -132,7 +132,7 @@ a.parent-comment-link {
 }
 
 .parent-comment-tooltip > img {
-	width: 36px; 
+	width: 36px !important; 
 	height: 36px; 
 	position: relative; 
 	display: block; 
@@ -181,7 +181,7 @@ a.parent-comment-link {
 
 article[depth],
 article[depth] ~ div.js_editor-placeholder  {
-	margin-left: 192px !important;
+	margin-left: 380px !important;
 }
 
 article[depth="0"]
@@ -352,13 +352,39 @@ article[depth="3"] ~ div.js_editor-placeholder {
 	border-color: rgb(101, 229, 120);
 	padding-right: 5px;
 }*/
-
-
+footer.commentlist__pagination{
+	display: none !important;
+}
+div.js_replycol{
+	display: none !important;
+}
 #kinjamprove-user-info-button,
 #kinjamprove-window-variables-container {
 	display: none;
 }
 
+div.discussion-tab-wrapper{
+	padding-top: 7px !important;
+}
+
+li.kinjamprove-filter-select-li{
+	white-space: nowrap !important;
+}
+
+li.kinjamprove-discussion-header-li-pending{
+	padding-left: 60px;
+    padding-top: 5px;
+}
+
+select.kinjamprove-filter-select{
+    width: 90%;
+	font-size: 17px;
+    margin-left: 4px;
+}
+a.kinjamprove-author-comment-count-link{
+	margin-left: 5px;
+    color: #636c9c;
+}
 /*
 button.kinjamprove-cancel-button,
 button.kinjamprove-publish-button {
@@ -434,32 +460,61 @@ div.kinjamprove-discussion-header-container {
 	width: -moz-available; 
 }
 
-.kinjamprove-hide-pending-comments-span {
-	line-height: 3em;
+span.kinjamprove-hide-pending-comments-span {
+    line-height: inherit;
     margin-left: 5px;
+    margin-right: 2px;
+}
+
+div.kinjamprove-sorting{
+	white-space: nowrap !important;
 }
 
 select.kinjamproveSortOrder {
+    width: 70%;
+    margin-right: 20px;
+    text-align: -webkit-right;
+    width: -moz-right;
+    font-size: 17px;
+}
+/*
+select.kinjamproveSortOrder {
 	height: 47px;
-    width: 100%;
+    width: 30%;
     margin-right: 20px;
     text-align: -webkit-right;
     width: -moz-right; 
 	font-size: 17px;
-	/*background-image: url('chrome-extension://__MSG_@@extension_id__/icons/kinjamproveLogoReversed.png');*/
+}*/
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
 }
-
+/*
 .switch {
   position: relative;
   display: inline-block;
   width: 83px;
   height: 47px;
 }
-
+*/
 .switch input {
 	display: none;
 }
-
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(214, 43, 7, 0.57);
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+/*
 .slider {
 	position: absolute;
 	cursor: pointer;
@@ -468,15 +523,50 @@ select.kinjamproveSortOrder {
 	right: 0;
 	bottom: 0;
 	background-color: rgb(51, 153, 255);
-	/*   background-color: #ccc; */
 	-webkit-transition: .4s;
 	transition: .4s;
 }
-
+*/
 input:checked + .slider {
-	background-color: orange;
+    background-color: #13ff00f2;
 }
 
+/*
+input:checked + .slider {
+	background-color: orange;
+}*/
+
+input + .slider:before {
+    position: absolute;
+    content: "Off";
+    text-align: center;
+    width: 45%;
+    top: 1.25px;
+    bottom: 1.25px;
+    left: 2px;
+    font-size: 80%;
+    background-color: #e20000;
+    text-shadow: 1px 1px 1px black;
+    color: white;
+    border: 1px solid !important;
+    border-color: black !important;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked + .slider:before {
+    position: absolute;
+    content: "On";
+    left: 0px;
+    background-color: #0cd635;
+    -webkit-transition: .4s;
+    transition: .4s;
+    -webkit-transform: translateX(20px);
+    -ms-transform: translateX(20px);
+    transform: translateX(20px);
+}
+
+/*
 input + .slider:before {
 	position: absolute;
 	content: "Hide";
@@ -505,7 +595,7 @@ input:checked + .slider:before {
 	-ms-transform: translateX(38px);
 	transform: translateX(38px);
 }
-
+*/
 input:focus + .slider {
   box-shadow: 0 0 1px #2196F3;
 }
@@ -575,11 +665,29 @@ input:focus + .slider {
 .kinjamprove-back-to-discussion-region-top,
 .kinjamprove-back-to-discussion-region-top:focus {
 	background-color: white;
-	background-image: url('chrome-extension://__MSG_@@extension_id__/icons/kinjamprove-logo-21x40-green.png');
-    background-repeat: no-repeat;
 	border-color: orange;
 	border-width: 1px;
 	color: rgb(51, 153, 255);
+    white-space: nowrap;
+    background-repeat: no-repeat;
+    background-size: 15px;
+    background-position-y: center;
+}
+.kinjamprove-return-to-top-button,
+.kinjamprove-return-to-top-button:focus{
+	width: 140px; 
+	text-align: right;
+	background-image: url('chrome-extension://__MSG_@@extension_id__/icons/kinjamprove-logo-21x40-green.png');
+    margin-left: 2px;
+    margin-right: 5px;
+}
+
+.kinjamprove-back-to-discussion-region-top,
+.kinjamprove-back-to-discussion-region-top:focus {
+	background-image: url('chrome-extension://__MSG_@@extension_id__/icons/kinjamprove-logo-21x40-green-flipped.png');
+    background-position-x: 100%;
+    width: 185px;
+	text-align: left;
 }
 
 .kinjamprove-return-to-top-button:hover,
@@ -588,17 +696,25 @@ input:focus + .slider {
 	color: rgb(51, 153, 255);
 }
 
-.kinjamprove-return-to-top-button:before,
-.kinjamprove-back-to-discussion-region-top:before {
-	content: "↑";
+.kinjamprove-back-to-discussion-region-top:before{
+	content: "⇵";
     margin: 0 5px;
+	color: black;
 }
 
+.kinjamprove-return-to-top-button:before{
+	content: "↑";
+    margin: 0 5px;
+	color: black;
+}
+
+div.sharingfooter__wrapper {
+    max-width: 1850px;
+}
 section.js_discussion-region[data-reply-count-total="0"] button.kinjamprove-loadMoreCommentsButton,
 section.js_discussion-region[kinjamprove-display-comments-remaining="0"] button.kinjamprove-loadMoreCommentsButton {
 	display: none;
 }
-
 
 body {
   padding-top: 40px !important;
@@ -668,15 +784,71 @@ div.editor-buttons {
 	max-width: 800px !important;
 }
 
-/*vvv Just added vvv*/
 li.commentlist__item.collapsed > article > :not(header),
 li.commentlist__item.collapsed > li
 {
     display: none;
 }
 
-li.commentlist__item.collapsed > article[depth="0"] .reply__header > .avatar img {
-    width: 36px !important;
-    height: 36px !important;
+a.tab-item--active{
+	font-weight: bold;
 }
-/* ^^^ Just added ^^^*/
+a.tab-item--inactive{
+	font-weight: normal !important;
+}
+
+div.hide-show-replies{
+	display: none;
+}
+
+a.hide-show-replies-link{
+	display: none;
+}
+
+a.kinjamprove-show-replies-text{
+	pointer-events: none;
+	cursor: default;
+	text-decoration: none;
+	color: black;
+	line-height: 1;
+	position: relative;
+}
+
+a.kinjamprove-show-comment-replies-a {
+    line-height: 1;
+	position: relative;
+	text-decoration: none;
+}
+
+a.kinjamprove-show-replies-approved-link {
+	color: #04046fbd;
+}
+a.kinjamprove-show-replies-pending-link {
+	color: #a20707c9;
+}
+a.kinjamprove-show-replies-all-link {
+	color: #079407;
+}
+div.js_content-region{
+	display: none !important;
+}
+span.one,
+span.two,
+span.three{
+	background-color: rgb(101, 229, 120) !important;
+}
+
+nav.global-nav--scrollback{
+	display: none !important;
+}
+
+div.discussion-sorting-wrapper{
+	display: none !important;
+}
+
+option[value="newest"]:before{
+	content:'aga';
+}
+li.cGENvi{
+	display: none !important;
+}

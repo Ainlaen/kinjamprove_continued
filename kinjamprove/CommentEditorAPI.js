@@ -23,18 +23,18 @@ CommentEditorAPI.prototype = {
     constructor: CommentEditorAPI,
 
     hideNativePlaceholder: function() {
-        console.log('hideNativePlaceholder');
+        // console.log('hideNativePlaceholder');
         this.$placeholder.hide();
     },
 
      clickReplyToBlogButton: function() {
-        console.log('clicking native reply button');
+        // console.log('clicking native reply button');
         this.$nativeReplyButton[0].click();
 
     },
 
      appendNativePlaceholderToCommentPlaceholder: function($comment) {
-        console.log('appendNativePlaceholderToCommentPlaceholder; $comment:', $comment);
+        // console.log('appendNativePlaceholderToCommentPlaceholder; $comment:', $comment);
         if (typeof $comment === 'object') {
             $comment.nextAll('.js_editor-placeholder').append(this.$placeholder);
         }
@@ -67,21 +67,21 @@ CommentEditorAPI.prototype = {
     },
 
     attachEditorToComment: function($comment, replyOrEdit) {
-        console.log('attachEditorToComment called');
+        // console.log('attachEditorToComment called');
 
         if (typeof $comment === 'object' && 
                 $comment.siblings('.js_editor-placeholder').children('.editor').length) {
-            console.log('This comment already has editor');
+            console.log('Kinjamprove: This comment already has editor');
             this.focusEditorInnerScribe();
             return;
         }
 
         if (this.$editor && this.$editor.length) {
-            console.log('Attaching pre existing editor to comment');
+            console.log('Kinjamprove: Attaching pre existing editor to comment');
             this.attachPreExistingEditorToComment($comment, replyOrEdit);
         }
         else {
-            console.log('Attaching new editor to comment');
+            console.log('Kinjamprove: Attaching new editor to comment');
             this.attachNewEditorToComment($comment, replyOrEdit);
         }
     }, 
@@ -134,7 +134,7 @@ CommentEditorAPI.prototype = {
                 timeElapsed = currentTime - animationStartTime;
 
             if ($editor.length) {
-                console.log('$nativeEditorPlaceholder has children; timeElapsed:', timeElapsed);
+                console.log('Kinjamprove: $nativeEditorPlaceholder has children; timeElapsed:', timeElapsed);
                 commentEditorAPI.replyOrEdit = replyOrEdit || 'reply';
                 commentEditorAPI.$editor = $editor;
                 commentEditorAPI.$scribe = commentEditorAPI.getEditorInnerScribe();
@@ -149,7 +149,7 @@ CommentEditorAPI.prototype = {
 
                 window.cancelAnimationFrame(placeholderHasEditor);
             } else if (timeElapsed >= 15000) {
-                console.log('canceling placeholderHasEditor animationFrame b/c it timed out');
+                console.log('Kinjamprove: canceling placeholderHasEditor animationFrame b/c it timed out');
                 window.cancelAnimationFrame(placeholderHasEditor);
             } else {
                 requestAnimationFrame(placeholderHasEditor);
@@ -223,7 +223,7 @@ CommentEditorAPI.prototype = {
 
         if (!$commentEditorPlaceholder.length) {
             $commentEditorPlaceholder = this.$discussionRegion.find('.js_editor-placeholder:first');
-            console.log('$commentEditorPlaceholder being set to original:', $commentEditorPlaceholder);
+            console.log('Kinjamprove: $commentEditorPlaceholder being set to original:', $commentEditorPlaceholder);
         }
 
         $commentEditorPlaceholder.append(this.$editor);
@@ -245,12 +245,10 @@ CommentEditorAPI.prototype = {
 
         kinjamprovePublishButtonText += (this.replyOrEdit === 'edit') ? 'Update' : 'Reply';
         $nativePublishButton = this.$editor.find('button.publish');
-        $kinjamprovePublishButton = $('<button>', { 
-            'class': kinjamprovePublishButtonClass
-        }).text(kinjamprovePublishButtonText)
-          // .click(onKinjamprovePublishButtonClick);
-          .one('click', onKinjamprovePublishButtonClick);
-         
+        $kinjamprovePublishButton = $('<button>', { 'class': kinjamprovePublishButtonClass})
+			.text(kinjamprovePublishButtonText)
+			.one('click', onKinjamprovePublishButtonClick);
+        
         commentEditorAPI.$kinjamprovePublishButton = $kinjamprovePublishButton;
         $nativePublishButton.after($kinjamprovePublishButton);
         $nativePublishButton.hide();
@@ -265,7 +263,6 @@ CommentEditorAPI.prototype = {
 
 
         function onKinjamprovePublishButtonClick_publishReply() {
-            console.log('addKinjamprovePublishCommentButton onKinjamprovePublishButtonClick');
             var $textEditor = commentEditorAPI.getEditorInnerScribe(),
                 $textArea = $textEditor.siblings('textarea:hidden:first'),
                 $parentComment = commentEditorAPI.getAttachedComment(),
@@ -281,8 +278,8 @@ CommentEditorAPI.prototype = {
                     token:         Utilities.getKinjaToken() 
                 };
                 
-            console.log('payload: ', payload);
-            
+            //console.log('payload: ', payload);
+
             /* For debugging so that post doesn't actually get created */
             // if (true) {      
             //     return;
@@ -295,32 +292,6 @@ CommentEditorAPI.prototype = {
                     createComment(payload.body, payload.defaultBlogId, payload.images, 
                                   payload.original, payload.parentId, payload.token, false)
                         .then(function(response) {
-                            console.log('createComment response:', response);
-                            // var expirationTimeMillis = publishedReply.publishTimeMillis + 10000; //(1000 * 60 * 15);
-                            // var $dropdown = $publishedReply.find('ul.kinjamprove-comment-dropdown');
-                            // $dropdown.attr('data-edit-expires-millis', expirationTimeMillis);
-                            // console.log('$dropdown:', $dropdown);
-
-                            var starterId = Number.parseInt(commentEditorAPI.$discussionRegion.attr('starter-id'));
-                            var commentTracker = kinjamprove.commentTrackers[starterId];
-                            var newComment = new Comment(response);
-                            // var parentComment = commentTracker.commentsMap[newComment.parentId];
-                            var parentComment = commentTracker.commentsMap.get(newComment.parentId);
-
-                            if (parentComment) {
-                                newComment.depth = parentComment.depth + 1;
-                                parentComment.replies.push(newComment);
-                            } else {
-                                commentTracker.commentsArr.push(newComment);
-                                console.log('commentTracker.commentsArr.length:', commentTracker.commentsArr.length);
-                            }
-
-                            // commentTracker.commentsMap[newComment.id] = newComment;
-                            commentTracker.commentsMap.set(newComment.id, newComment);
-                            commentTracker.totalNumOfComments++;
-
-                            console.log('newComment:', commentTracker.commentsMap.get(newComment.id));
-
                             commentEditorAPI.closeEditor();
                         }).catch(function(error) {
                             console.error(error);
@@ -331,15 +302,13 @@ CommentEditorAPI.prototype = {
         }
 
         function onKinjamprovePublishButtonClick_publishEdit() {
-            console.log('onKinjamprovePublishButtonClick_publishEdit');
-
             var $textEditor = commentEditorAPI.getEditorInnerScribe(),
                 $commentBeingUpdated = commentEditorAPI.getAttachedComment(),
                 commentBeingUpdatedId = $commentBeingUpdated.attr('data-id'),
                 parentCommentId = $commentBeingUpdated.attr('data-parentid'),
                 payload = getCreateCommentPayload($textEditor, parentCommentId);
 
-            console.log('payload: ', JSON.parse(payload));
+            // console.log('payload: ', JSON.parse(payload));
 
             setTimeout(function() {
                 var confirmPublishUpdate = true;//confirm('Kinjamprove: Are you sure you want to publish this update?');
@@ -347,24 +316,20 @@ CommentEditorAPI.prototype = {
                 if (confirmPublishUpdate) {
                     updateComment(commentBeingUpdatedId, $textEditor, parentCommentId)
                         .then(function(response) {
-                            console.log('response:', response);
-                            var starterId = Number.parseInt(commentEditorAPI.$discussionRegion.attr('starter-id'));
-                            var commentTracker =  kinjamprove.commentTrackers[starterId];
-                            // commentTracker.commentsMap[response.id].body = response.body;
-                            // commentTracker.commentsMap[response.id].body = response.body;
-                            // commentTracker.commentsMap[response.id] = new Comment(response);
-                            
-                            var commentMapResponse = commentTracker.commentsMap.get(response.id);
-                            commentMapResponse.body = response.body;
+                            // console.log('response:', response);
+                            var starterId = Number.parseInt(commentEditorAPI.$discussionRegion.attr('starter-id')),
+								commentTracker =  kinjamprove.commentTrackers[starterId],
+								commentMapResponse = commentTracker.commentsMap.get(response.id);
+								
+							commentMapResponse.body = response.body;
 
                             if (!commentTracker.recentlyEditedCommentsMap) {
                                 commentTracker.recentlyEditedCommentsMap = { };
                             }
                             commentTracker.recentlyEditedCommentsMap[response.id] = response; //new Comment(response);
                             // console.log('updated comment:', commentTracker.commentsMap[response.id]);
-                            console.log('updated comment:', commentTracker.commentsMap.get(response.id));
+                            console.log('Kinjamprove: updated comment:', commentTracker.commentsMap.get(response.id));
                             
-                           
                             commentEditorAPI.closeEditor();
                         }).catch(function(error) {
                             console.error(error);
@@ -387,7 +352,7 @@ CommentEditorAPI.prototype = {
         
         $nativeCancelButton = this.$editor.find('button[type="cancel"]');
         $nativeCancelButton.click(function() {
-            console.log('$nativeCancelButton clicked:', $(this));
+            console.log('Kinjamprove: $nativeCancelButton clicked:', $(this));
         });
 
         $kinjamproveCancelButton = $('<button>', { 
@@ -404,7 +369,7 @@ CommentEditorAPI.prototype = {
 
        
        function onKinjamproveCancelButtonClick2() {
-            console.log('commentEditorAPI onKinjamproveCancelButtonClick');
+            console.log('Kinjamprove: commentEditorAPI onKinjamproveCancelButtonClick');
        }
     },
 
@@ -430,7 +395,7 @@ CommentEditorAPI.prototype = {
         this.$kinjamproveAutoCancelButton.click(_onKinjamproveAutoCancelButtonClick);
         
         function _onKinjamproveAutoCancelButtonClick() {
-            console.log('_onKinjamproveAutoCancelButtonClick:', this);
+            console.log('Kinjamprove: _onKinjamproveAutoCancelButtonClick:', this);
             commentEditorAPI.reset();
         }
     },
@@ -481,7 +446,7 @@ CommentEditorAPI.prototype = {
     },
 
     reset: function() {
-        console.log('reset called');
+        console.log('Kinjamprove: reset called');
        
         this.returnPlaceholderToOrigin();
         this.$editor = null;
@@ -495,7 +460,7 @@ CommentEditorAPI.prototype = {
     },
 
     returnPlaceholderToOrigin: function() {
-        console.log('returning placeholder to origin');
+        console.log('Kinjamprove: returning placeholder to origin');
         this.$placeholderPrevSibling.after(this.$placeholder);
     },
 
@@ -559,10 +524,10 @@ CommentEditorAPI.prototype = {
 
 
 var commentEditorAPI;
-console.log('commentEditorAPI:', commentEditorAPI);
+
 
 function onReplyLinkClick(event) {
-    console.log('onReplyLinkClick; event:', event);
+    console.log('Kinjamprove: onReplyLinkClick; event:', event);
     event.preventDefault();
     event.stopPropagation();
 
@@ -580,7 +545,7 @@ function onReplyLinkClick(event) {
 }
 
 function onEditClick(event) {
-     console.log('onEditClick; event:', event);
+     console.log('Kinjamprove: onEditClick; event:', event);
 
      var $comment = $(this).closest('article');
 

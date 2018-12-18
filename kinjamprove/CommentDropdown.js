@@ -45,13 +45,22 @@ function createPostDropdownUl(comment) {
 	
 	if (Utilities.userIsCommentAuthor(comment)) {
 		$blockUserLi.addClass('hide');
+		let timeLeft = Utilities.commentPublishedInLastFifteenMinutes(comment);
+		if (timeLeft > 0) {
+			$editCommentLi.removeClass('hide');
+			// 0.0.1.8 Time out editing
+			setTimeout(function() {
+				$editCommentLi.addClass('hide').hide();
+				$editCommentLi.closest('article')
+					.removeClass('kinjamprove-user-comment-editable')
+					.removeAttr('title');
+			}
+			,timeLeft);
+		}
 	}
 	
 	if (!Utilities.commentIsDeletableByUser(comment)) {
 		$deleteCommentLi.addClass('hide');
-	}
-	if (!Utilities.commentIsEditableByUser(comment)) {
-		$editCommentLi.addClass('hide');
 	}
 	
 	if (Utilities.userFlaggedPost(comment.id)) { 
@@ -73,7 +82,6 @@ function createSvgIconHtml(iconName) {
 	return svgIconOuterHtml;
 }
 
-// function DropdownLi(comment,
 
 function createDropdownEditCommentLi(comment) {
 	var $editCommentLi, 
@@ -85,7 +93,7 @@ function createDropdownEditCommentLi(comment) {
 			rel: 'nofollow' 
 		},
 		editCommentLiObj = { 
-			'class': 'js_edit-reply hover-icon readonly-hide kinjamprove-edit-comment' 
+			'class': 'js_edit-reply hover-icon readonly-hide kinjamprove-edit-comment hide' 
 		};
 
 	$editCommentLink = $('<a>', editCommentLinkObj)
@@ -255,9 +263,9 @@ function onBlockUserClick(event) {
 		authorId = $comment.attr('data-authorId'),
 		authorName = $comment.attr('data-authorname');
 
-	var trackerCategory = 'Block User',
-		trackerAction = 'confirm',
-		trackerLabel = 'Block User - ' + authorName;
+	// var trackerCategory = 'Block User',
+		// trackerAction = 'confirm',
+		// trackerLabel = 'Block User - ' + authorName;
 	
 
 	if (authorId === Utilities.getUserAuthorId()) {
@@ -272,15 +280,15 @@ function onBlockUserClick(event) {
 		confirmBlockUser = confirm(confirmBlockUserMessage);
 	
 	if (!confirmBlockUser) {
-		trackerAction = 'cancel';
-		trackEvent(trackerCategory, trackerAction, trackerLabel);
-		console.log('Canceling blockUser');
+		// trackerAction = 'cancel';
+		// trackEvent(trackerCategory, trackerAction, trackerLabel);
+		// console.log('Canceling blockUser');
 		return;
 	}
 	
-	trackEvent(trackerCategory, trackerAction, trackerLabel);
+	//trackEvent(trackerCategory, trackerAction, trackerLabel);
 	
-	console.log('Blocking user "' + authorName + '" (authorId="' + authorId + '")');
+	console.log('Kinjamprove: Blocking user "' + authorName + '" (authorId="' + authorId + '")');
 	
 	var blockedUser = { authorId: authorName },
 		blockedUsers = (kinjamprove.options.blockedUsers.length) ? JSON.parse(kinjamprove.options.blockedUsers) : { };
@@ -294,8 +302,8 @@ function onBlockUserClick(event) {
 	chrome.storage.sync.set({
 		blockedUsers: blockedUsers
 	}, function() {
-		console.log('Adding new user to blocked users in storage: "', blockedUser, '"');
-		console.log('updated blockedUsers:', blockedUsers);
+		console.log('Kinjamprove: Adding new user to blocked users in storage: "', blockedUser, '"');
+		console.log('Kinjamprove: updated blockedUsers:', blockedUsers);
 		kinjamprove.options.blockedUsers = blockedUsers;
 		blockUserPosts(authorId);
 	});
@@ -325,7 +333,7 @@ function onUpdateCommentButtonClick() {
 
 
 function onDeleteCommentLinkClick() {
-	console.log('onDeleteCommentLinkClick:', this);
+	// console.log('onDeleteCommentLinkClick:', this);
 	Utilities.setWindowConfirmToNormal();
 	
 	var confirmDeleteComment = confirm('Kinjamprove: Are you sure you want to delete this post? Once deleted it can\'t be restored.');
@@ -341,15 +349,11 @@ function onDeleteCommentLinkClick() {
 	deleteComment(postId, kinjaToken);		
 }
 
-//0.0.1.8
-function mustBeLoggedIn(){
-	alert("You must be logged in to perform this action");
-}
 
 function onFollowLiClick(event) {
 	event.preventDefault();
 	event.stopPropagation();
-	console.log('onFollowLiClick:', event);
+	// console.log('onFollowLiClick:', event);
 	
 	var $this = $(this),
 		$article = $this.closest('article'),
@@ -357,14 +361,15 @@ function onFollowLiClick(event) {
 		userId = kinjamprove.accountState.authorId;
 							
 	followUser(targetUserId, userId).then(function(result) {
-		console.log('User with id "' + userId + '" (a.k.a. You) successfully followed user w/ id "' + targetUserId + '"!');
-		console.log('result: ', result);
+		console.log('Kinjamprove: User with id "' + userId + '" (a.k.a. You) successfully followed user w/ id "' + targetUserId + '"!');
+		// console.log('result: ', result);
 		$this.siblings('li.js_unfollowforuser').addBack().toggleClass('hide');
 		
 		var $discussionRegion = $(event.delegateTarget),
 			$followedUserComments = $discussionRegion.find('article[data-authorid="' + targetUserId + '"]');
 
 		$followedUserComments.addClass('kinjamprove-followedUser');
+		// tracker.updateFilterSelect("followed");
 
 	}, function(err) {
 		console.error('Error in onFollowLiClick: ', err);
@@ -394,7 +399,7 @@ function followUser(targetUserId, userId, token) {
 function onUnfollowLiClick(event) {
 	event.preventDefault();
 	event.stopPropagation();
-	console.log('onUnfollowLiClick:', event);
+	// console.log('onUnfollowLiClick:', event);
 	
 	var $this = $(this),
 		$article = $this.closest('article'),
@@ -403,14 +408,15 @@ function onUnfollowLiClick(event) {
 				
 	unfollowUser(targetUserId, userId)
 		.then(function(result) {
-			console.log('User with id "' + userId + '" (a.k.a. You) successfully unfollowed user w/ id "' + targetUserId + '"!');
-			console.log('result: ', result);
+			console.log('Kinjamprove: User with id "' + userId + '" (a.k.a. You) successfully unfollowed user w/ id "' + targetUserId + '"!');
+			// console.log('result: ', result);
 			$this.siblings('li.js_followforuser').addBack().toggleClass('hide');
 			 
 			var $discussionRegion = $(event.delegateTarget),
 				$unfollowedUserComments = $discussionRegion.find('article[data-authorid="' + targetUserId + '"]');
 
 			$unfollowedUserComments.removeClass('kinjamprove-followedUser');
+			// tracker.updateFilterSelect("unfollowed");
 		}, function(err) {
 			console.error('Error in onUnfollowLiClick: ', err);
 		});
@@ -435,7 +441,6 @@ function unfollowUser(targetUserId, userId, token) {
 
 
 function onUnflagLiClick(event) {
-	console.log('onUnflagLiClick');
 	event.preventDefault();
 	
 	var $this = $(this), 
@@ -446,11 +451,36 @@ function onUnflagLiClick(event) {
 	unflagPost(postId).then(function(result) {
 		var str = 'Successfully unflagged post w/ id ' + postId + '! result:';
 		console.log(str, result);
+		postId = parseInt(postId);
+		var starterId = $this.closest('section.discussion-region').attr('starter-id'),
+			tracker = kinjamprove.commentTrackers[starterId],
+			comment = tracker.commentsMap.get(postId),
+			baseComment = tracker.commentsMap.get(comment.threadId),
+			threadCount = tracker.commentsPerThread.get(comment.threadId);
 		
 		$postDropdownUl.children('li.js_flag-post, li.js_unflag-post').toggleClass('hide');
 		$article.children('.js_reply-flagged').hide();
+		$article.removeClass('kinjamprove-flagged-comment');
 		
-		delete kinjamprove.userFlaggedPostIdsMap[postId];
+		comment.userFlagged = false;
+		tracker.userFlaggedCommentIds = 
+			tracker.userFlaggedCommentIds.filter(function(value){
+				if(value == postId){
+					return false;
+				}else{
+					return true;
+				}
+			});
+		
+		--threadCount.flagged;
+		--tracker.totalVisible.flagged;
+		
+		if(threadCount.flagged){
+			tracker.threadTypes.flagged.delete(comment.threadId);
+		}
+			
+		kinjamprove.userFlaggedPostIdsMap.delete(postId);
+		tracker.updateFilterSelect("flagging");
 		
 	}, function(err) {
 		var str = 'Error trying to unflag post w/ id ' + postId + ': ';
@@ -458,15 +488,25 @@ function onUnflagLiClick(event) {
 	});
 }
 
+function unflagPost(postId, token) {
+	var unflagPathname = '/api/moderation/flagging/unflag',
+		unflagUrl = window.location.origin + unflagPathname,
+		requestPayload = {
+			postId: postId,
+			token: (token || kinjamprove.token.token)
+		},
+		requestPayloadStr = JSON.stringify(requestPayload);
+
+	return postJSON(unflagUrl, requestPayloadStr);
+}
+
 function onFlagLiClick(event) {
-	console.log('onFlagLiClick');
 	event.preventDefault();
 	var $this = $(this), 
 		$article = $this.closest('article'),
 		$flaggedIndicatorDiv = $article.find('.js_reply-flagged'),
 		postId = $article.attr('data-id');
 		
-	// $flaggedIndicatorDiv.after(createFlagReasonDiv());
 	$flaggedIndicatorDiv.after(FlagCommentReasonDiv.createFlagReasonDiv());
 }
 
@@ -553,7 +593,7 @@ var FlagCommentReasonDiv = (function() {
 		},
 
 		onCancelFlagButtonClick: function(event) {
-			console.log('onCancelFlagButtonClick; event:', event, 'this:', this);
+			// console.log('onCancelFlagButtonClick; event:', event, 'this:', this);
 			var $this = $(this), 
 				$flagReasonDropdown = $this.closest('div.flag-reason-dropdown');
 			
@@ -561,7 +601,7 @@ var FlagCommentReasonDiv = (function() {
 		},
 
 		onSaveFlagButtonClick: function(event) {
-			console.log('onSaveFlagButtonClick; event:', event, 'this:', this);
+			// console.log('onSaveFlagButtonClick; event:', event, 'this:', this);
 			var $this = $(this),
 				$flagReasonForm = $this.closest('form'),
 				$selectedReason = $flagReasonForm.find(':checked')
@@ -572,14 +612,32 @@ var FlagCommentReasonDiv = (function() {
 					postId = $article.attr('data-id'),
 					$postDropdownUl = $article.find('ul.kinjamprove-comment-dropdown');
 
-				console.log('$article:', $article, '$postDropdownUl:', $postDropdownUl)
+				// console.log('$article:', $article, '$postDropdownUl:', $postDropdownUl)
 					
 				flagPost(postId, selectedReasonValue).then(function(result) {
-					var str = 'Successfully flagged post w/ id ' + postId + '! result:';
+					postId = parseInt(postId);
+					var str = 'Successfully flagged post w/ id ' + postId + '! result:',
+						starterId = $this.closest('section.discussion-region').attr('starter-id'),
+						tracker = kinjamprove.commentTrackers[starterId],
+						comment = tracker.commentsMap.get(postId),
+						baseComment = tracker.commentsMap.get(comment.threadId),
+						threadCount = tracker.commentsPerThread.get(comment.threadId);
+						
 					console.log(str, result);
+					
 					$flagReasonForm.parent().remove();
 					$postDropdownUl.children('li.js_flag-post, li.js_unflag-post').toggleClass('hide');
-					$article.children('.js_reply-flagged').show();					
+					$article.children('.js_reply-flagged').show();
+					$article.addClass('kinjamprove-flagged-comment');
+					
+					comment.userFlagged = true;
+					++threadCount.flagged;
+					++tracker.totalVisible.flagged;
+					tracker.threadTypes.flagged.set(comment.threadId, baseComment);
+					tracker.userFlaggedCommentIds.push(postId);
+					kinjamprove.userFlaggedPostIdsMap.set(postId, 1);
+					tracker.updateFilterSelect("flagging");
+					
 				}, function(err) {
 					var str = 'Error trying to flag post w/ id ' + postId + ': ';
 					console.error(str, error);
@@ -588,31 +646,6 @@ var FlagCommentReasonDiv = (function() {
 				var $warningMessageDiv = $flagReasonForm.find('.warningmessage').parent();
 				$warningMessageDiv.toggleClass('hide');
 			}
-		},
-
-		flagPost: function(postId, reason, token) {
-			var flagPathname = '/api/moderation/flagging/flag',
-				flagUrl = window.location.origin + flagPathname,
-				requestPayload = {
-					postId: postId,
-					reason: reason,
-					token: (token || kinjamprove.token.token)
-				},
-				requestPayloadStr = JSON.stringify(requestPayload);
-
-			return postJSON(flagUrl, requestPayloadStr);
-		},
-
-		unflagPost: function(postId, token) {
-			var unflagPathname = '/api/moderation/flagging/unflag',
-				unflagUrl = window.location.origin + unflagPathname,
-				requestPayload = {
-					postId: postId,
-					token: (token || kinjamprove.token.token)
-				},
-				requestPayloadStr = JSON.stringify(requestPayload);
-
-			return postJSON(unflagUrl, requestPayloadStr);
 		}
 	};
 })();
@@ -630,19 +663,6 @@ function flagPost(postId, reason, token) {
 	return postJSON(flagUrl, requestPayloadStr);
 }
 
-function unflagPost(postId, token) {
-	var unflagPathname = '/api/moderation/flagging/unflag',
-		unflagUrl = window.location.origin + unflagPathname,
-		requestPayload = {
-			postId: postId,
-			token: (token || kinjamprove.token.token)
-		},
-		requestPayloadStr = JSON.stringify(requestPayload);
-
-	return postJSON(unflagUrl, requestPayloadStr);
-}
-
-
 function blockUserPosts(blockedUserAuthorId) {
 	var $blockedUserPosts = $('article[data-authorid="'+blockedUserAuthorId+'"]').addClass('kinjamprove-blockedUser'),
 		$headers = $blockedUserPosts.children('header'),
@@ -654,11 +674,37 @@ function blockUserPosts(blockedUserAuthorId) {
 	$replyBylines.empty();
 	$replyBylines.nextAll().remove();
 	$replyBylines.append(blockedUserContainerHtml).after(createCollapseThreadButton());
-	console.log('$replyBylines:', $replyBylines,  '$headers:', $headers)
+	// console.log('$replyBylines:', $replyBylines,  '$headers:', $headers)
 }
 
 
-function onDismissDropdownClick() {			
+// 0.0.1.8
+function onDismissDropdownClick() {
+	var $this = $(this),
+		postId = $this.closest('ul').attr('data-postid');
+		$existingNativePost = $('div.js_content-region article#reply_'+postId);
+	
+	// Make sure confirm is turned on.
+	Utilities.setWindowConfirmToNormal();
+	
+	if($existingNativePost.length){
+		let $dismissButton = $existingNativePost.find('ul#dropdown-'+postId+' a.dismiss');
+		if($dismissButton.length){
+			$dismissButton.click();
+			return;
+		}
+	}
+	
+	var url = (window.location.origin + "/" + postId);
+	
+	var dismissCommentConfirmation = confirm("Dismiss currently cannot be handled by Kinjamprove. Click okay to pause Kinjamprove and be redirected to this post's permalink ("+url+"), where you'll be able to dismiss it using the native interface. Kinjamprove will automatically unpause after 5 seconds or when page has loaded, whichever comes first.");
+	if (dismissCommentConfirmation){
+		var msgObj = { to: "background", val: "dismiss", url: url };
+		
+		chrome.runtime.sendMessage(msgObj);
+	}
+}
+/* 0.0.1.8 Disabled for now.
 	var dismissCommentConfirmation = confirm('Are you sure you want to dismiss this comment?');
 	
 	if (!dismissCommentConfirmation) {
@@ -670,60 +716,61 @@ function onDismissDropdownClick() {
 	if (!authorizeRequest) {
 		alert('Unable to complete request.');
 		return;
-	}
-	
-	var postId = $(this).closest('ul').attr('data-postid'),
-		defaultBlogId = Utilities.getUserDefaultBlogId(),
-		kinjaToken = Utilities.getKinjaToken();
-		url = 'https://kinja.com/api/profile/token/createSecure',
-		payload = {};
-	//JSON.stringify({ token: kinjaToken });
+	} else	{
+		
+		var postId = $(this).closest('ul').attr('data-postid'),
+			defaultBlogId = Utilities.getUserDefaultBlogId(),
+			kinjaToken = Utilities.getKinjaToken();
+			url = 'https://kinja.com/api/profile/token/createSecure',
+			payload = {};
+		//JSON.stringify({ token: kinjaToken });
 
-	 postJSON(url, payload)
-		.then(function(response) {
-			var secureToken = response.data.token;
-			payload = JSON.stringify({postId: postId});
-			url = CommentApiURLFactory.getDismissPostURL(postId, defaultBlogId, kinjaToken);
-			
-			return new Promise(function(resolve, reject) {
-
-				var req = new XMLHttpRequest();
-				req.open('POST', url);
+		 postJSON(url, payload)
+			.then(function(response) {
+				var secureToken = response.data.token;
+				payload = JSON.stringify({postId: postId});
+				url = CommentApiURLFactory.getDismissPostURL(postId, defaultBlogId, kinjaToken);
 				
-				req.setRequestHeader('Content-type', 'application/json; charset=UTF-8');
-				req.setRequestHeader('Authorization', 'Bearer ' + secureToken);
+				return new Promise(function(resolve, reject) {
 
-				req.onload = function() {
-					// This is called even on 404 etc.
-					// so check the status
-					if (req.status === 200) {
-						// Resolve the promise w/ the response text
-						resolve(req.response);
-					} else {
-						// Otherwise reject w/ the status text
-						// which will hopefully be a meaningful error
-						// reject(Error(req.statusText));
-						reject(req.responseText);
-					}
-				};
-				
-				// Handle network errors
-				req.onerror = function() {
-					reject(Error('Network Error'));
-				};
-				
-				// Make the request!
-				req.send(payload);
-			}).then(JSON.parse);
-		})
-		.then(function(dismissedComment) {		
-			// 0.0.1.8
-			var $dismissedComment = $('#reply_' + dismissedComment.data.postId),
-				$dismissedCommentLi = $dismissedComment.closest('li');
+					var req = new XMLHttpRequest();
+					req.open('POST', url);
+					
+					req.setRequestHeader('Content-type', 'application/json; charset=UTF-8');
+					req.setRequestHeader('Authorization', 'Bearer ' + secureToken);
 
-			console.log('Successfully dismissed comment: ', dismissedComment);
-			$dismissedCommentLi.remove();
-	}).catch(function(error) {
-		console.error('Error dismissing comment: ', error);
-	});	
-}
+					req.onload = function() {
+						// This is called even on 404 etc.
+						// so check the status
+						if (req.status === 200) {
+							// Resolve the promise w/ the response text
+							resolve(req.response);
+						} else {
+							// Otherwise reject w/ the status text
+							// which will hopefully be a meaningful error
+							// reject(Error(req.statusText));
+							reject(req.responseText);
+						}
+					};
+					
+					// Handle network errors
+					req.onerror = function() {
+						reject(Error('Network Error'));
+					};
+					
+					// Make the request!
+					req.send(payload);
+				}).then(JSON.parse);
+			})
+			.then(function(dismissedComment) {		
+				// 0.0.1.8
+				var $dismissedComment = $('#reply_' + dismissedComment.data.postId),
+					$dismissedCommentLi = $dismissedComment.closest('li');
+
+				console.log('Kinjamprove: Successfully dismissed comment: ', dismissedComment);
+				$dismissedCommentLi.remove();
+		}).catch(function(error) {
+			console.error('Error dismissing comment: ', error);
+		});
+	}		
+}*/
