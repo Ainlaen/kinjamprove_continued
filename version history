@@ -33,6 +33,7 @@ Google Analytics code was removed as it wasn't being used.
 
 
 Known issues:
+Need a better workaround for dismissing comments.
 Following doesn't update on the fly yet.
 Need to add blog-specific dropdown items. (Follow for blog, block for blog)
 
