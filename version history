@@ -1,7 +1,8 @@
 0.0.1.9 (12/20/2018)
 
 New: 
-Added options in to change minimum number of comments loaded and to default to community filter. Right-click on the Kinjamprove icon and select options to change these and other settings.
+Added options in to change minimum number of comments loaded and to default to community filter. 
+  Right-click on the Kinjamprove icon and select options to change these and other settings.
 
 Fixes: 
 Switching between filters should now work properly.
