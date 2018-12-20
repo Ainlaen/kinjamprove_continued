@@ -852,3 +852,12 @@ option[value="newest"]:before{
 li.cGENvi{
 	display: none !important;
 }
+
+div.js_region--warning{
+	display:none !important;
+}
+
+span.kinjamprove-failure{
+    color: #32d706;
+    font-size: 26px;
+}

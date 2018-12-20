@@ -496,8 +496,9 @@ function createReplyByline(comment) {
 									 
 	if (comment.depth !== 0) {
 		var $parentCommentLink = $('<a>', {
-			'class': 'parent-comment-link', 
-			href: '#comment-'+comment.parentId
+			'starter-id': comment.starterId,
+			'parent-id': comment.parentId,
+			'class': 'parent-comment-link'
 		}).append($replyToAuthor);
 
 		$replyByline.append($replyBylineAuthorName, $parentCommentLink);

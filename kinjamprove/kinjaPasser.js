@@ -1,10 +1,17 @@
 /* Send data from kinja page to kinjamprove */
-document.dispatchEvent(new CustomEvent('kinjamproveGlobalPasser', {
-	detail:{
-		kinja: window.kinja,
-		account: window._user
-		}
-}));
+var kinjaWindowVar = JSON.stringify(kinja),
+	kinjaAccountVar = JSON.stringify(_user),
+	kinjaAttr = document.createAttribute('kinja'),
+	accountAttr = document.createAttribute('account');
+	
+//Attach data as JSON strings in case variable don't pass properly.
+kinjaAttr.value = kinjaWindowVar;
+accountAttr.value = kinjaAccountVar;
+document.head.setAttributeNode(kinjaAttr);
+document.head.setAttributeNode(accountAttr);
+
+var newEvent = new CustomEvent('kinjamproveGlobalPasser', {detail:{kinja: kinja, account: _user}});
+window.dispatchEvent(newEvent);
 
 document.addEventListener('kinjamproveConfirm', function(response) {
 	// response.detail contains the transferred data (can be anything, ranging

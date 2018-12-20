@@ -1,14 +1,16 @@
 var kinjamprove = { 
 	commentTrackers: {},
+	headers: {},
 	options: { 
 		preferredStyle: undefined,
-		defaultComments: undefined,
 		hidePendingReplies: undefined,
 		sortOrder: undefined,
 		hideSocialMediaButtons: undefined,
 		hideSidebar: undefined,
 		localizePublishTime: undefined,
-		blockedUsers: undefined
+		blockedUsers: undefined,
+		defaultToCommunity: undefined,
+		minCommentsToLoad: undefined
 	},
 	userLikedPostIdsMap: new Map(),
 	userFlaggedPostIdsMap: new Map(),
@@ -36,44 +38,40 @@ var firstDiscussionRegionScrollTop;
 
 
 $(function() {
-
 	var pageHasDiscussionRegion = !!$('section.js_discussion-region').length;
 
 	if (!pageHasDiscussionRegion) {
 		console.log("Page does not have discussion region, therefore Kinjamprove won't be run.");
 		return;
 	}
-
-	var $windowOnbeforeunloadButton = $('<button>', {
-		id: 'kinjamprove-window-onbeforeunload-button',
-		onclick: 'Utilities.setWindowOnbeforeunload()',
-		style: 'display: none;'
-	});
-
-
-	$('body').append(
-		//$kinjamproveUserInfoButton, 
-		// createKinjamproveFooter()
-		$windowOnbeforeunloadButton 
-	);
-
-	// Event listener
-	document.addEventListener('kinjamproveGlobalPasser', function(response) {
-		// response.detail contains the transferred data (can be anything, ranging
-		// from JavaScript objects to strings).
+	window.addEventListener('kinjamproveGlobalPasser', function(response) {
+		if(response.detail){
+			kinjamprove.kinja = response.detail.kinja;
+			kinjamprove.userData = response.detail.account;
+			kinjamprove.accountState = kinjamprove.userData.data.accountState;
+			kinjamprove.token = kinjamprove.userData.data.token;
+			kinjamprove.kinja.meta.authors	= kinjamprove.kinja.postMeta.authors;
+			kinjamprove.kinja.meta.curatedReplyCounts = kinjamprove.kinja.postMeta.curatedReplyCounts;
+			kinjamprove.kinja.meta.discussionSettings = kinjamprove.kinja.postMeta.discussionSettings;
+			kinjamprove.kinja.meta.post = kinjamprove.kinja.postMeta.post;
+			kinjamprove.kinja.meta.postId = kinjamprove.kinja.postMeta.postId;
+			kinjamprove.kinja.meta.starterAuthorId = kinjamprove.kinja.postMeta.starterAuthorId;
+			kinjamprove.kinja.meta.starterId = kinjamprove.kinja.postMeta.starterId;					
+		}else{
+			kinjamprove.kinja = JSON.parse(document.head.attributes[0].value);
+			kinjamprove.userData = JSON.parse(document.head.attributes[1].value);
+			kinjamprove.accountState = kinjamprove.userData.data.accountState;
+			kinjamprove.token = kinjamprove.userData.data.token;
+			kinjamprove.kinja.meta.authors	= kinjamprove.kinja.meta.authors || kinjamprove.kinja.postMeta.authors;
+			kinjamprove.kinja.meta.curatedReplyCounts = kinjamprove.kinja.meta.curatedReplyCounts || kinjamprove.kinja.postMeta.curatedReplyCounts;
+			kinjamprove.kinja.meta.discussionSettings = kinjamprove.kinja.meta.discussionSettings || kinjamprove.kinja.postMeta.discussionSettings;
+			kinjamprove.kinja.meta.post = kinjamprove.kinja.meta.post || kinjamprove.kinja.postMeta.post;
+			kinjamprove.kinja.meta.postId = kinjamprove.kinja.meta.postId || kinjamprove.kinja.postMeta.postId;
+			kinjamprove.kinja.meta.starterAuthorId = kinjamprove.kinja.meta.starterAuthorId || kinjamprove.kinja.postMeta.starterAuthorId;
+			kinjamprove.kinja.meta.starterId = kinjamprove.kinja.meta.starterId || kinjamprove.kinja.postMeta.starterId;	
+		}
 		
-		kinjamprove.kinja = response.detail.kinja;
-		kinjamprove.userData = response.detail.account;
-		kinjamprove.accountState = kinjamprove.userData.data.accountState;
-		kinjamprove.token = kinjamprove.userData.data.token;
-		kinjamprove.kinja.meta.authors	= kinjamprove.kinja.postMeta.authors;
-		kinjamprove.kinja.meta.curatedReplyCounts = kinjamprove.kinja.postMeta.curatedReplyCounts;
-		kinjamprove.kinja.meta.discussionSettings = kinjamprove.kinja.postMeta.discussionSettings;
-		kinjamprove.kinja.meta.post = kinjamprove.kinja.postMeta.post;
-		kinjamprove.kinja.meta.postId = kinjamprove.kinja.postMeta.postId;
-		kinjamprove.kinja.meta.starterAuthorId = kinjamprove.kinja.postMeta.starterAuthorId;
-		kinjamprove.kinja.meta.starterId = kinjamprove.kinja.postMeta.starterId;
-	});
+	}, true);
 
 	var passGlobals = document.createElement('script');
 	passGlobals.src = chrome.extension.getURL('kinjaPasser.js');
@@ -81,6 +79,20 @@ $(function() {
 	passGlobals.onload = function() {
 		passGlobals.remove();
 	};
+			
+	var $windowOnbeforeunloadButton = $('<button>', {
+		id: 'kinjamprove-window-onbeforeunload-button',
+		onclick: 'Utilities.setWindowOnbeforeunload()',
+		style: 'display: none;'
+	});
+	
+	$('body').append(
+		//$kinjamproveUserInfoButton, 
+		// createKinjamproveFooter()
+		$windowOnbeforeunloadButton 
+	);
+
+	// Event listener
 	
 	chrome.storage.sync.get({
 		preferredStyle: 'kinjamprove',
@@ -91,6 +103,8 @@ $(function() {
 		localizePublishTime: false,
 		blockedUsers: '{}',
 		paused: false,
+		defaultToCommunity: false,
+		minCommentsToLoad: 50
 	}, optionsCallback);
 	
 
@@ -123,7 +137,9 @@ $(function() {
 
 	//b.didScroll&&!e.isTouch||(b.didScroll=!0,e.requestAnimationFrame(a)
 	//$('.js_postbottom-waypoint-hook').remove();
+
 });
+
 
 function optionsCallback(items) {
 	console.log('Kinjamprove: options: ', items);
@@ -189,14 +205,22 @@ function kinjamproveFunc() {
 	if (referralId == window.location.pathname.substring(1, window.location.pathname.length)){
 		notArticle = true;
 	}
+
+
+	var commentTracker,
+		$spinner;
+		
+	kinjamprove.waiting = true;
 	// Wait on kinjamproveGlobalPasser
 	var kinjamproveWindowVarContainerTextInterval = setInterval(function() {
 		//$kinjamproveUserInfoButton[0].click();
-		var commentTracker;
-	
+
 		if (kinjamprove.kinja) {
 			clearInterval(kinjamproveWindowVarContainerTextInterval);
-			
+			kinjamprove.waiting = false;
+			if($spinner && $spinner.length){
+				$spinner.hide();
+			}
 			firstStoryStarterId = Utilities.getStarterIdOfFirstStory();
 			setKinjamproveUserInfo();
 			userIsAuthor = kinjamprove.kinja.meta.starterAuthorId == kinjamprove.accountState.authorId;
@@ -214,7 +238,7 @@ function kinjamproveFunc() {
 				for(let i = 0; !userIsStaff && i < kinjamprove.accountState.membership.length; ++i){
 					if(kinjamprove.accountState.membership[i].blogId == kinjamprove.kinja.meta.blog.id){
 						userIsStaff = kinjamprove.accountState.membership[i].role;
-					}				
+					}
 				}
 			}
 
@@ -232,21 +256,22 @@ function kinjamproveFunc() {
 	        	commentTracker.setUnorderedList();
 	        });
 					
-		} else if (kinjamproveWindowVarTicks > 200) {
+		}else if (kinjamproveWindowVarTicks > 300) {
 			console.log('Kinjamprove: kinjamproveWindowVarTicks timed out; clearing interval');
 			clearInterval(kinjamproveWindowVarContainerTextInterval);
-			alert('Failed to load Kinjamprove: Timed out loading kinja variables.');
-			// kinjamprove.commentTrackers[firstStoryStarterId] = new XhrCommentTracker(firstStoryStarterId);
-			// commentTracker = kinjamprove.commentTrackers[firstStoryStarterId];
-			// commentTracker.hidePending = kinjamprove.options.hidePendingReplies;
-			// commentTracker.referralId = referralId;
-			// commentTracker.notArticle = notArticle;
-			// commentTracker.load(kinjamprove.loggedIn).then(function(response){
-				// commentTracker.setDiscussionRegion();
-			// });
+			kinjamprove.waiting = false;
+			$spinner.hide();
+			let $repliesWrapper = $('div.js_replies-wrapper'),
+				$failSpan = $("<span>", {'class': 'kinjamprove-failure', 'text': 'Kinjamprove timed out while loading. Please refresh the page to load comments.'});
+			$repliesWrapper.append($failSpan);
 		} else {
-			if (kinjamproveWindowVarTicks % 10 === 0) {
+			if (kinjamproveWindowVarTicks % 40 === 0) {
 				console.log('Kinjamprove: Waiting for kinjamprove-window-variables-container... ' + kinjamproveWindowVarTicks);
+			}
+			if(kinjamproveWindowVarTicks == 30){
+				$spinner = $("span.spinner");
+				$spinner = $($spinner[0]);
+				$('div.js_replies-wrapper').append($spinner);
 			}
 			kinjamproveWindowVarTicks++;
 		}
@@ -296,7 +321,8 @@ function updatePageArticle(summaries) {
 		//commentSummary = summaries[summaryIndex++],
 		replyToPostButtonContainerSummary = summaries[summaryIndex++],
 		blogPublishTimeSummary = summaries[summaryIndex++];
-	//console.log('pageArticleSummary', pageArticleSummary, 'discussionHeaderSummary', discussionHeaderSummary, 'contentRegionSummary', contentRegionSummary, 'commentSummary', commentSummary, 'replyToPostButtonContainerSummary', replyToPostButtonContainerSummary, 'blogPublishTimeSummary', blogPublishTimeSummary);
+	//console.log('pageArticleSummary', pageArticleSummary, 'discussionHeaderSummary', discussionHeaderSummary, 'contentRegionSummary', contentRegionSummary, 'replyToPostButtonContainerSummary', replyToPostButtonContainerSummary, 'blogPublishTimeSummary', blogPublishTimeSummary);
+	
     pageArticleSummary.added.forEach(function(pageArticle) {
         var $pageArticle = $(pageArticle),
         	postId = Number.parseInt($pageArticle.attr('data-id')),
@@ -317,19 +343,21 @@ function updatePageArticle(summaries) {
 			$discussionRegion = $discussionHeader.closest('section.js_discussion-region'),
 			$article = $discussionRegion.siblings('.branch-wrapper').find('article'),
 			postId = Number.parseInt($article.attr('data-id')),
-			$kinjamproveDiscussionHeaderPanel = $('<div>', { 'class': 'kinjamprove-discussion-header-container' }),
-			referralId = window.location.pathname.replace(/.*?([0-9]{6,})$/g, '$1');
+			$kinjamproveDiscussionHeaderPanel = $('<div>', { 'class': 'kinjamprove-discussion-header-container' });
+			//referralId = window.location.pathname.replace(/.*?([0-9]{6,})$/g, '$1');
 		
-		if (!isNaN(Number.parseInt(referralId))) {
-			referralId = Number.parseInt(referralId);
+		// if (!isNaN(Number.parseInt(referralId))) {
+			// referralId = Number.parseInt(referralId);
+		// }
+		if(!kinjamprove.headers[postId]){
+			kinjamprove.headers[postId] = true;
+			createKinjamproveDiscussionHeaderLi(postId, $discussionRegion, $discussionHeader.find('ul'));
+			//console.log('kinjamprove.options.sortOrder=' + kinjamprove.options.sortOrder);
+			
+			addDiscussionRegionEvents($discussionRegion, postId);
+			$discussionHeader.append($kinjamproveDiscussionHeaderPanel);
+			//console.log('$discussionHeader added:', $discussionHeader);
 		}
-
-		createKinjamproveDiscussionHeaderLi(postId, $discussionRegion, $discussionHeader.find('ul'));
-		//console.log('kinjamprove.options.sortOrder=' + kinjamprove.options.sortOrder);
-		
-		addDiscussionRegionEvents($discussionRegion, postId);
-		$discussionHeader.append($kinjamproveDiscussionHeaderPanel);
-		//console.log('$discussionHeader added:', $discussionHeader);
 
 	});
 
@@ -341,21 +369,21 @@ function updatePageArticle(summaries) {
 			starterId = Number.parseInt($storyArticle.attr('data-id')),
 			commentTracker = kinjamprove.commentTrackers[starterId];
 		
-		if (!commentTracker) {
+		if (!kinjamprove.waiting && !commentTracker) {
 			kinjamprove.commentTrackers[starterId] = new XhrCommentTracker(starterId);
 			commentTracker = kinjamprove.commentTrackers[starterId];
 			commentTracker.hidePending = kinjamprove.options.hidePendingReplies;
 			commentTracker.load(kinjamprove.loggedIn).then(function(){
 				//commentTracker.contentRegionAdded($contentRegion);
 			});
-		} else if (commentTracker.finished){
+		} else if (commentTracker && commentTracker.finished){
 			if(!commentTracker.$contentRegion) {
 
 				commentTracker.contentRegionAdded($contentRegion);
 			}
 		} else{
 			var waitOnTracker = setInterval(function(){
-				if (commentTracker.finished){
+				if (commentTracker && commentTracker.finished){
 					clearInterval(waitOnTracker);
 					if(!commentTracker.$contentRegion) {
 						commentTracker.contentRegionAdded($contentRegion);
@@ -525,7 +553,10 @@ function createFilterSelect(postId) {
 	
 	if(tracker.staffCommentIdsMap.size){
 		optionsArr.push(Option('staff', 'Staff (' + tracker.staffCommentIdsMap.size+')'));
-		setValue = setValue || "staff";
+
+		if(!kinjamprove.options.defaultToCommunity){
+			setValue = setValue || "staff";
+		}
 	}
 	if(tracker.userLikedCommentIds.length){
 		optionsArr.push(Option('liked', 'Liked Comments ('+tracker.userLikedCommentIds.length+')'));
@@ -543,6 +574,8 @@ function createFilterSelect(postId) {
 	for (var option of optionsArr) {
 		$filterSelect.append(option.toHTML());
 	}
+	
+
 	
 	$filterSelect.val(setValue || "community");
 	
@@ -695,7 +728,7 @@ function onHidePendingCommentsToggleSwitchChange() {
 		}
 	}
 }
-
+/* Not used
 function setBodyScrollIntervalEvent() {
 	var $kinjamproveFooter = $('footer#kinjamprove-footer'),
 		$viewAllButton;
@@ -743,7 +776,7 @@ function setBodyScrollIntervalEvent() {
 		lastScrollTop = scrollTop;
 	}
 
-}
+}*/
 
 function createBackToTopButton() {
 	var backToTopButton = createElement('button', { 'class': 'kinjamprove-return-to-top-button' }, 'Back to Top of Page');
@@ -1004,13 +1037,7 @@ function onDiscussionFilterSelectChange() {
 				commentTracker.waitOnFilter = false;
 				commentTracker.stillFiltering = true;
 
-				let activeFilter = _this.value;
-				
-				if(!commentTracker.hasBeenSorted[activeFilter]){
-					commentTracker.reorderCommentsOnSortChange(kinjamprove.options.sortOrder);
-				}else{
-					commentTracker.filterDiscussion(activeFilter);
-				}
+				commentTracker.reorderCommentsOnSortChange(kinjamprove.options.sortOrder);
 				
 				commentTracker.stillFiltering = false;
 				commentTracker.lastChangeTime = Date.now();
@@ -1019,13 +1046,9 @@ function onDiscussionFilterSelectChange() {
 	}else{
 		commentTracker.stillFiltering = true;
 		
-		let activeFilter = _this.value;
 		commentTracker.lastChangeTime = currentTime;
-		if(!commentTracker.hasBeenSorted[activeFilter]){
-			commentTracker.reorderCommentsOnSortChange(kinjamprove.options.sortOrder);
-		}else{
-			commentTracker.filterDiscussion(activeFilter);	
-		}
+		commentTracker.reorderCommentsOnSortChange(kinjamprove.options.sortOrder);
+
 		commentTracker.stillFiltering = false;
 	}
 }
@@ -1160,6 +1183,14 @@ function dropdownCommentIsDismissible($dropdown, userAuthorId) {
 function onParentCommentLinkClick(event) {
 	//trackEvent('Button', 'click', 'Parent Comment Link');
 	event.stopPropagation();
+	console.log(event);
+	let $link = $(event.currentTarget),
+		starterId = parseInt($link.attr('starter-id')),
+		parentId = parseInt($link.attr('parent-id')),
+		commentTracker = kinjamprove.commentTrackers[starterId],
+		$li = commentTracker.commentLis[parentId];
+	
+	window.scrollTo( {top: $li.offset().top, behavior: 'smooth'});
     $('nav.js_top-nav').removeClass('shown fixed global-nav--scrollback');
 }
 
@@ -1189,14 +1220,14 @@ function onParentCommentLinkClick(event) {
 // }
 
 
-function addParentCommentLinkMouseEvents() {
-	var $parentCommentLinks = $('.parent-comment-link'); 
+// function addParentCommentLinkMouseEvents() {
+	// var $parentCommentLinks = $('.parent-comment-link'); 
 	
-	$parentCommentLinks.on({
-		'mouseover': onParentCommentLinkMouseOver,
-	    'mouseout': onParentCommentLinkMouseOut
-	});	
-}
+	// $parentCommentLinks.on({
+		// 'mouseover': onParentCommentLinkMouseOver,
+	    // 'mouseout': onParentCommentLinkMouseOut
+	// });	
+// }
 
 function onParentCommentLinkMouseOut() {
 	var _this = this;

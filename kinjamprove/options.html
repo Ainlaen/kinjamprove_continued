@@ -39,15 +39,28 @@
 		<!-- <option value="popular">Best</option> -->
 		<option value="likes">Most Likes</option>
 		<option value="replies">Most Replies</option>
-		<option value="newest">Newest</options>	
+		<option value="newest">Newest</option>	
 		<option value="oldest">Oldest</option>
 	</select>
+	<p>
+	<span id="defaultToCommunitySpan"> 
+		Prefer Community filter to Staff 
+		<input type="checkbox" id="defaultToCommunity" value="defaultToCommunity"/> 
+	</span>
+	</p>
+	<p>
+	<span id="minCommentsToLoadSpan" title="Setting this higher than default (50) will lead to longer load times.">
+		Minimum comments to load at once
+		<input type="number" id="minCommentsToLoad" min="1"/>
+	</span>
+	</p>
 	<hr/>
 
 	<span id="timezoneSpan">
 		Display publish times adjusted for timezone differences
 		<input type="checkbox" id="localizePublishTime" value="localizePublishTime"/> 
 	</span>
+		
 	<hr/>
 
 	<table id="hideElementsTable" >

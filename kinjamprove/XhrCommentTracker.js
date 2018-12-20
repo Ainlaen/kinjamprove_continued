@@ -64,11 +64,11 @@ XhrCommentTracker.prototype = {
 	constructor: XhrCommentTracker,
 
 	get numOfCommentsToLoadAtOnce() {
-		return this.constructor.numOfCommentsToLoadAtOnce;
+		return kinjamprove.options.minCommentsToLoad || this.constructor.numOfCommentsToLoadAtOnce;
 	},
 
 	set numOfCommentsToLoadAtOnce(numOfCommentsToLoadAtOnce) {
-		this.constructor.numOfCommentsToLoadAtOnce = numOfCommentsToLoadAtOnce;
+		this.constructor.numOfCommentsToLoadAtOnce = kinjamprove.options.minCommentsToLoad || numOfCommentsToLoadAtOnce;
 	},
 	
 	getLikesOfUserUnderStarter: function() {
@@ -1160,6 +1160,23 @@ XhrCommentTracker.prototype = {
 
 		var kinjamproveSpinnerBounce = createKinjamproveSpinnerBounce();
 		
+		
+		if(!kinjamprove.headers[commentTracker.postId]){
+			kinjamprove.headers[commentTracker.postId] = true;
+
+			var $discussionHeader = commentTracker.$discussionRegion.find('div.discussion-header'),
+				$discussionRegion = commentTracker.$discussionRegion,
+				postId = commentTracker.postId,
+				$kinjamproveDiscussionHeaderPanel = $('<div>', { 'class': 'kinjamprove-discussion-header-container' });
+
+			createKinjamproveDiscussionHeaderLi(postId, $discussionRegion, $discussionHeader.find('ul'));
+			
+			addDiscussionRegionEvents($discussionRegion, postId);
+			$discussionHeader.append($kinjamproveDiscussionHeaderPanel);
+		}
+		
+		
+		
 		commentTracker.$kinjamproveFilterSelect = appendFilterSelect(commentTracker.postId);
 		commentTracker.$discussionRegion.on({change: onDiscussionFilterSelectChange}, 'select.kinjamprove-filter-select');
 		commentTracker.setContentRegion($contentRegion);
@@ -1182,10 +1199,13 @@ XhrCommentTracker.prototype = {
 		commentTracker.$contentRegion.show();
 		
 		if(commentTracker.notArticle){
-			let $curatedArticle = commentTracker.commentLis[commentTracker.referralId];
+			let curatedComment = commentTracker.commentsMap.get(commentTracker.referralId),
+				parentId = curatedComment.parentId == commentTracker.postId ? commentTracker.referralId : curatedComment.parentId,
+				$curatedArticleParent = commentTracker.commentLis[parentId];
+			//let $curatedArticle = commentTracker.commentLis[commentTracker.commentsMap.get(commentTracker.referralId).threadId];
 
-			if($curatedArticle){
-				window.scrollTo(0,$curatedArticle.offset().top);
+			if($curatedArticleParent){
+				window.scrollTo(0,$curatedArticleParent.offset().top);
 			}else{
 				window.scrollTo(0,commentTracker.$contentRegion.offset().top);
 			}

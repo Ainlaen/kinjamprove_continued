@@ -9,7 +9,7 @@
       "run_at": "document_end"
    } ],
    "content_security_policy": "script-src 'self'; object-src 'self'",
-   "description": "Kinja with threaded replies, manual comment sorting (newest, oldest, & most popular), user blocking, and other improvements.",
+   "description": "Kinja with threaded replies, enhanced filters, additional comment sorting, user blocking, and other improvements.",
    "icons": {
       "128": "icons/kinjamproveLogoTransparentBackground.png",
       "16": "icons/kinjamproveLogoTransparentBackground.png",
@@ -31,6 +31,6 @@
       "default_title": "Kinjamprove"
    },
    "permissions": [ "declarativeContent", "activeTab", "storage", "*://*.avclub.com/*", "*://*.deadspin.com/*", "*://*.earther.com/*", "*://*.gizmodo.com/*", "*://*.jalopnik.com/*", "*://*.jezebel.com/*", "*://*.kinja.com/*", "*://*.kotaku.com/*", "*://*.lifehacker.com/*", "*://*.splinternews.com/*", "*://*.theroot.com/*", "*://*.univision.com/*", "*://*.thetakeout.com/*", "*://*.clickhole.com/*", "*://*.theinventory.com/*" ],
-   "version": "0.0.1.8",
+   "version": "0.0.1.9",
    "web_accessible_resources": [ "icons/*", "styles/*", "kinjamproveUtilities.js", "InlineFunctions.js", "CommentEditorAPI.js", "CommentEncoder.js", "XhrCommentTracker.js", "CommentClass.js", "CommentDropdown.js", "CommentDomCreator.js", "kinjaPasser.js" ]
 }

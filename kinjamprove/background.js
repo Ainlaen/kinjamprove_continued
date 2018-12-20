@@ -36,18 +36,33 @@ chrome.runtime.onInstalled.addListener(function(details){
      }
 });
 
+// 0.0.1.9 Unused idea to check if Kinjamprove tab is active before loading.
+// var activeTabId;
+// chrome.tabs.onActivated.addListener(function(activeInfo){
+	// activeTabId = activeInfo.tabId;
+	// let time = new Date();
+	// chrome.tabs.sendMessage(activeInfo.tabId, {activeTabId: activeTabId});
+// });
+
 // Listen for any changes to the URL of tab
 chrome.tabs.onUpdated.addListener(checkForValidUrl);
 chrome.tabs.onActivated.addListener(handleActivated);
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	console.log('Kinjamprove: Background received request:', request, 'sender:', sender);
-	console.log('Kinjamprove: chrome.tabs:', chrome.tabs);
 
 	if (request.to === 'background') {
 		var messageLowercase = request.val; 
 		//console.log('message.toLowerCase():', messageLowercase);
-
+		// 0.0.1.9 Unused idea to check if Kinjamprove tab is active before loading.
+		// if (messageLowercase == "istabactive"){
+			// if(!activeTabId){
+				// chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+					// activeTabId = tabs[0].id;
+				// });
+			// }
+			// chrome.tabs.sendMessage(activeTabId, {activeTabId: activeTabId});
+		// }
 		if (messageLowercase.indexOf('paused') > -1) {
 			var icon = (messageLowercase.startsWith('un')) 
 				? ACTIVE_ICON_PATH
@@ -171,13 +186,15 @@ function checkForValidUrl(tabId, changeInfo, tab) {
 		chrome.storage.sync.get({
 			paused: false,
 			preferredStyle: 'kinjamprove',
-		sortOrder: 'likes',
-		// defaultComments: 'pending',
-		hidePendingReplies: false,
-		hideSocialMediaButtons: false,
-		hideSidebar: false,
-		localizePublishTime: false,
-		blockedUsers: '{}'
+			sortOrder: 'likes',
+			// defaultComments: 'pending',
+			hidePendingReplies: false,
+			hideSocialMediaButtons: false,
+			hideSidebar: false,
+			localizePublishTime: false,
+			blockedUsers: '{}',
+			defaultToCommunity: false,
+			minCommentsToLoad: 50
 		}, function(items) {
 			var icon = items.paused 
 				? PAUSED_ICON_PATH 

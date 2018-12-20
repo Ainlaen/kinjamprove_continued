@@ -7,12 +7,17 @@ function save_options() {
 		hidePendingReplies = document.getElementById('hidePendingReplies').checked,
 		hideSidebar = document.getElementById('hideSidebar').checked,
 		hideSocialMediaButtons = document.getElementById('hideSocialMediaButtons').checked,
-		localizePublishTime = document.getElementById('localizePublishTime').checked;
+		localizePublishTime = document.getElementById('localizePublishTime').checked,
+		defaultToCommunity = document.getElementById('defaultToCommunity').checked,
+		minCommentsToLoad = document.getElementById('minCommentsToLoad').value;
 	
 	if (!blockedUsers.length) {
 		blockedUsers = '{}';
 	}
-	
+	minCommentsToLoad = parseInt(minCommentsToLoad);
+	if(isNaN(minCommentsToLoad)){
+		minCommentsToLoad = 50;
+	}
 	console.log('Kinjamprove: saving option "preferred style" =', style);
 	console.log('Kinjamprove: saving option hideSocialMedia =', hideSocialMediaButtons);
 	console.log('Kinjamprove: blockedUsers:', blockedUsers);
@@ -26,6 +31,8 @@ function save_options() {
 		hideSidebar: hideSidebar,
 		localizePublishTime: localizePublishTime,
 		blockedUsers: blockedUsers,
+		defaultToCommunity: defaultToCommunity,
+		minCommentsToLoad: minCommentsToLoad
 		
 	}, updateStatus);
 
@@ -54,6 +61,8 @@ function restore_options() {
 		localizePublishTime: false,
 		blockedUsers: '{}',
 		paused: false,
+		defaultToCommunity: false,
+		minCommentsToLoad: 50
 	}, setValues);
 		
 	function setValues(items) { 
@@ -71,6 +80,8 @@ function restore_options() {
 		document.getElementById('hideSocialMediaButtons').checked = items.hideSocialMediaButtons;
 		document.getElementById('hideSidebar').checked = items.hideSidebar;
 		document.getElementById('localizePublishTime').checked = items.localizePublishTime;
+		document.getElementById('defaultToCommunity').checked = items.defaultToCommunity;
+		document.getElementById('minCommentsToLoad').value = items.minCommentsToLoad;
 	}
 } // end of restore_options
 		
