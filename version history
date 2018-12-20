@@ -1,4 +1,23 @@
-0.0.1.8
+0.0.1.9 (12/20/2018)
+
+New: 
+Added options in to change minimum number of comments loaded and to default to community filter. Right-click on the Kinjamprove icon and select options to change these and other settings.
+
+Fixes: 
+Switching between filters should now work properly.
+Fixed timeout issues. Kinjamprove should load more consistently now, especially when loaded in a non-active tab.
+Replaced alert on timeout with discussion region notification.
+Clicking on parent comment link should take you to the proper location.
+
+Known issues:
+Spinner should show while loading.
+Need a better workaround for dismissing comments.
+Following doesn't update on the fly yet.
+Need to add blog-specific dropdown items. (Follow for blog, block for blog)
+
+
+
+0.0.1.8 (12/17/2018)
 
 This version represents a major redesign for Kinjamprove. Numerous changes and improvements have been made.
 
