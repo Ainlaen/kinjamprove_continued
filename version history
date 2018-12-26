@@ -15,6 +15,8 @@ Spinner should show while loading.
 Need a better workaround for dismissing comments.
 Following doesn't update on the fly yet.
 Need to add blog-specific dropdown items. (Follow for blog, block for blog)
+If a post has both approved and pending replies, and the pending replies are hidden, the post will display 
+having hidden approved replies, even if they're already shown.
 
 
 
