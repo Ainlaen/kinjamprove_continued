@@ -83,9 +83,14 @@ function togglePause(event) {
 	});*/
 }
 
+function openOptions(event){
+	chrome.runtime.openOptionsPage();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
 	restoreState();
 	document.getElementById('pauseButton').addEventListener('click', togglePause);
+	document.getElementById('optionsButton').addEventListener('click', openOptions);
 
 /*
 	(function(i,s,o,g,r,a,m) {

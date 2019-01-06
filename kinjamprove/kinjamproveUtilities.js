@@ -4,8 +4,8 @@ const KINJAMPROVE_WINDOW_VARIABLES_CONTAINER_SELECTOR = '#' + KINJAMPROVE_WINDOW
 var Utilities = (function() {
 	const CHROME_EXTENSION_BASE_URL = 'chrome-extension://' + chrome.runtime.id + '/';
 
-	var kinjamproveWindowVariablesContainer = document.getElementById(KINJAMPROVE_WINDOW_VARIABLES_CONTAINER_ID),
-		kinjamproveWindowVariablesContainerJSON;
+	// var kinjamproveWindowVariablesContainer = document.getElementById(KINJAMPROVE_WINDOW_VARIABLES_CONTAINER_ID),
+		// kinjamproveWindowVariablesContainerJSON;
 
 	
 	return {
@@ -79,31 +79,12 @@ var Utilities = (function() {
 			}
 			return Utilities.commentPublishedInLastFifteenMinutes(comment);
 		},
-
-		setWindowConfirmToAutomatic: function() {
-			console.log('Kinjamprove: Setting window confirmation to automatic.');
-			document.dispatchEvent(new CustomEvent('kinjamproveConfirm', {
-				detail: "set"
-			}));
-			if (!window.realConfirm) {
-				window.realConfirm = window.confirm;
-			}
-
-			window.confirm = function() {
-				console.log('Kinjamprove: Confirming automatically.');
-				return true;
-			};
+		
+		// Clears confirmation for navigating away from page.
+		clearWindowOnbeforeunload: function(){
+			document.dispatchEvent(new CustomEvent("clearOnbeforeunload"), {});
 		},
-		
-		setWindowConfirmToNormal: function() {
-			console.log('Kinjamprove: Returning window confirmation to normal.');
-			document.dispatchEvent(new CustomEvent('kinjamproveConfirm', {
-				detail: "unset"
-			}));
-			window.confirm = window.realConfirm || window.confirm;
-		},
-		
-		
+		/*
 		getKinjamproveWindowVariablesContainerJSON: function() {			
 
 			return kinjamproveWindowVariablesContainerJSON 
@@ -111,7 +92,7 @@ var Utilities = (function() {
 				// : JSON.parse(document.getElementById(KINJAMPROVE_WINDOW_VARIABLES_CONTAINER_ID).textContent)
 				: JSON.parse(document.getElementById(KINJAMPROVE_WINDOW_VARIABLES_CONTAINER_ID).value);
 		},
-		
+		*/
 		getKinjaToken: function() {
 			return kinjamprove.token.token;
 			//return Utilities.getKinjamproveWindowVariablesContainerJSON().token.token;
@@ -139,7 +120,7 @@ var Utilities = (function() {
 		followingAuthor: function(authorId) {
 			return kinjamprove.accountState.followedAuthorIds.hasOwnProperty(authorId);
 		},
-		
+		/*
 		storeVariables: function() {
 			var kinja = kinjamprove.kinja,
 				userData = kinjamprove.userData,
@@ -168,7 +149,7 @@ var Utilities = (function() {
 				document.body.appendChild(kinjamproveWindowVariablesContainer);
 			}
 		},
-
+		*/
 		getStaffArticleDataModelJSON: function ($story) {
 			$story = $story || $('article.post:first');
 

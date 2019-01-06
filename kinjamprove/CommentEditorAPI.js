@@ -30,7 +30,6 @@ CommentEditorAPI.prototype = {
      clickReplyToBlogButton: function() {
         // console.log('clicking native reply button');
         this.$nativeReplyButton[0].click();
-
     },
 
      appendNativePlaceholderToCommentPlaceholder: function($comment) {
@@ -63,7 +62,6 @@ CommentEditorAPI.prototype = {
         }
         
         this.clickKinjamproveAutoCancelButton();
-        this.reset();
     },
 
     attachEditorToComment: function($comment, replyOrEdit) {
@@ -95,7 +93,7 @@ CommentEditorAPI.prototype = {
         if (!confirmEditorClose) {
             return;
         }
-
+		this.addKinjamprovePublishCommentButton();
         this.replyOrEdit = replyOrEdit || 'reply';
         this.detachEditorAndResetText();
         this._attachEditorToComment($comment);
@@ -135,18 +133,19 @@ CommentEditorAPI.prototype = {
 
             if ($editor.length) {
                 console.log('Kinjamprove: $nativeEditorPlaceholder has children; timeElapsed:', timeElapsed);
+
                 commentEditorAPI.replyOrEdit = replyOrEdit || 'reply';
                 commentEditorAPI.$editor = $editor;
-                commentEditorAPI.$scribe = commentEditorAPI.getEditorInnerScribe();
                 commentEditorAPI.addKinjamprovePublishCommentButton();
                 commentEditorAPI.addKinjamproveCancelCommentButton();
                 commentEditorAPI.addAutomaticCancelButton();
                 commentEditorAPI.$editor.find('button[type="cancel"]').hide();
 
                 commentEditorAPI._attachEditorToComment($comment);
+                commentEditorAPI.$scribe = commentEditorAPI.getEditorInnerScribe();
                 commentEditorAPI.$placeholder.show();
                 commentEditorAPI.$placeholderPrevSibling.after(commentEditorAPI.$placeholder);
-
+				
                 window.cancelAnimationFrame(placeholderHasEditor);
             } else if (timeElapsed >= 15000) {
                 console.log('Kinjamprove: canceling placeholderHasEditor animationFrame b/c it timed out');
@@ -167,7 +166,7 @@ CommentEditorAPI.prototype = {
     },
 
     _attachEditorToComment: function($comment) {
-        var $authorDisplayNameSpan = this.$editor.find('span.js_author-display-name'),//'',
+        var $authorDisplayNameSpan = this.$editor.find('span.js_author-display-name'),
             $commentEditorPlaceholder = '',
             parentDisplayName = '';
 
@@ -227,8 +226,10 @@ CommentEditorAPI.prototype = {
         }
 
         $commentEditorPlaceholder.append(this.$editor);
-        $commentEditorPlaceholder.show();
-        
+		
+		$commentEditorPlaceholder.show();
+		this.$editor.show();
+		
         this.focusEditorInnerScribe();
     },
 
@@ -340,7 +341,6 @@ CommentEditorAPI.prototype = {
         }
     },
 
-
     addKinjamproveCancelCommentButton: function() {
         var $nativeCancelButton,
             $kinjamproveCancelButton = this.$editor.find('button.kinjamprove-cancel-button'),
@@ -383,16 +383,14 @@ CommentEditorAPI.prototype = {
         var commentEditorAPI = this,
             $kinjamproveAutoCancelButton = $('<button>', { 
                     'class': AUTO_CANCEL_BUTTON_CLASS, 
-                    'style': 'display: none;',
-                    'onclick': 'onKinjamproveAutoCancelButtonClick()'
+                    'style': 'display: none;'
+                    ,'onclick': 'Utilities.clearWindowOnbeforeunload();'
                 })
                 .text('Auto Cancel')
                 .click(_onKinjamproveAutoCancelButtonClick);
 
         this.$editor.find('button[type="cancel"]').after($kinjamproveAutoCancelButton);
         this.$kinjamproveAutoCancelButton = $kinjamproveAutoCancelButton;
-        
-        this.$kinjamproveAutoCancelButton.click(_onKinjamproveAutoCancelButtonClick);
         
         function _onKinjamproveAutoCancelButtonClick() {
             console.log('Kinjamprove: _onKinjamproveAutoCancelButtonClick:', this);
@@ -449,13 +447,14 @@ CommentEditorAPI.prototype = {
         console.log('Kinjamprove: reset called');
        
         this.returnPlaceholderToOrigin();
-        this.$editor = null;
-        this.$scribe = null;
-        this.$kinjamproveAutoCancelButton = null;
-        this.$kinjamproveCancelButton = null;
-        this.$kinjamprovePublishButton = null;
-        this.$nativeCancelButton = null;
-        this.$kinjamprovePublishButton = null;
+		this.setEditorText();
+        this.$editor.hide();
+        // this.$scribe = null;
+        // this.$kinjamproveAutoCancelButton = null;
+        // this.$kinjamproveCancelButton = null;
+        this.$kinjamprovePublishButton.remove();
+        // this.$nativeCancelButton = null;
+        // this.$kinjamprovePublishButton = null;
         this.replyOrEdit = null;
     },
 

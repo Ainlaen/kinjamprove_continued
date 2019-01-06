@@ -1219,6 +1219,9 @@ XhrCommentTracker.prototype = {
 		}else {
 			$reloadButton.show();
 		}
+		
+		var newEvent = new CustomEvent('disableWaypoints');
+		document.dispatchEvent(newEvent);
 
 		/*
 		*	vvv FOR DEBUGGING ONLY: Adding commentsArr to DOM vvv

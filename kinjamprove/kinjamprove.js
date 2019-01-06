@@ -44,7 +44,7 @@ $(function() {
 		console.log("Page does not have discussion region, therefore Kinjamprove won't be run.");
 		return;
 	}
-	window.addEventListener('kinjamproveGlobalPasser', function(response) {
+	document.addEventListener('kinjamproveGlobalPasser', function(response) {
 		if(response.detail){
 			kinjamprove.kinja = response.detail.kinja;
 			kinjamprove.userData = response.detail.account;
@@ -57,29 +57,29 @@ $(function() {
 			kinjamprove.kinja.meta.postId = kinjamprove.kinja.postMeta.postId;
 			kinjamprove.kinja.meta.starterAuthorId = kinjamprove.kinja.postMeta.starterAuthorId;
 			kinjamprove.kinja.meta.starterId = kinjamprove.kinja.postMeta.starterId;					
-		}else{
-			kinjamprove.kinja = JSON.parse(document.head.attributes[0].value);
-			kinjamprove.userData = JSON.parse(document.head.attributes[1].value);
-			kinjamprove.accountState = kinjamprove.userData.data.accountState;
-			kinjamprove.token = kinjamprove.userData.data.token;
-			kinjamprove.kinja.meta.authors	= kinjamprove.kinja.meta.authors || kinjamprove.kinja.postMeta.authors;
-			kinjamprove.kinja.meta.curatedReplyCounts = kinjamprove.kinja.meta.curatedReplyCounts || kinjamprove.kinja.postMeta.curatedReplyCounts;
-			kinjamprove.kinja.meta.discussionSettings = kinjamprove.kinja.meta.discussionSettings || kinjamprove.kinja.postMeta.discussionSettings;
-			kinjamprove.kinja.meta.post = kinjamprove.kinja.meta.post || kinjamprove.kinja.postMeta.post;
-			kinjamprove.kinja.meta.postId = kinjamprove.kinja.meta.postId || kinjamprove.kinja.postMeta.postId;
-			kinjamprove.kinja.meta.starterAuthorId = kinjamprove.kinja.meta.starterAuthorId || kinjamprove.kinja.postMeta.starterAuthorId;
-			kinjamprove.kinja.meta.starterId = kinjamprove.kinja.meta.starterId || kinjamprove.kinja.postMeta.starterId;	
 		}
-		
 	}, true);
 
 	var passGlobals = document.createElement('script');
-	passGlobals.src = chrome.extension.getURL('kinjaPasser.js');
+	passGlobals.textContent = '('+function(){
+		var newEvent = new CustomEvent('kinjamproveGlobalPasser', JSON.parse(JSON.stringify({detail:{kinja: kinja, account: _user}})));
+		document.dispatchEvent(newEvent);
+		// Disable Kinja native waypoints. Called after comments section is loaded.
+		document.addEventListener('disableWaypoints', function(response) {
+			if(window.Waypoint){
+				window.Waypoint.disableAll();
+			}
+		});
+		// Clear confirmation for navigating away from page.
+		document.addEventListener('clearOnbeforeunload', function(response) {
+			window.onbeforeunload = null;
+		});
+	}+')();';
 	(document.head||document.documentElement).appendChild(passGlobals);
-	passGlobals.onload = function() {
-		passGlobals.remove();
-	};
-			
+	passGlobals.parentNode.removeChild(passGlobals);
+	
+	
+	
 	var $windowOnbeforeunloadButton = $('<button>', {
 		id: 'kinjamprove-window-onbeforeunload-button',
 		onclick: 'Utilities.setWindowOnbeforeunload()',
@@ -140,7 +140,6 @@ $(function() {
 
 });
 
-
 function optionsCallback(items) {
 	console.log('Kinjamprove: options: ', items);
 	
@@ -149,6 +148,8 @@ function optionsCallback(items) {
 	}
 
 	if (kinjamprove.options.paused) { 
+		var msgObj = { to: "background", val: "changeicon"};
+		chrome.runtime.sendMessage(msgObj);
 		return;
 	} 
 	// 0.0.1.8 Stop infinite scrolling
@@ -468,22 +469,6 @@ function createKinjamproveDiscussionHeaderLi(postId, $discussionRegion, $filterU
 	//$sortingDiv.children('div').hide();
 	$sortingDiv.append($sortOrderSelect);
 }
-/* 0.0.1.8 Not used.
-function createKinjamproveDiscussionHeaderPanel(postId, $discussionRegion) {
-	var $sortOrderSelect = createSortOrderSelect(postId),
-		numOfPendingComments = $discussionRegion.attr('data-reply-count-pending'),
-		$hidePendingCommentsToggleSwitch = createHidePendingCommentsToggleSwitch(numOfPendingComments),
-		$kinjamproveDiscussionHeaderPanel = 
-			$('<div>', { 'class': 'kinjamprove-discussion-header-panel' })
-				.append($sortOrderSelect, $hidePendingCommentsToggleSwitch),
-		$kinjamproveDiscussionHeaderContainer = 
-			$('<div>', { 'class': 'kinjamprove-discussion-header-container' });
-				
-	$kinjamproveDiscussionHeaderContainer.append($kinjamproveDiscussionHeaderPanel);
-
-	return $kinjamproveDiscussionHeaderContainer;
-}
-*/
 
 function createSortOrderSelect(postId) {
 	var Option = function(value, text) {
@@ -728,55 +713,6 @@ function onHidePendingCommentsToggleSwitchChange() {
 		}
 	}
 }
-/* Not used
-function setBodyScrollIntervalEvent() {
-	var $kinjamproveFooter = $('footer#kinjamprove-footer'),
-		$viewAllButton;
-
-	lastScrollTop = 0;
-	delta = 40;
-	navbarHeight = $kinjamproveFooter.outerHeight();
-	firstDiscussionRegionScrollTop = $('#js_discussion-region').offset().top;
-
-	// on scroll, let the interval function know the user has scrolled
-	$(window).scroll(function(event) {
-		
-		didScroll = true;
-	});
-	// run hasScrolled() and reset didScroll status
-	scrollInterval = setInterval(function() {
-		if (didScroll) {
-	  		hasScrolled();
-	  		didScroll = false;
-		}
-	}, 250);
-
-	function hasScrolled() {
-
-		var scrollTop = window.scrollY;
-
-		if (Math.abs(lastScrollTop - scrollTop) <= delta) {
- 			return;
-		}
-
-		$('section.js_discussion-region div.parent-comment-tooltip').hide();
-
-		// If current position > last position AND scrolled past navbar...
-		if (scrollTop < firstDiscussionRegionScrollTop || (scrollTop > lastScrollTop && scrollTop > navbarHeight)) {
-			// Scroll Down
-			$kinjamproveFooter.removeClass('kinjamprove-nav-up').addClass('kinjamprove-nav-down');
-		} else if (scrollTop > firstDiscussionRegionScrollTop 
-					&& (scrollTop + $(window).height() < $(document).height())) {
-			// Scroll Up
-			// If did not scroll past the document (possible on mac)...
-			$kinjamproveFooter.removeClass('kinjamprove-nav-down').addClass('kinjamprove-nav-up');
-			
-		}
-
-		lastScrollTop = scrollTop;
-	}
-
-}*/
 
 function createBackToTopButton() {
 	var backToTopButton = createElement('button', { 'class': 'kinjamprove-return-to-top-button' }, 'Back to Top of Page');
@@ -845,7 +781,7 @@ function addDiscussionRegionEvents($discussionRegion, postId) {
 			mouseout: function hideCollapseThreadButton() {
 				$(this).find('a.kinjamprove-collapse-thread-button').hide();
 			},
-			click: articleClickMark
+			dblclick: articleClickMark
 		}, 
 		collapseThreadButtonEventsObj = {
 			click: onCollapseThreadButtonClick
@@ -1052,41 +988,7 @@ function onDiscussionFilterSelectChange() {
 		commentTracker.stillFiltering = false;
 	}
 }
-/*
-//0.0.1.8 Turned off
-function trackEvent(category, action, label) {
-	return;
-	// console.log('trackEvent; event:', event);
-	
-	// if (arguments.length === 1) {
-	// 	if (typeof arguments[0] === 'string') {
-	// 		label = arguments[0];
-	// 	} else {
-	// 		event = arguments[0];
-	// 		label = event.currentTarget.title || event.currentTarget.classList[0];
-	// 	}
-	// }
- 0.0.1.8
-	if (arguments.length === 1 && typeof arguments[0] === 'object') {
-		category = arguments[0].category;
-		action = arguments[0].action;
-		label = arguments[0].label;
-	}
 
-	category = category || 'Button';
-	action = action || 'click';
-	label = label || '';
-
-	chrome.runtime.sendMessage({ 
-		to: 'background', 
-		val: 'track', 
-		category: category,
-		action: action,
-		label: label
-	});
-	
-}
-*/
 function onCollapseThreadButtonClick(event) {
 	// console.log('onCollapseThreadButtonClick; event:', event);
 	//trackEvent('Button', 'click', event.currentTarget.title);
@@ -1193,41 +1095,6 @@ function onParentCommentLinkClick(event) {
 	window.scrollTo( {top: $li.offset().top, behavior: 'smooth'});
     $('nav.js_top-nav').removeClass('shown fixed global-nav--scrollback');
 }
-
-// function onParentCommentLinkClick(event) {
-// 	event.preventDefault();			    
-//     var hash = this.hash,
-//         $parentCommentAnchor = $(hash),
-//         $navBar = $('nav.js_global-nav-wrap')
-//         $navBarContainer;
-    
-// 	if ($navBar.length) {
-// 		$navBarContainer = $navBar.parent();
-// 		$navBarContainer.hide();
-
-// 		 setTimeout(function(){
-// 		 	$navBar.removeClass('shown');
-// 		 	$navBarContainer.show();
-// 	    }, 1000);
-// 	}
-	
-// 	/* based on code from: 
-// 	*     https://stackoverflow.com/questions/4801655/how-to-go-to-a-specific-element-on-page 
-// 	*/
-// 	$('html, body').animate({
-//         scrollTop: $parentCommentAnchor.closest('li').offset().top + 'px'
-//     }, 'fast');   
-// }
-
-
-// function addParentCommentLinkMouseEvents() {
-	// var $parentCommentLinks = $('.parent-comment-link'); 
-	
-	// $parentCommentLinks.on({
-		// 'mouseover': onParentCommentLinkMouseOver,
-	    // 'mouseout': onParentCommentLinkMouseOut
-	// });	
-// }
 
 function onParentCommentLinkMouseOut() {
 	var _this = this;
@@ -1346,13 +1213,16 @@ function updateCommentRepliesDiv($article, id, tracker){
 			} else {
 				$approvedRepliesLink.addClass('hide-show-replies-link');
 			}
+		} else {
+			let $approvedRepliesLink = $showReplyLinks.siblings('a.kinjamprove-show-replies-approved-link');
+			$approvedRepliesLink.addClass('hide-show-replies-link');
 		}
 		
 		if(numObj.approved && numObj.pending) {
 			let $allRepliesLink = $showReplyLinks.siblings('a.kinjamprove-show-replies-all-link');
 			$allRepliesLink.text("All (" + (numObj.approved + numObj.pending) + ")");
 			$allRepliesLink.removeClass('hide-show-replies-link');
-		} else if( (typeof(numObj.approved) !== 'undefined') && (typeof(numObj.pending) !== 'undefined') ) {
+		} else {
 			$showReplyLinks.siblings('a.kinjamprove-show-replies-all-link').addClass('hide-show-replies-link');
 		}
 		
@@ -1413,4 +1283,137 @@ function createKinjamproveFooter() {
 
 	return kinjamproveFooter;
 }
+/*
+//0.0.1.8 Turned off
+function trackEvent(category, action, label) {
+	return;
+	// console.log('trackEvent; event:', event);
+	
+	// if (arguments.length === 1) {
+	// 	if (typeof arguments[0] === 'string') {
+	// 		label = arguments[0];
+	// 	} else {
+	// 		event = arguments[0];
+	// 		label = event.currentTarget.title || event.currentTarget.classList[0];
+	// 	}
+	// }
+ 0.0.1.8
+	if (arguments.length === 1 && typeof arguments[0] === 'object') {
+		category = arguments[0].category;
+		action = arguments[0].action;
+		label = arguments[0].label;
+	}
 
+	category = category || 'Button';
+	action = action || 'click';
+	label = label || '';
+
+	chrome.runtime.sendMessage({ 
+		to: 'background', 
+		val: 'track', 
+		category: category,
+		action: action,
+		label: label
+	});
+	
+}
+*/
+/* 0.0.1.8 Not used.
+function createKinjamproveDiscussionHeaderPanel(postId, $discussionRegion) {
+	var $sortOrderSelect = createSortOrderSelect(postId),
+		numOfPendingComments = $discussionRegion.attr('data-reply-count-pending'),
+		$hidePendingCommentsToggleSwitch = createHidePendingCommentsToggleSwitch(numOfPendingComments),
+		$kinjamproveDiscussionHeaderPanel = 
+			$('<div>', { 'class': 'kinjamprove-discussion-header-panel' })
+				.append($sortOrderSelect, $hidePendingCommentsToggleSwitch),
+		$kinjamproveDiscussionHeaderContainer = 
+			$('<div>', { 'class': 'kinjamprove-discussion-header-container' });
+				
+	$kinjamproveDiscussionHeaderContainer.append($kinjamproveDiscussionHeaderPanel);
+
+	return $kinjamproveDiscussionHeaderContainer;
+}
+*/
+/* Not used
+function setBodyScrollIntervalEvent() {
+	var $kinjamproveFooter = $('footer#kinjamprove-footer'),
+		$viewAllButton;
+
+	lastScrollTop = 0;
+	delta = 40;
+	navbarHeight = $kinjamproveFooter.outerHeight();
+	firstDiscussionRegionScrollTop = $('#js_discussion-region').offset().top;
+
+	// on scroll, let the interval function know the user has scrolled
+	$(window).scroll(function(event) {
+		
+		didScroll = true;
+	});
+	// run hasScrolled() and reset didScroll status
+	scrollInterval = setInterval(function() {
+		if (didScroll) {
+	  		hasScrolled();
+	  		didScroll = false;
+		}
+	}, 250);
+
+	function hasScrolled() {
+
+		var scrollTop = window.scrollY;
+
+		if (Math.abs(lastScrollTop - scrollTop) <= delta) {
+ 			return;
+		}
+
+		$('section.js_discussion-region div.parent-comment-tooltip').hide();
+
+		// If current position > last position AND scrolled past navbar...
+		if (scrollTop < firstDiscussionRegionScrollTop || (scrollTop > lastScrollTop && scrollTop > navbarHeight)) {
+			// Scroll Down
+			$kinjamproveFooter.removeClass('kinjamprove-nav-up').addClass('kinjamprove-nav-down');
+		} else if (scrollTop > firstDiscussionRegionScrollTop 
+					&& (scrollTop + $(window).height() < $(document).height())) {
+			// Scroll Up
+			// If did not scroll past the document (possible on mac)...
+			$kinjamproveFooter.removeClass('kinjamprove-nav-down').addClass('kinjamprove-nav-up');
+			
+		}
+
+		lastScrollTop = scrollTop;
+	}
+
+}*/
+// function onParentCommentLinkClick(event) {
+// 	event.preventDefault();			    
+//     var hash = this.hash,
+//         $parentCommentAnchor = $(hash),
+//         $navBar = $('nav.js_global-nav-wrap')
+//         $navBarContainer;
+    
+// 	if ($navBar.length) {
+// 		$navBarContainer = $navBar.parent();
+// 		$navBarContainer.hide();
+
+// 		 setTimeout(function(){
+// 		 	$navBar.removeClass('shown');
+// 		 	$navBarContainer.show();
+// 	    }, 1000);
+// 	}
+	
+// 	/* based on code from: 
+// 	*     https://stackoverflow.com/questions/4801655/how-to-go-to-a-specific-element-on-page 
+// 	*/
+// 	$('html, body').animate({
+//         scrollTop: $parentCommentAnchor.closest('li').offset().top + 'px'
+//     }, 'fast');   
+// }
+
+
+// function addParentCommentLinkMouseEvents() {
+	// var $parentCommentLinks = $('.parent-comment-link'); 
+	
+	// $parentCommentLinks.on({
+		// 'mouseover': onParentCommentLinkMouseOver,
+	    // 'mouseout': onParentCommentLinkMouseOut
+	// });	
+// }

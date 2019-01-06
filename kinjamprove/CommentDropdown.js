@@ -334,8 +334,7 @@ function onUpdateCommentButtonClick() {
 
 function onDeleteCommentLinkClick() {
 	// console.log('onDeleteCommentLinkClick:', this);
-	Utilities.setWindowConfirmToNormal();
-	
+
 	var confirmDeleteComment = confirm('Kinjamprove: Are you sure you want to delete this post? Once deleted it can\'t be restored.');
 	
 	if (!confirmDeleteComment) {
@@ -683,9 +682,6 @@ function onDismissDropdownClick() {
 	var $this = $(this),
 		postId = $this.closest('ul').attr('data-postid');
 		$existingNativePost = $('div.js_content-region article#reply_'+postId);
-	
-	// Make sure confirm is turned on.
-	Utilities.setWindowConfirmToNormal();
 	
 	if($existingNativePost.length){
 		let $dismissButton = $existingNativePost.find('ul#dropdown-'+postId+' a.dismiss');
