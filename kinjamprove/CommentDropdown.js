@@ -31,7 +31,6 @@ function createPostDropdownUl(comment) {
 		$unflagLi = createDropdownUnflagLi(comment),
 		$dismissLi = createDismissDropdownLi(comment),
 		$blockUserLi = createDropdownBlockUserLi(comment),
-		
 		$listItems = [
 			$editCommentLi, 
 			$deleteCommentLi, 
@@ -41,7 +40,9 @@ function createPostDropdownUl(comment) {
 			$unflagLi, 
 			$dismissLi, 
 			$blockUserLi
-		];
+		],
+		starterId = comment.starterId,
+		userIsStaff = kinjamprove.commentTrackers[starterId].userIsStaff;
 	
 	if (Utilities.userIsCommentAuthor(comment)) {
 		$blockUserLi.addClass('hide');
@@ -63,7 +64,17 @@ function createPostDropdownUl(comment) {
 		$deleteCommentLi.addClass('hide');
 	}
 	
-	if (Utilities.userFlaggedPost(comment.id)) { 
+	if(userIsStaff && !comment.authorIsStaff){
+		var $followForBlogLi = createDropdownFollowForBlogLi(comment),
+			$unfollowForBlogLi = createDropdownUnfollowForBlogLi(comment),
+			$blockUserForBlogLi = createDropdownBlockUserForBlogLi(comment);
+		
+		$listItems.push($followForBlogLi);
+		$listItems.push($unfollowForBlogLi);
+		$listItems.push($blockUserForBlogLi);
+	}
+	
+	if (Utilities.userFlaggedPost(comment.id)) {
 		$flagLi.addClass('hide');
 		$unflagLi.removeClass('hide');
 	}
@@ -150,6 +161,28 @@ function createDropdownFollowLi(comment) {
 	return $followLi;
 }
 
+function createDropdownFollowForBlogLi(comment) {
+	var followLiLinkObj = { href: '#', rel: 'nofollow', 'class': 'icon--svg u-darkened--onhover u-prepended' },
+		$followLiLink = $('<a>', followLiLinkObj),
+		followLiLinkSvgHTML = createSvgIconHtml('add'),
+		followText = 'Follow For Blog';
+
+	$followLiLink.append(followLiLinkSvgHTML, followText);
+	
+	var followLiObj = { 
+		'class': 'js_followforblog hover-icon readonly-hide kinjamprove-follow-for-blog',
+	};
+	
+	if (comment.followedByBlog) {
+		followLiObj['class'] += ' hide';
+	}
+	
+	var $followLi = $('<li>', followLiObj)
+		.append($followLiLink);		
+	
+	return $followLi;
+}
+
 function createDropdownUnfollowLi(comment) {
 	var $unfollowLi,
 		$unfollowLiLink,
@@ -170,6 +203,32 @@ function createDropdownUnfollowLi(comment) {
 		.append($unfollowLiLink);
 
 	if (kinjamprove.followingAuthor(comment.authorId)) {
+		$unfollowLi.removeClass('hide'); 
+	}
+
+	return $unfollowLi;
+}
+
+function createDropdownUnfollowForBlogLi(comment) {
+	var $unfollowLi,
+		$unfollowLiLink,
+		unfollowLiLinkSvgHTML = createSvgIconHtml('checkmark'),
+		unfollowStr = 'Unfollow For Blog',
+		unfollowLiLinkObj = { 
+			'class': 'icon--svg u-darkened--onhover u-prepended',
+			href: '#', 
+			rel: 'nofollow'
+		},
+		unfollowLiObj = { 
+			'class': 'js_unfollowforblog hover-icon readonly-hide hide kinjamprove-unfollow-for-blog' 
+		};
+	
+	$unfollowLiLink = $('<a>', unfollowLiLinkObj)
+		.append(unfollowLiLinkSvgHTML, unfollowStr);
+	$unfollowLi = $('<li>', unfollowLiObj)
+		.append($unfollowLiLink);
+
+	if (comment.followedByBlog) {
 		$unfollowLi.removeClass('hide'); 
 	}
 
@@ -246,6 +305,25 @@ function createDropdownBlockUserLi(comment) {
 		blockUserLiObj = { 
 			'class': 'blockuser icon--svg hover-icon kinjamprove-block-user',
 			title: 'Block User'
+		};
+	
+	$blockUserLink = $('<a>', { 'class': 'icon--svg u-darkened--onhover u-prepended' })
+		.append(blockUserSvgHTML, blockUserLiText);
+
+	$blockUserLi = $('<li>', blockUserLiObj)
+		.append($blockUserLink);
+	
+	return $blockUserLi;
+}	
+
+function createDropdownBlockUserForBlogLi(comment) {
+	var $blockUserLi,
+		$blockUserLink,
+		blockUserSvgHTML = createSvgIconHtml('disabled'),
+		blockUserLiText = 'Block For Blog',
+		blockUserLiObj = { 
+			'class': 'blockuserforblog icon--svg hover-icon kinjamprove-block-user-for-blog',
+			title: 'Block User For Blog'
 		};
 	
 	$blockUserLink = $('<a>', { 'class': 'icon--svg u-darkened--onhover u-prepended' })
@@ -357,18 +435,52 @@ function onFollowLiClick(event) {
 	var $this = $(this),
 		$article = $this.closest('article'),
 		targetUserId = $article.attr('data-authorid'),
+		starterId = parseInt($article.attr("starterid")),
 		userId = kinjamprove.accountState.authorId;
 							
 	followUser(targetUserId, userId).then(function(result) {
 		console.log('Kinjamprove: User with id "' + userId + '" (a.k.a. You) successfully followed user w/ id "' + targetUserId + '"!');
 		// console.log('result: ', result);
-		$this.siblings('li.js_unfollowforuser').addBack().toggleClass('hide');
 		
-		var $discussionRegion = $(event.delegateTarget),
-			$followedUserComments = $discussionRegion.find('article[data-authorid="' + targetUserId + '"]');
 
-		$followedUserComments.addClass('kinjamprove-followedUser');
-		// tracker.updateFilterSelect("followed");
+		var commentTracker = kinjamprove.commentTrackers[starterId],
+			newFollowedAuthorCommentIds = commentTracker.authorMap.get(targetUserId),
+			$filterSelect = commentTracker.$kinjamproveFilterSelect;
+			// $followedUserComments = $discussionRegion.find('article[data-authorid="' + targetUserId + '"]');
+		
+		kinjamprove.accountState.followedAuthorIds[targetUserId] = 1;
+		
+		for(let i = 0; i < newFollowedAuthorCommentIds.length; ++i){
+			let comment = commentTracker.commentsMap.get(newFollowedAuthorCommentIds[i]),
+				threadId = comment.threadId,
+				baseComment = commentTracker.commentsMap.get(threadId),
+				$followedArticle = commentTracker.commentArticles[newFollowedAuthorCommentIds[i]];
+			
+			commentTracker.followedAuthorCommentIds.push(newFollowedAuthorCommentIds[i]);
+			if($followedArticle){
+				$followedArticle.addClass('kinjamprove-followedUser').attr('title', 'Followed Author');
+				$followedArticle.find('ul.kinjamprove-comment-dropdown').children('li.js_followforuser, li.js_unfollowforuser').toggleClass('hide');
+				if($filterSelect.val() == 'community' || $filterSelect.val() == 'followed'){
+					commentTracker.showThreadUntilComments(comment.id);
+				}
+				++commentTracker.totalVisible.followed;
+			}
+			comment.followedAuthor = true;
+			comment.articleClass += ' kinjamprove-followedUser';
+			comment.articleTitle +=  "Followed Author";
+			commentTracker.threadTypes.followed.set(threadId, baseComment);
+			commentTracker.commentsPerThread.get(threadId).followed += 1;
+		}
+		commentTracker.hasBeenSorted.followed = false;
+		
+		if($filterSelect.val() == 'community' || $filterSelect.val() == 'followed'){
+			commentTracker.commentListArticlesDescendantMap.forEach( function(value, key) {
+				updateCommentRepliesDiv(value[1], key, commentTracker);
+			});
+			commentTracker.updateKinjamproveButton($filterSelect.val());
+		}
+		
+		commentTracker.updateFilterSelect('followed');
 
 	}, function(err) {
 		console.error('Error in onFollowLiClick: ', err);
@@ -393,7 +505,57 @@ function followUser(targetUserId, userId, token) {
 	return postJSON(followUrl, requestPayloadStr);	
 }
 
+function onFollowForBlogLiClick(event) {
+	event.preventDefault();
+	event.stopPropagation();
+	
+	var $this = $(this),
+		$article = $this.closest('article'),
+		targetUserId = $article.attr('data-authorid'),
+		starterId = parseInt($article.attr("starterid")),
+		postId = parseInt($article.attr("data-id")),
+		userId = kinjamprove.accountState.authorId,
+		commentTracker = kinjamprove.commentTrackers[starterId],
+		targetComment = commentTracker.commentsMap.get(postId),
+		targetBlogId = targetComment.authorBlogId;
+	
+	followUserForBlog(starterId, targetBlogId, kinjamprove.kinja.meta.blog.id, userId, postId).then(function(result){
+		var newFollowedAuthorCommentIds = commentTracker.authorMap.get(targetComment.authorId);
+		kinjamprove.blogsFollowed[targetBlogId] = 1;
+		
+		for(let i = 0; i < newFollowedAuthorCommentIds.length; ++i){
+			let comment = commentTracker.commentsMap.get(newFollowedAuthorCommentIds[i]),
+				$followedArticle = commentTracker.commentArticles[newFollowedAuthorCommentIds[i]];
+			
+			if($followedArticle){
+				$followedArticle.find('ul.kinjamprove-comment-dropdown').children('li.js_followforblog, li.js_unfollowforblog').toggleClass('hide');
+			}
+			
+			comment.followedByBlog = true;
+		}
+		
+	}, function(err) {
+		console.error('Error in onFollowForBlogLiClick: ', err);
+	});
+	
+}
 
+function followUserForBlog(starterId, targetBlogId, blogId, authorId, postId, token) {
+	token = token || kinjamprove.token.token;
+	
+	var followPathname = '/ajax/post/'+starterId+'/followAndApprove/blog/'+targetBlogId+'/by/'+blogId,
+		followQueryStr = '?authorId='+authorId+'&token=' + token,
+		followUrl = window.location.origin + followPathname + followQueryStr,
+		requestPayload = {
+			authorId: authorId,
+			blogId: blogId,
+			targetBlogId: targetBlogId,
+			postId: postId
+		},
+		requestPayloadStr = JSON.stringify(requestPayload);
+
+	return postJSON(followUrl, requestPayloadStr);	
+}
 
 function onUnfollowLiClick(event) {
 	event.preventDefault();
@@ -403,22 +565,56 @@ function onUnfollowLiClick(event) {
 	var $this = $(this),
 		$article = $this.closest('article'),
 		targetUserId = $article.attr('data-authorid'),
+		starterId = parseInt($article.attr("starterid")),
 		userId = kinjamprove.accountState.authorId;
 				
-	unfollowUser(targetUserId, userId)
-		.then(function(result) {
-			console.log('Kinjamprove: User with id "' + userId + '" (a.k.a. You) successfully unfollowed user w/ id "' + targetUserId + '"!');
-			// console.log('result: ', result);
-			$this.siblings('li.js_followforuser').addBack().toggleClass('hide');
-			 
-			var $discussionRegion = $(event.delegateTarget),
-				$unfollowedUserComments = $discussionRegion.find('article[data-authorid="' + targetUserId + '"]');
-
-			$unfollowedUserComments.removeClass('kinjamprove-followedUser');
-			// tracker.updateFilterSelect("unfollowed");
-		}, function(err) {
-			console.error('Error in onUnfollowLiClick: ', err);
-		});
+	unfollowUser(targetUserId, userId).then(function(result) {
+		console.log('Kinjamprove: User with id "' + userId + '" (a.k.a. You) successfully unfollowed user w/ id "' + targetUserId + '"!');
+		// console.log('result: ', result);
+		//$this.siblings('li.js_followforuser').addBack().toggleClass('hide');
+		
+		var commentTracker = kinjamprove.commentTrackers[starterId],
+			unfollowedAuthorCommentIds = commentTracker.authorMap.get(targetUserId),
+			$filterSelect = commentTracker.$kinjamproveFilterSelect;
+			
+		kinjamprove.accountState.followedAuthorIds[targetUserId] = 0;
+		
+		for(let i = 0; i < unfollowedAuthorCommentIds.length; ++i){
+			let comment = commentTracker.commentsMap.get(unfollowedAuthorCommentIds[i]),
+				threadId = comment.threadId,
+				baseComment = commentTracker.commentsMap.get(threadId),
+				$unfollowedArticle = commentTracker.commentArticles[unfollowedAuthorCommentIds[i]];
+			
+			//commentTracker.followedAuthorCommentIds.push(unfollowedAuthorCommentIds[i]);
+			
+			if($unfollowedArticle){
+				$unfollowedArticle.removeClass('kinjamprove-followedUser').attr('title', '');
+				$unfollowedArticle.find('ul.kinjamprove-comment-dropdown').children('li.js_followforuser, li.js_unfollowforuser').toggleClass('hide');
+				--commentTracker.totalVisible.followed;
+			}
+			comment.followedAuthor = false;
+			comment.articleClass = comment.articleClass.replace(' kinjamprove-followedUser', '');
+			comment.articleTitle =  "";
+			commentTracker.commentsPerThread.get(threadId).followed -= 1;
+			if(commentTracker.commentsPerThread.get(threadId).followed == 0){
+				commentTracker.threadTypes.followed.delete(threadId);
+			}
+		}
+		commentTracker.followedAuthorCommentIds = 
+			commentTracker.followedAuthorCommentIds.filter(function(value){
+				if(unfollowedAuthorCommentIds.includes(value)){
+					return false;
+				}else{
+					return true;
+				}
+			});
+		
+		commentTracker.hasBeenSorted.followed = false;
+		commentTracker.updateKinjamproveButton($filterSelect.val());
+		commentTracker.updateFilterSelect("unfollowed");
+	}, function(err) {
+		console.error('Error in onUnfollowLiClick: ', err);
+	});
 }
 
 function unfollowUser(targetUserId, userId, token) {
@@ -438,6 +634,115 @@ function unfollowUser(targetUserId, userId, token) {
 	return postJSON(unfollowUrl, requestPayloadStr);
 }
 
+function onUnfollowForBlogLiClick(event) {
+	event.preventDefault();
+	event.stopPropagation();
+	
+	var $this = $(this),
+		$article = $this.closest('article'),
+		starterId = parseInt($article.attr("starterid")),
+		postId = parseInt($article.attr("data-id")),
+		commentTracker = kinjamprove.commentTrackers[starterId],
+		targetComment = commentTracker.commentsMap.get(postId),
+		targetBlogId = targetComment.authorBlogId;
+		
+	unfollowUserForBlog(kinjamprove.kinja.meta.blog.id, targetBlogId).then(function(result){
+		
+		var unfollowedAuthorCommentIds = commentTracker.authorMap.get(targetComment.authorId);
+		
+		kinjamprove.blogsFollowed[targetBlogId] = 0;
+		
+		for(let i = 0; i < unfollowedAuthorCommentIds.length; ++i){
+			let comment = commentTracker.commentsMap.get(unfollowedAuthorCommentIds[i]),
+				$followedArticle = commentTracker.commentArticles[unfollowedAuthorCommentIds[i]];
+			
+			if($followedArticle){
+				$followedArticle.find('ul.kinjamprove-comment-dropdown').children('li.js_followforblog, li.js_unfollowforblog').toggleClass('hide');
+			}
+			
+			comment.followedByBlog = false;
+		}
+		
+	}, function(err) {
+		console.error('Error in onUnfollowLiClick: ', err);
+	});
+}
+
+function unfollowUserForBlog(blogId, targetBlogId, token) {
+	token = token || kinjamprove.token.token;
+	
+	var unfollowPathname = '/api/profile/blogfollow/unfollow',
+		unfollowQueryStr = '?token=' + token,
+		unfollowUrl = window.location.origin + unfollowPathname + unfollowQueryStr,
+		requestPayload = {
+			sourceBlogId: blogId,
+			targetBlogId: targetBlogId
+		},
+		requestPayloadStr = JSON.stringify(requestPayload);
+
+	return postJSON(unfollowUrl, requestPayloadStr);
+}
+
+function onBlockForBlogLiClick(event){
+	event.preventDefault();
+	event.stopPropagation();
+	
+	if(!confirm('Block this user for '+kinjamprove.kinja.meta.blog.displayName)){
+		return;
+	}
+	
+	var $this = $(this),
+		$article = $this.closest('article'),
+		starterId = parseInt($article.attr("starterid")),
+		postId = parseInt($article.attr("data-id")),
+		commentTracker = kinjamprove.commentTrackers[starterId],
+		targetComment = commentTracker.commentsMap.get(postId),
+		targetBlogId = targetComment.authorBlogId;
+
+	blockUserForBlog(kinjamprove.kinja.meta.blog.id, targetBlogId).then(function(result){
+		
+		var blockedAuthorCommentIds = commentTracker.authorMap.get(targetComment.authorId);
+		
+		for(let i = 0; i < blockedAuthorCommentIds.length; ++i){
+			let comment = commentTracker.commentsMap.get(blockedAuthorCommentIds[i]),
+				$blockedArticle = commentTracker.commentArticles[blockedAuthorCommentIds[i]];
+			
+			if($blockedArticle){
+				let $li = $blockedArticle.find('li.blockuserforblog'),
+					$a = $li.find('a');
+				
+				$li.removeClass('blockuserforblog');
+				$li.removeClass('kinjamprove-block-user-for-blog');
+				$li.attr('title', 'User has been blocked');
+				$li.off('click');
+				$a.removeClass('u-darkened--onhover');
+				$a.css('cursor', 'default');
+				$a.html($a.html().replace('Block For Blog', 'BLOCKED'));
+			
+			}
+
+		}
+		
+	}, function(err) {
+		console.error('Error in onBlockForBlogLiClick: ', err);
+	});
+
+}
+
+function blockUserForBlog(blogId, targetBlogId, token) {
+	token = token || kinjamprove.token.token;
+	
+	var blockPathname = '/api/profile/blogblock/block',
+		blockQueryStr = '?token=' + token,
+		blockUrl = window.location.origin + blockPathname + blockQueryStr,
+		requestPayload = {
+			blocked: targetBlogId,
+			blocking: blogId
+		},
+		requestPayloadStr = JSON.stringify(requestPayload);
+
+	return postJSON(blockUrl, requestPayloadStr);
+}
 
 function onUnflagLiClick(event) {
 	event.preventDefault();
@@ -682,7 +987,7 @@ function onDismissDropdownClick() {
 	var $this = $(this),
 		postId = $this.closest('ul').attr('data-postid');
 		$existingNativePost = $('div.js_content-region article#reply_'+postId);
-	
+	// Check if the post has been loaded by Kinja, then use native dismiss if it has been.
 	if($existingNativePost.length){
 		let $dismissButton = $existingNativePost.find('ul#dropdown-'+postId+' a.dismiss');
 		if($dismissButton.length){
@@ -693,7 +998,7 @@ function onDismissDropdownClick() {
 	
 	var url = (window.location.origin + "/" + postId);
 	
-	var dismissCommentConfirmation = confirm("Dismiss currently cannot be handled by Kinjamprove. Click okay to pause Kinjamprove and be redirected to this post's permalink ("+url+"), where you'll be able to dismiss it using the native interface. Kinjamprove will automatically unpause after 5 seconds or when page has loaded, whichever comes first.");
+	var dismissCommentConfirmation = confirm("Dismiss currently cannot be handled by Kinjamprove. Click okay to pause Kinjamprove and be redirected to this post's permalink ("+url+"), where you'll be able to dismiss it using the native interface. Kinjamprove will automatically unpause after 5 seconds or when the page has loaded, whichever comes first.");
 	if (dismissCommentConfirmation){
 		var msgObj = { to: "background", val: "dismiss", url: url };
 		

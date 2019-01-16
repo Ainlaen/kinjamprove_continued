@@ -424,11 +424,18 @@ function createReplyPublishTimeDiv(comment) {
 		authorMap = commentTracker.authorMap,
 		numComments = commentTracker.authorMap.get(comment.authorId).length,
 		replyAuthorCommentsSpanText = 'Replies from author: '+numComments, 
-		replyAuthorCommentsSpanTitle = 'Coming soon: click to show all author\'s comments',
+		replyAuthorCommentsSpanTitle = 'Click to show all of this author\'s comments',
 		replyAuthorCommentsSpanClass = 'kinjamprove-author-comment-count-span kinjamprove-author-replies_'+comment.authorId,
 		replyAuthorCommentsSpan = createElement('span', {'class': replyAuthorCommentsSpanClass, title:replyAuthorCommentsSpanTitle}, replyAuthorCommentsSpanText),
-		replyAuthorCommentsLink = createElement('a', {'class': 'kinjamprove-author-comment-count-link'}); 
+		replyAuthorCommentsLink = createElement('a', {'class': 'kinjamprove-author-comment-count-link'}),
+		clickEvent = function(event){
+				var check = confirm('Change filter to show this author\'s posts?');
+				if(check){
+					commentTracker.displayAuthorPosts(comment.authorId);
+				}
+			}; 
 	
+	replyAuthorCommentsLink.addEventListener('click', clickEvent);
 	replyAuthorCommentsLink.appendChild(replyAuthorCommentsSpan);
 	replyPublishTimeDiv.appendChild(replyAuthorCommentsLink);
 	
@@ -1020,6 +1027,12 @@ function createReplySidebar(comment) {
 		},
 		replySidebar = createElement('div', replySidebarObj),
 		likedByUser = comment.likedByUser;
+	
+	// if(comment.newComment){
+		// let replySpan = createElement('span', {'class': 'kinjamprove-new-comment-span'});
+		// replySpan.textContent = "New Comment";
+		// replySidebar.appendChild(replySpan);
+	// }
 
 	replySidebar.appendChild(replySidebarLikeElem);
 
@@ -1113,6 +1126,7 @@ function likeComment($comment) {
 		++threadCount.liked;
 		// Update liked status and count.
 		comment.likedByUser = true;
+		comment.articleClass += ' kinjamprove-liked-by-user';
 		comment.likes = comment.likes ? comment.likes + 1 : 1;
 		if(comment.maxThreadLikes < comment.likes){
 			comment.maxThreadLikes = comment.likes;
@@ -1202,7 +1216,7 @@ function unlikeComment($comment) {
 		payloadStr = JSON.stringify(payload),
 		xhr = new XMLHttpRequest(),
 		starterId = $comment.closest('section.discussion-region').attr('starter-id'),
-		tracker = kinjamprove.commentTrackers[starterId];
+		commentTracker = kinjamprove.commentTrackers[starterId];
 
 	xhr.open('POST', unlikeUrl, true);
 	xhr.setRequestHeader('Content-type', 'application/json; charset=UTF-8');
@@ -1212,27 +1226,27 @@ function unlikeComment($comment) {
 		
 		$comment.removeClass('kinjamprove-liked-by-user');
 		
-		var comment = tracker.commentsMap.get(postId),
-			baseComment = tracker.commentsMap.get(comment.threadId),
-			threadCount = tracker.commentsPerThread.get(comment.threadId),
-			threadTypes = tracker.threadTypes;
+		var comment = commentTracker.commentsMap.get(postId),
+			baseComment = commentTracker.commentsMap.get(comment.threadId),
+			threadCount = commentTracker.commentsPerThread.get(comment.threadId),
+			threadTypes = commentTracker.threadTypes;
 		
 		--threadCount.liked;
-		--tracker.totalVisible.liked;
+		--commentTracker.totalVisible.liked;
 		
 		comment.likes = comment.likes ? comment.likes - 1 : 0;
 		if(comment.maxThreadLikes == comment.likes + 1){
-			comment.updateThreadForLikes(tracker, false);
+			comment.updateThreadForLikes(commentTracker, false);
 		}
 		
 		comment.likedByUser = false;
 
 		if(!threadCount.liked){
-			tracker.threadTypes.liked.delete(comment.threadId);
+			commentTracker.threadTypes.liked.delete(comment.threadId);
 		}
 		
-		tracker.userLikedCommentIds = 
-			tracker.userLikedCommentIds.filter(function(value){
+		commentTracker.userLikedCommentIds = 
+			commentTracker.userLikedCommentIds.filter(function(value){
 				if(value == postId){
 					return false;
 				}else{

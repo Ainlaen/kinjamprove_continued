@@ -1,18 +1,9 @@
 var Comment = function(xhrResponseComment) {
 	this.isUserComment = undefined;
-	// this.firstReply = null;
-	// this.prevSibling = null
-	// this.nextSibling = null;
 	this.replies = [];
 	this.numOfDescendants = 0;
 	this.numOfApprovedDescendants = 0;
 	this.numOfStaffDescendants = 0;
-	// this.numOfPendingDescendants = 0;
-	// this.numOfFollowedDescendants = 0;
-	// this.numOfUserDescendants = 0;
-	// this.numOfFlaggedDescendants = 0;
-	// this.numOfLikedDescendants = 0;
-	// this.numOfCuratedDescendats = 0;
 	this.directReplyCount = 0;
 	this.directApprovedReplyCount = 0;
 	this.directStaffReplyCount = 0;
@@ -114,12 +105,6 @@ Comment.prototype = {
 			this.numOfDescendants += replyNumOfDescendants;
 			this.numOfStaffDescendants += replyNumStaff;
 			this.numOfApprovedDescendants += replyNumApproved;
-			// this.numOfPendingDescendants += values.numPending;
-			// this.numOfFollowedDescendants += values.numFollowed;
-			// this.numOfUserDescendants += values.numUser;
-			// this.numOfFlaggedDescendants += values.numFlagged;
-			// this.numOfLikedDescendants += values.numLiked;
-			// this.numOfCuratedDescendats += values.numCurated;
 			this.maxThreadLikes = Math.max(this.maxThreadLikes, replyMaxThreadLikes);
 		}
 
@@ -128,12 +113,6 @@ Comment.prototype = {
 			numReplies: (this.numOfDescendants + 1),
 			numApproved: (this.approved ? this.numOfApprovedDescendants + 1 : this.numOfApprovedDescendants),
 			numStaff: (this.staffCuratedReply ? this.numOfStaffDescendants + 1 : this.numOfStaffDescendants)
-			// numPending: (this.approved ? this.numOfPendingDescendants : this.numOfPendingDescendants + 1),
-			// numFollowed: (this.followedAuthor ? this.numOfFollowedDescendants + 1 : this.numOfFollowedDescendants),
-			// numUser: (this.isUserComment ? this.numOfUserDescendants + 1 : this.numOfUserDescendants),
-			// numFlagged: (this.userFlagged ? this.numOfFlaggedDescendants + 1 : this.numOfFlaggedDescendants),
-			// numLiked: (this.likedByUser ? this.numOfLikedDescendants + 1 : this.numOfLikedDescendants),
-			// numCurated: (this.curated ? this.numOfCuratedDescendats + 1 : this.numOfCuratedDescendats)
 		}
 	},
 	

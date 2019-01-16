@@ -399,23 +399,6 @@ span.kinjamprove-creator-authorname.odd {
 	color: rgb(101, 229, 120) !important;
 }
 
-.kinjamprove-user-comment-editable {
-	border-top-color: purple !important;
-}
-
-.kinjamprove-followedUser {
-	border-top-color: orange !important;
-}
-
-.kinjamprove-staff {
-	border-top-color: rgb(101, 229, 120) !important;
-}
-
-.kinjamprove-user-comment {
-	border-top-color: rgb(51, 153, 255) !important;
-}
-
-
 article[data-authorname="mark-bowen1"] .reply__byline {
 	line-height: 17.5px;
 }
@@ -663,7 +646,11 @@ input:focus + .slider {
 .kinjamprove-return-to-top-button,
 .kinjamprove-return-to-top-button:focus,
 .kinjamprove-back-to-discussion-region-top,
-.kinjamprove-back-to-discussion-region-top:focus {
+.kinjamprove-back-to-discussion-region-top:focus,
+.kinjamprove-store-load-time-button,
+.kinjamprove-store-load-time-button:focus,
+.kinjamprove-authorlist-span,
+.kinjamprove-authorlist-span:focus{
 	background-color: white;
 	border-color: orange;
 	border-width: 1px;
@@ -684,14 +671,19 @@ input:focus + .slider {
 
 .kinjamprove-back-to-discussion-region-top,
 .kinjamprove-back-to-discussion-region-top:focus {
-	background-image: url('chrome-extension://__MSG_@@extension_id__/icons/kinjamprove-logo-21x40-green-flipped.png');
-    background-position-x: 100%;
-    width: 185px;
+    width: 170px;
+	text-align: left;
+}
+
+.kinjamprove-store-load-time-button,
+.kinjamprove-store-load-time-button:focus {
+    width: 170px;
 	text-align: left;
 }
 
 .kinjamprove-return-to-top-button:hover,
-.kinjamprove-back-to-discussion-region-top:hover {
+.kinjamprove-back-to-discussion-region-top:hover,
+.kinjamprove-store-load-time-button:hover {
 	background-color: #f2f9ff;
 	color: rgb(51, 153, 255);
 }
@@ -708,9 +700,57 @@ input:focus + .slider {
 	color: black;
 }
 
+.kinjamprove-store-load-time-button:before{
+	content: "💾";
+    margin: 0 5px;
+	color: black;
+}
+
+.kinjamprove-authorlist-span{
+	display: inline-block !important;
+	width: 455px;
+	background-image: url('chrome-extension://__MSG_@@extension_id__/icons/kinjamprove-logo-21x40-green-flipped.png');
+    background-position-x: 100%;
+}
+
+.kinjamprove-authorlist-label{
+	display: inherit;
+	width: 150px;
+}
+
+.kinjamprove-authorlist-label:before{
+	content: "📝";
+	margin: 0 5px;
+	color: black;
+}
+
+#kinjamprove-authorlist-input{
+	width: 50%;
+}
+
+.kinjamprove-authorlist-button{
+	background-color: rgb(51, 153, 255);
+    color: aliceblue;
+    border-radius: 10px;
+    width: 12%;
+    margin-left: 5px;
+}
+
+.kinjamprove-authorlist-button:hover,
+.kinjamprove-authorlist-button:active,
+.kinjamprove-authorlist-button:focus{
+	background-color: rgb(51, 153, 255);
+    color: black;
+}
+
 div.sharingfooter__wrapper {
     max-width: 1850px;
 }
+
+.kinjamprove-new-comments-info{
+	color: blue;
+}
+
 section.js_discussion-region[data-reply-count-total="0"] button.kinjamprove-loadMoreCommentsButton,
 section.js_discussion-region[kinjamprove-display-comments-remaining="0"] button.kinjamprove-loadMoreCommentsButton {
 	display: none;

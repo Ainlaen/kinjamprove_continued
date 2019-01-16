@@ -13,26 +13,18 @@
 </head>
 
 <body>
-	<p>
-		<b><u>Don't forget to click the 'save' button to save any changes!</u></b>
+	<p style="text-align: center;">
+		<b><u>Hit "SAVE" button to store changes</u></b>
 	</p>
 	<!-- <br/> -->
 
 	Preferred Kinja Style: 
 	<select id="preferredStyle">
 		<option value="kinjamprove">Kinjamproved (Recommended)</option>
-		<option value="classic">Classic (I love giant text and tons of white space!)</option>
+		<option value="classic">Classic (Legacy, unsupported)</option>
 	</select>
 	<hr/>
-	
-	<!-- By default, show 
-	<select id="defaultComments">
-		<option value="pending">all (including pending)</option>
-		<option value="community">only approved</option>
-		<option value="staff">staff</options>
-	</select>
-	comments
-	<hr/> -->
+
 
 	Sort comments by 
 	<select id="sortOrder">
@@ -57,7 +49,7 @@
 	<hr/>
 
 	<span id="timezoneSpan">
-		Display publish times adjusted for timezone differences
+		Adjust publish times for local timezone
 		<input type="checkbox" id="localizePublishTime" value="localizePublishTime"/> 
 	</span>
 		
@@ -82,29 +74,6 @@
 	</table>
 	
 	<hr/>
-
-<!-- 	Hide pending replies?
-	<span id="hidePendingReplies">
-		<input type="radio" name="hidePendingReplies" value="no">No</input>
-		<input type="radio" name="hidePendingReplies" value="yes">Yes</input>
-	</span>
-	<hr/>
-
-	Hide sidebar? 
-	<span id="hideSidebar">
-		<input type="radio" name="hideSidebar" value="no" >No</input>
-		<input type="radio" name="hideSidebar" value="yes">Yes</input>
-	</span> 
-	<hr/>
-	
-	Hide social media buttons? 
-	<span id="hideSocialMediaButtons">
-		<input type="radio" name="hideSocialMediaButtons" value="no">No</input>
-		<input type="radio" name="hideSocialMediaButtons" value="yes">Yes</input>
-	</span>
-	<hr/> -->
-
-	
 	
 
 	<table id="blockedUsersTable">
@@ -113,12 +82,22 @@
 		</tr>
 	</table>
 	<hr/>
-
-	<div id="status">
-	</div>
-	<button id="save">Save</button>
+	<table id="savedTimeTable"> 
+		<tr>
+		<th colspan="2">Saved Article Times</th>
+		</tr>
+	</table>
+	<span id="clearAllTimesSpan"> 
+		Clear All Saved Articles Times 
+		<input type="checkbox" id="clear"/>
+	</span>
 	<br/>
-
+	<br/>
+	<br/>
+	<br/>
+	<div id="fixed">
+		<button id="save">Save</button>
+	</div>
 	<input id="blockedUsers" type="hidden"/>
 	
 	<div id="blockedUsersContainer">

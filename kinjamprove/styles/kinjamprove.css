@@ -83,7 +83,7 @@ a.reply-to-post--mobile,
 img.avatar:not(.blog-avatar) {
 	border-radius: 3px !important;
 }
-.replies-wrapper,.reply:not(.kinjamprove-marked-comment):not(.kinjamprove-curated-comment){
+.replies-wrapper,.reply:not(.kinjamprove-marked-comment):not(.kinjamprove-curated-comment):not(.kinjamprove-filter-highlight){
 	border-top: none !important;
 }
 li.commentlist__item.collapsed > article[depth="0"] {
@@ -209,7 +209,13 @@ article[depth="0"]:not(.collapsed, .kinjamprove-blockedUser) header:after {
 	border-radius: 3px
 }
 
-
+article.kinjamprove-new-comment > div.reply__sidebar:before{
+	content: 'NEW';
+    color: deepskyblue;
+    position: absolute;
+    left: 6px;
+    font-weight: bold;
+}
 
 /* 
 article[depth="0"]:before {
@@ -265,12 +271,11 @@ article[depth="0"]:after {
 }
 */
 
-.kinjamprove-marked-comment {
+.kinjamprove-filter-highlight {
 	border-top: 2px solid !important;
 	border-right: 2px solid !important;
 	border-bottom: 2px solid !important;
-	border-radius: 5px;	
-	border-color: rgb(217, 234, 18);
+	border-radius: 6px;	
 	margin-top: 1px;
     margin-bottom: 1px;
 }
@@ -280,44 +285,74 @@ article[depth="0"]:after {
 .kinjamprove-staff,
 .kinjamprove-user-comment,
 .kinjamprove-curated-comment,
-.kinjamprove-marked-comment
-{
+.kinjamprove-filter-highlight{
 	border-left: 2px solid !important;
-	border-radius: 5px;
+	border-radius: 6px;
 }
 
-.kinjamprove-staff-curated {
-	border-color: #ea08ea !important;
+
+.kinjamprove-filter-highlight{
+	border-color: var(--filter-highlight-border-color, rgb(64, 220, 76));
+	border-top-color: var(--filter-highlight-border-color, rgb(64, 220, 76)) !important;
+	border-bottom-color: var(--filter-highlight-border-color, rgb(64, 220, 76)) !important;
+}
+
+.kinjamprove-filter-highlight:not(.kinjamprove-followedUser):not(.kinjamprove-user-comment):not(.kinjamprove-staff):not(.kinjamprove-staff-curated){
+	border-color: var(--filter-highlight-border-color, rgb(64, 220, 76)) !important;
+}
+
+.kinjamprove-marked-comment{
+	background-color: var(--marked-background-color, #fdefdd8f) !important;
+	border-radius: 6px;
 }
 
 .kinjamprove-followedUser {
-	border-color: orange !important;
+	border-left-color: var(--followed-user-border-color, orange) !important;
+	border-right-color: var(--followed-user-border-color, orange) !important;
 }
 
 .kinjamprove-staff {
-	border-color: rgb(101, 229, 120) !important;
+	border-left-color: var(--staff-border-color, green) !important;
+	border-right-color: var(--staff-border-color, green) !important;
 }
 
 .kinjamprove-user-comment {
-	border-color: rgb(51, 153, 255) !important;
+	border-left-color: var(--user-border-color, rgb(51, 153, 255)) !important;
+	border-right-color: var(--user-border-color, rgb(51, 153, 255)) !important;
 }
 
+.kinjamprove-staff-curated {
+	border-left-color: var(--staff-curated-border-color, #ea08ea) !important;
+	border-right-color: var(--staff-curated-border-color, #ea08ea) !important;
+}
+
+/*
+.kinjamprove-user-comment.kinjamprove-staff-curated:before {
+  content: " ";
+  position: absolute;
+  z-index: -1;
+  top: 0px;
+  left: 2px;
+  right: 0px;
+  bottom: 0px;
+  border-left: 2px solid rgb(51, 153, 255);
+}
+*/
 .kinjamprove-curated-comment {
 	border-top: 2px solid !important;
 	border-right: 2px solid !important;
 	border-bottom: 2px solid !important;
 	margin-top: 1px;
     margin-bottom: 1px;
-	border-color: red !important;
+	border-color: var(--user-curated-border-color, red) !important;
 }
 
-.kinjamprove-user-comment-editable {
-	border-bottom: 2px solid !important;
-	border-radius: 5px;	
-	border-bottom-color: red !important;
+.kinjamprove-user-comment-editable:after {
+	content: "EDITABLE";
+	color: blueviolet;
+    position: absolute;
+    left: 90%;
 }
-
-
 
 article[depth="0"]:not(.collapsed):not(.kinjamprove-blockedUser) .reply__header>.avatar img {
 	width: 48px !important;
@@ -423,4 +458,79 @@ article[depth="0"] .reply__header{
 
 .kinjamprove-hidden {
 	display: none;
+}
+
+ul.colors-ul{
+	margin-top: 1.25rem;
+}
+
+div.kinjamprove-color-sidebar{
+    position: fixed;
+    z-index: 1;
+    overflow-x: hidden;
+    border: 1px solid;
+    width: 300px;
+}
+
+hr.color-hr{
+	margin: 0.7rem 0 0.7rem !important;
+}
+
+span.kinjamprove-color{
+	height: 25px;
+	width: 25px;
+	border-radius: 50%;
+	display: inline-block;
+	float: right;
+    margin-right: 40px;
+	cursor: pointer;
+}
+
+button.colors-button{
+	color: aliceblue;
+	background-color: rgb(51, 153, 255);
+	margin-bottom: 10px;
+    border-radius: 10px;
+	height: 25px;
+}
+
+button.colors-button:hover{
+	color: black;
+	background-color: rgb(41, 118, 195);
+}
+
+button.restore-colors-button{
+    margin-left: 25%;
+    width: 50%;
+	background-color:rgb(26, 169, 81);
+}
+
+button.restore-colors-button:hover{
+	background-color: rgb(18, 121, 58);
+}
+
+button.reset-colors-button{
+    margin-left: 35%;
+    width: 30%;
+}
+
+
+button.save-colors-button{
+	float: left;
+	width: 25%;
+    margin-left: 20%;
+
+}
+
+button.cancel-colors-button{
+	float: right;
+	width: 25%;
+    margin-right: 20%;
+}
+
+
+div.picker_wrapper{
+	left: 29% !important;
+    top: inherit !important;
+    position: fixed !important;
 }

@@ -87,11 +87,23 @@ function openOptions(event){
 	chrome.runtime.openOptionsPage();
 }
 
+function showColorsPanel(){
+	chrome.tabs.query(
+		{
+			active: true, 
+			currentWindow: true 
+		}, 
+		function(tabs){
+			chrome.tabs.sendMessage(tabs[0].id, 'showColorPanel');
+		}
+	);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
 	restoreState();
 	document.getElementById('pauseButton').addEventListener('click', togglePause);
 	document.getElementById('optionsButton').addEventListener('click', openOptions);
-
+	document.getElementById('colorsButton').addEventListener('click', showColorsPanel);
 /*
 	(function(i,s,o,g,r,a,m) {
 		i['GoogleAnalyticsObject'] = r;

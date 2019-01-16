@@ -1,3 +1,6 @@
+var articleTimes = undefined,
+	loadTimesToRemove = [];
+	
 // Saves options to chrome.storage.sync.
 function save_options() {
 	var style = document.getElementById('preferredStyle').value,
@@ -9,7 +12,10 @@ function save_options() {
 		hideSocialMediaButtons = document.getElementById('hideSocialMediaButtons').checked,
 		localizePublishTime = document.getElementById('localizePublishTime').checked,
 		defaultToCommunity = document.getElementById('defaultToCommunity').checked,
-		minCommentsToLoad = document.getElementById('minCommentsToLoad').value;
+		minCommentsToLoad = document.getElementById('minCommentsToLoad').value,
+		clearSaved = document.getElementById('clear').checked,
+		storedLocal = false,
+		string;
 	
 	if (!blockedUsers.length) {
 		blockedUsers = '{}';
@@ -18,13 +24,57 @@ function save_options() {
 	if(isNaN(minCommentsToLoad)){
 		minCommentsToLoad = 50;
 	}
-	console.log('Kinjamprove: saving option "preferred style" =', style);
-	console.log('Kinjamprove: saving option hideSocialMedia =', hideSocialMediaButtons);
-	console.log('Kinjamprove: blockedUsers:', blockedUsers);
+	// console.log('Kinjamprove: saving option "preferred style" =', style);
+	// console.log('Kinjamprove: saving option hideSocialMedia =', hideSocialMediaButtons);
+	// console.log('Kinjamprove: blockedUsers:', blockedUsers);
+	
+	var savedTimeTable = document.getElementById('savedTimeTable');
+	
+	for(let i in articleTimes){
+		savedTimeTable.deleteRow(1);
+	}
+	
+	if(clearSaved){
+		
+		articleTimes = {};
+
+	}else{
+		
+		for(let i = 0; i < loadTimesToRemove.length; ++i){
+			let id = loadTimesToRemove[i];
+			if(articleTimes[id]){
+				delete articleTimes[id];
+			}
+		}
+	}
+	
+	string = JSON.stringify(articleTimes);
+	
+	let numKeys = Object.keys(articleTimes).length;
+	
+	if(numKeys > 35){
+		chrome.storage.local.set({'storedArticleLoadTimes': string});
+		storedLocal = true;
+		let truncatedList = {},
+			counter = 0,
+			toStore = numKeys - 35;
+		
+		for(let articleId in articleTimes){
+			++counter;
+			if(counter > toStore){
+				truncatedList[articleId] = articleTimes[articleId];
+			}
+		}
+		
+		string = JSON.stringify(truncatedList);
+	}
+		
+	
+	loadTimesToRemove = [];
+	setSavedTimesTable(articleTimes);
 	
 	chrome.storage.sync.set({
 		preferredStyle: style,
-		// defaultComments: defaultComments,
 		hidePendingReplies: hidePendingReplies,
 		sortOrder: sortOrder,
 		hideSocialMediaButtons: hideSocialMediaButtons,
@@ -32,19 +82,22 @@ function save_options() {
 		localizePublishTime: localizePublishTime,
 		blockedUsers: blockedUsers,
 		defaultToCommunity: defaultToCommunity,
-		minCommentsToLoad: minCommentsToLoad
-		
+		minCommentsToLoad: minCommentsToLoad, 
+		storedArticleLoadTimes: string,
+		itemsStoredLocal: storedLocal
 	}, updateStatus);
+	
 
 	// ga('send', 'pageview', '/options.html');
 	
 	function updateStatus() { 
-		var status = document.getElementById('status');
-		status.textContent = 'Options saved.';		
-		
+		var saveButton = document.getElementById('save');
+		save.textContent = 'Options saved';		
+		save.style.color = 'blue';
 		setTimeout(function() {
-			status.textContent = '';
-		}, 750);
+			save.textContent = 'Save';
+			save.style.color = '';
+		}, 1000);
 	}
 }
 
@@ -54,7 +107,6 @@ function restore_options() {
 	chrome.storage.sync.get({
 		preferredStyle: 'kinjamprove',
 		sortOrder: 'likes',
-		// defaultComments: 'pending',
 		hidePendingReplies: false,
 		hideSocialMediaButtons: false,
 		hideSidebar: false,
@@ -62,7 +114,9 @@ function restore_options() {
 		blockedUsers: '{}',
 		paused: false,
 		defaultToCommunity: false,
-		minCommentsToLoad: 50
+		minCommentsToLoad: 50,
+		storedArticleLoadTimes: '{}',
+		itemsStoredLocal: false
 	}, setValues);
 		
 	function setValues(items) { 
@@ -71,8 +125,24 @@ function restore_options() {
 		document.getElementById('preferredStyle').value = items.preferredStyle;
 		// document.getElementById('defaultComments').value = items.defaultComments;
 		document.getElementById('sortOrder').value = items.sortOrder;
-
 		setBlockedUsersTable(items.blockedUsers);
+		articleTimes = JSON.parse(items.storedArticleLoadTimes);
+		if(items.itemsStoredLocal){
+			chrome.storage.local.get({
+				storedArticleLoadTimes: '{}'
+			}, function(moreItems){
+				let localStored = JSON.parse(moreItems.storedArticleLoadTimes);
+				
+				for(let i in localStored){
+					if(!articleTimes[i]){
+						articleTimes[i] = localStored[i];
+					}
+				}
+				setSavedTimesTable(articleTimes);
+			});
+		}else{
+			setSavedTimesTable(articleTimes);
+		}
 		document.getElementById('blockedUsers').value = items.blockedUsers;
 		document.getElementById('blockedUsersText').value = items.blockedUsers;
 		
@@ -148,6 +218,68 @@ function onToggleBlockButtonClick() {
 		// toggleState = 'unblock';
 		this.dataset['toggleState'] = 'unblock';
 		this.innerText = 'Unblock';
+	}
+}
+
+function setSavedTimesTable(savedTimes){
+	
+	if (typeof savedTimes === 'string'){
+		if (!savedTimes.length) {
+			savedTimes = '{}';
+		}
+
+		try {
+			savedTimes = JSON.parse(savedTimes);
+		} catch (error) {
+			console.error(error);
+			savedTimes = {};
+		}
+		
+		articleTimes = savedTimes;
+	}
+	
+	
+	var savedTimeTable = document.getElementById('savedTimeTable'),
+		rowNum = 1;
+	
+	for (var articleId in savedTimes){
+		var row = savedTimeTable.insertRow(rowNum++),
+			articleName = savedTimes[articleId].hostname +": " + articleId,
+			url = savedTimes[articleId].url, 
+			headline = savedTimes[articleId].headline,
+			toggleRemoveButton = '<button class="toggleRemoveButton" data-toggle-state="remove" id="' + articleId + '">Remove</button>',
+			articleNameCell = row.insertCell(0),
+			toggleRemoveButtonCell = row.insertCell(1),
+			a =  "<a href="+url+" title='"+headline+"'>"+articleName+"</a>";
+		
+		
+		articleNameCell.outerHTML = '<td class="'+articleId+'">' + a + '</td>';
+		toggleRemoveButtonCell.outerHTML = '<td class="removeCol">' + toggleRemoveButton + '</td>';
+		
+		document.getElementById(articleId).addEventListener('click', onToggleRemoveButtonClick);
+
+	}
+}
+
+function onToggleRemoveButtonClick() {
+	var id = this.id,
+		toggleState = this.dataset['toggleState'],
+		cell = this.parentElement,
+		row = cell.parentElement;
+	
+	if(toggleState.indexOf('remove') > -1){
+		loadTimesToRemove.push(id);
+		this.dataset['toggleState'] = 'restore';
+		this.innerText ="Restore";
+	} else{
+		if(loadTimesToRemove.length){
+			let index = loadTimesToRemove.indexOf(id);
+			if(index > -1){
+				loadTimesToRemove[index] = 0;
+			}
+		}
+		this.dataset['toggleState'] = 'remove';
+		this.innerText ="Remove";
 	}
 }
 

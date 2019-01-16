@@ -10,7 +10,10 @@ var kinjamprove = {
 		localizePublishTime: undefined,
 		blockedUsers: undefined,
 		defaultToCommunity: undefined,
-		minCommentsToLoad: undefined
+		minCommentsToLoad: undefined,
+		storedArticleLoadTimes: undefined,
+		colors: undefined,
+		useDefaultColors: undefined
 	},
 	userLikedPostIdsMap: new Map(),
 	userFlaggedPostIdsMap: new Map(),
@@ -21,20 +24,32 @@ var kinjamprove = {
 	kinja: undefined,
 	token: undefined,
 	followingAuthor: function(authorId) {
-		return kinjamprove.accountState.followedAuthorIds.hasOwnProperty(authorId);
-	}
+		return !!kinjamprove.accountState.followedAuthorIds[authorId];
+	},
+	mouseDownTime: 0,
+	mouseUpTime: 0,
+	defaultColors: {
+			marked: ['--marked-background-color', '#fdefdd8f'],
+			followed: ['--followed-user-border-color', 'orange'],
+			staff: ['--staff-border-color', 'green'],
+			staffCurated: ['--staff-curated-border-color', '#ea08ea'],
+			user: ['--user-border-color', 'rgb(51, 153, 255)'],
+			highlight: ['--filter-highlight-border-color', 'rgb(64, 220, 76)'], 
+			userCurated: ['--user-curated-border-color', 'red']
+	},
+	blogsFollowed: {}
 };
 
 var showParentCommentTooltipTimer,
 	hideParentCommentTooltipTimer;
 
-var removedButton = false;
-var didScroll;
-var scrollInterval;
-var lastScrollTop;
-var delta;
-var navbarHeight;
-var firstDiscussionRegionScrollTop;
+// var removedButton = false;
+// var didScroll;
+// var scrollInterval;
+// var lastScrollTop;
+// var delta;
+// var navbarHeight;
+// var firstDiscussionRegionScrollTop;
 
 
 $(function() {
@@ -44,6 +59,7 @@ $(function() {
 		console.log("Page does not have discussion region, therefore Kinjamprove won't be run.");
 		return;
 	}
+	
 	document.addEventListener('kinjamproveGlobalPasser', function(response) {
 		if(response.detail){
 			kinjamprove.kinja = response.detail.kinja;
@@ -62,8 +78,22 @@ $(function() {
 
 	var passGlobals = document.createElement('script');
 	passGlobals.textContent = '('+function(){
-		var newEvent = new CustomEvent('kinjamproveGlobalPasser', JSON.parse(JSON.stringify({detail:{kinja: kinja, account: _user}})));
-		document.dispatchEvent(newEvent);
+		if(kinja && _user){
+			var newEvent = new CustomEvent('kinjamproveGlobalPasser', JSON.parse(JSON.stringify({detail:{kinja: kinja, account: _user}})));
+			document.dispatchEvent(newEvent);
+		}else{
+			var ticks = 0,
+				waitOnVariablesToLoad = setInterval(function(){
+					if(kinja && _user){
+						clearInterval(waitOnVariablesToLoad);
+						var newEvent = new CustomEvent('kinjamproveGlobalPasser', JSON.parse(JSON.stringify({detail:{kinja: kinja, account: _user}})));
+						document.dispatchEvent(newEvent);
+					} else if(ticks > 200){
+						clearInterval(waitOnVariablesToLoad);
+					}
+					++ticks;
+				},25);
+		}
 		// Disable Kinja native waypoints. Called after comments section is loaded.
 		document.addEventListener('disableWaypoints', function(response) {
 			if(window.Waypoint){
@@ -74,27 +104,21 @@ $(function() {
 		document.addEventListener('clearOnbeforeunload', function(response) {
 			window.onbeforeunload = null;
 		});
+		// Prevent blocking mousewheel listeners from firing.
+		window.addEventListener('mousewheel', function (event) {
+			event.stopPropagation();
+		}, {capture: true, passive: true});
+		window.addEventListener('DOMMouseScroll', function (event) {
+			event.stopPropagation();
+		}, {capture: true, passive: true});
+
 	}+')();';
 	(document.head||document.documentElement).appendChild(passGlobals);
 	passGlobals.parentNode.removeChild(passGlobals);
 	
-	
-	
-	var $windowOnbeforeunloadButton = $('<button>', {
-		id: 'kinjamprove-window-onbeforeunload-button',
-		onclick: 'Utilities.setWindowOnbeforeunload()',
-		style: 'display: none;'
-	});
-	
-	$('body').append(
-		//$kinjamproveUserInfoButton, 
-		// createKinjamproveFooter()
-		$windowOnbeforeunloadButton 
-	);
-
-	// Event listener
-	
 	chrome.storage.sync.get({
+		colors: JSON.stringify(kinjamprove.defaultColors),
+		useDefaultColors: true,
 		preferredStyle: 'kinjamprove',
 		sortOrder: 'likes',
 		hidePendingReplies: false,
@@ -104,36 +128,17 @@ $(function() {
 		blockedUsers: '{}',
 		paused: false,
 		defaultToCommunity: false,
-		minCommentsToLoad: 50
+		minCommentsToLoad: 50,
+		storedArticleLoadTimes: '{}',
+		itemsStoredLocal: false
 	}, optionsCallback);
 	
-
-	// setBodyScrollIntervalEvent();
-	
-	// var scriptsArr = [  
-		// 'InlineFunctions.js',		 	/* necessary */
-		// 'kinjamproveUtilities.js' 		/* necessary */
-		// ,
-		// "CommentEditorAPI.js",
-		// "CommentEncoder.js",
-		// "XhrCommentTracker.js",
-		// "CommentClass.js",
-		// "CommentDropdown.js",
-		// "CommentDomCreator.js"
-	// ];
-
-	// for (var i = 0; i < scriptsArr.length; i++) {
-		// Utilities.addScriptToPage(scriptsArr[i]);
-	// }
-
 	$('body')
 		.on({
 			 click: function() {
 				$(this).remove();
 			}
 		}, 'div.lightbox-overlay');
-	
-
 
 	//b.didScroll&&!e.isTouch||(b.didScroll=!0,e.requestAnimationFrame(a)
 	//$('.js_postbottom-waypoint-hook').remove();
@@ -155,19 +160,45 @@ function optionsCallback(items) {
 	// 0.0.1.8 Stop infinite scrolling
 	$('div.js_reading-list').remove();
 	
-	let $sharingFooter = $('div.sharingfooter__wrapper');
-	addNavButtons($sharingFooter);
-	Utilities.addStyleToPage('comments.css');
-	kinjamproveFunc();
-
-
 	if (kinjamprove.options.preferredStyle  !== 'classic') {
 		Utilities.addStyleToPage('kinjamprove.css');
 	}
 	
+	if(!kinjamprove.options.storedArticleLoadTimes) {
+		kinjamprove.options.storedArticleLoadTimes = {};
+	} else {
+		kinjamprove.options.storedArticleLoadTimes = JSON.parse(kinjamprove.options.storedArticleLoadTimes);
+	}
+	
+	let $sharingFooter = $('div.sharingfooter__wrapper');
+	addNavButtons($sharingFooter);
+	Utilities.addStyleToPage('comments.css');
+	kinjamprove.options.colors = JSON.parse(kinjamprove.options.colors);
+
+	if(!kinjamprove.options.useDefaultColors){
+		changeColors(kinjamprove.options.colors);
+	}
+	
+	if(items.itemsStoredLocal){
+		chrome.storage.local.get({
+			storedArticleLoadTimes: '{}'
+		}, function(moreItems){
+			let localStored = JSON.parse(moreItems.storedArticleLoadTimes);
+			
+			for(let i in localStored){
+				if(!kinjamprove.options.storedArticleLoadTimes[i]){
+					kinjamprove.options.storedArticleLoadTimes[i] = localStored[i];
+				}
+			}
+			
+			kinjamproveFunc();
+		});
+	}else{
+		kinjamproveFunc();
+	}
+	
 	if (kinjamprove.options.hideSocialMediaButtons) { 
 		$('div.sharingfooter__content').hide();
-		//$('#sharingfooter').remove();
 	}
 	
 	if (kinjamprove.options.hideSidebar) {
@@ -186,12 +217,16 @@ function optionsCallback(items) {
 	if (!kinjamprove.options.blockedUsers) {
 		kinjamprove.options.blockedUsers = '{}';
 	}
+	
+	chrome.runtime.onMessage.addListener(function(message, messenger){
+			if(messenger.id == chrome.runtime.id && message == 'showColorPanel'){
+				showColorPanel();
+			}
+	});
 } 
 
 function kinjamproveFunc() {
-	var //$kinjamproveWindowsVariableContainer,
-		firstStoryStarterId,
-		//$kinjamproveUserInfoButton = $('#kinjamprove-user-info-button'),
+	var firstStoryStarterId,
 		kinjamproveWindowVarTicks = 0, 
 		referralId = window.location.pathname.replace(/.*?([0-9]{6,})$/g, '$1'),
 		notArticle = false,
@@ -202,10 +237,10 @@ function kinjamproveFunc() {
 		referralId = Number.parseInt(referralId);
 	}
 
-	// 0.0.1.8
-	if (referralId == window.location.pathname.substring(1, window.location.pathname.length)){
-		notArticle = true;
-	}
+	// 0.0.1.9 Replaced with more reliable check below.
+	// if (referralId == window.location.pathname.substring(1, window.location.pathname.length)){
+		// notArticle = true;
+	// }
 
 
 	var commentTracker,
@@ -224,6 +259,12 @@ function kinjamproveFunc() {
 			}
 			firstStoryStarterId = Utilities.getStarterIdOfFirstStory();
 			setKinjamproveUserInfo();
+
+			// 0.0.1.9
+			if(kinjamprove.kinja.postMeta.starterId != kinjamprove.kinja.postMeta.postId){
+				notArticle = true;
+			}
+
 			userIsAuthor = kinjamprove.kinja.meta.starterAuthorId == kinjamprove.accountState.authorId;
 			
 			if(!userIsAuthor){
@@ -251,13 +292,16 @@ function kinjamproveFunc() {
 			commentTracker.userIsAuthor = userIsAuthor;
 			commentTracker.userIsStaff = userIsStaff;
 			commentTracker.notArticle = notArticle;
+			if(kinjamprove.options.storedArticleLoadTimes[firstStoryStarterId]){
+				commentTracker.newestPostTime = kinjamprove.options.storedArticleLoadTimes[firstStoryStarterId].postTime;
+			}
 			commentTracker.load(kinjamprove.loggedIn).then(function(response) {
 				console.log('Kinjamprove: commentTracker response:', response);
 	        	commentTracker.setDiscussionRegion();
 	        	commentTracker.setUnorderedList();
 	        });
 					
-		}else if (kinjamproveWindowVarTicks > 300) {
+		}else if (kinjamproveWindowVarTicks > 240) {
 			console.log('Kinjamprove: kinjamproveWindowVarTicks timed out; clearing interval');
 			clearInterval(kinjamproveWindowVarContainerTextInterval);
 			kinjamprove.waiting = false;
@@ -269,7 +313,7 @@ function kinjamproveFunc() {
 			if (kinjamproveWindowVarTicks % 40 === 0) {
 				console.log('Kinjamprove: Waiting for kinjamprove-window-variables-container... ' + kinjamproveWindowVarTicks);
 			}
-			if(kinjamproveWindowVarTicks == 30){
+			if(kinjamproveWindowVarTicks == 10){
 				$spinner = $("span.spinner");
 				$spinner = $($spinner[0]);
 				$('div.js_replies-wrapper').append($spinner);
@@ -277,7 +321,7 @@ function kinjamproveFunc() {
 			kinjamproveWindowVarTicks++;
 		}
 	
-	}, 50);
+	}, 25);
 
 
 	var articleObserver = new MutationSummary({
@@ -555,12 +599,14 @@ function createFilterSelect(postId) {
 	if(tracker.userFlaggedCommentIds.length){
 		optionsArr.push(Option('flagged', 'Flagged Comments ('+tracker.userFlaggedCommentIds.length+')'));
 	}
+	if(tracker.newCommentIds.length){
+		optionsArr.push(Option('new', 'New Comments ('+tracker.newCommentIds.length+')'));
+		setValue = "new";
+	}
 
 	for (var option of optionsArr) {
 		$filterSelect.append(option.toHTML());
 	}
-	
-
 	
 	$filterSelect.val(setValue || "community");
 	
@@ -609,7 +655,7 @@ function onSortOrderSelectChange() {
 			if(!(commentTracker.stillSorting || commentTracker.stillFiltering)){
 				clearInterval(doneSorting);
 				commentTracker.waitOnSort = false;
-				commenTracker.hasBeenSorted = {staff: false, liked: false, user: false, flagged: false, followed: false, curated: false, community: false};
+				commenTracker.hasBeenSorted = {staff: false, liked: false, user: false, flagged: false, followed: false, curated: false, community: false, new: false};
 				
 				let sort = _this.value;
 				
@@ -623,7 +669,7 @@ function onSortOrderSelectChange() {
 		}, 50);
 	}else{
 		let sort = _this.value;
-		commentTracker.hasBeenSorted = {staff: false, liked: false, user: false, flagged: false, followed: false, curated: false, community: false};
+		commentTracker.hasBeenSorted = {staff: false, liked: false, user: false, flagged: false, followed: false, curated: false, community: false, new: false};
 		commentTracker.lastChangeTime = currentTime;
 		commentTracker.reorderCommentsOnSortChange(sort, justSorting);
 		chrome.storage.sync.set({ 'sortOrder': sort, }, function() {
@@ -708,20 +754,64 @@ function onHidePendingCommentsToggleSwitchChange() {
 		});
 		tracker.filterDiscussion(activeFilter);
 	} else{
-		if(activeFilter == "community"){
+		if(activeFilter == "community" || activeFilter == 'new'){
 			tracker.filterDiscussion(activeFilter);
 		}
 	}
 }
 
-function createBackToTopButton() {
-	var backToTopButton = createElement('button', { 'class': 'kinjamprove-return-to-top-button' }, 'Back to Top of Page');
-	backToTopButton.addEventListener('click', function() {
-		window.scrollTo(0, 0);
-	});
+function createStoreLoadTimeButton(){
+	var storeLoadTimeButton = createElement('button', { 'class': 'kinjamprove-store-load-time-button', 'title':'Save time of the most recent comment for this article. Next time you visit this article, this will be used to check for newer posts.'}, 'Store Load Time');
 
-	return backToTopButton;
+	
+	storeLoadTimeButton.addEventListener('click', function(){
+		let storedArticleLoadTimes = kinjamprove.options.storedArticleLoadTimes,
+			starterId = Utilities.getStarterIdOfFirstStory(),
+			commentTracker = kinjamprove.commentTrackers[starterId],
+			hostname = window.location.hostname,
+			storedLocal = false,
+			string;
+			
+		hostname = hostname.substring(0, hostname.lastIndexOf('.'));
+		if(hostname.substring(0, 3) == "www"){
+			hostname = hostname.substring(4);
+		}
+		
+		storedArticleLoadTimes[starterId] = {
+			postTime: commentTracker.newestPostTime, 
+			headline: kinjamprove.kinja.postMeta.post.headline, 
+			url: kinjamprove.kinja.postMeta.post.permalink, 
+			hostname: hostname
+		};
+		
+		let numKeys = Object.keys(storedArticleLoadTimes).length;
+		
+		string = JSON.stringify(storedArticleLoadTimes);
+		
+		if(numKeys > 35){
+			chrome.storage.local.set({'storedArticleLoadTimes': string});
+			storedLocal = true;
+			let truncatedList = {},
+				counter = 0,
+				toStore = numKeys - 35;
+			
+			for(let articleId in storedArticleLoadTimes){
+				++counter;
+				if(counter > toStore){
+					truncatedList[articleId] = storedArticleLoadTimes[articleId];
+				}
+			}
+			
+			string = JSON.stringify(truncatedList);
+		}
+		
+		chrome.storage.sync.set({'storedArticleLoadTimes': string, 'itemsStoredLocal':storedLocal});
+	});
+	
+	return storeLoadTimeButton;
 }
+
+
 function addNavButtons($elem) {
 	var $backToTopButton = 
 		$('<button>', { 'class': 'kinjamprove-return-to-top-button' })
@@ -730,7 +820,45 @@ function addNavButtons($elem) {
 				window.scrollTo(0, 0);
 			});
 
-	var backToTopDiscussionRegionButton = createElement('button', { 'class': 'kinjamprove-back-to-discussion-region-top' }, 'To top of comments');
+	var storeLoadTimeButton = createStoreLoadTimeButton(),
+		backToTopDiscussionRegionButton = createElement('button', { 'class': 'kinjamprove-back-to-discussion-region-top' }, 'To top of comments'),
+		$authorListSpan = $('<span>', {'class': 'kinjamprove-authorlist-span'}),
+		$authorListLabel = $('<label>', {'for':'kinjamprove-authorlist-input', 'class':'kinjamprove-authorlist-label'}).text('Comment Authors: '),
+		$authorListInput = $('<input>', {'list':'kinjamprove-author-datalist', 'id':'kinjamprove-authorlist-input','name':'kinjamprove-authorlist-input'}),
+		$authorSelectButton = $('<button>', {'class':'kinjamprove-authorlist-button', 'title':'Click to show all of this author\'s posts on this article.'});
+	
+	$authorListInput.val('Author List Not Yet Loaded');
+	$authorListInput.keyup(function(event){
+		if(event.keyCode === 13){
+			$(this).siblings('button.kinjamprove-authorlist-button').click();
+		}
+	});
+	$authorListInput.focus(function(event){
+		$(this).val('');
+	});
+
+	$authorSelectButton.text('Select');
+	$authorSelectButton.click(function(event){
+		var $authorListInput = $(this).siblings('input'),
+			authorName = $authorListInput.val();
+		$authorListInput.val('');
+		if(authorName){
+			let starterId = Utilities.getStarterIdOfFirstStory(),
+				commentTracker = kinjamprove.commentTrackers[starterId],
+				authorId = $authorListInput.find('option[lowercase="'+authorName.toLowerCase()+'"]').attr('key');
+			
+			if(authorId){
+				commentTracker.displayAuthorPosts(authorId);
+			}else{
+				$authorListInput.val('Author Not Found');
+				setTimeout(function(){$authorListInput.val('');}, 1000);
+			}
+		}
+	});
+		
+	$authorListSpan.append($authorListLabel);
+	$authorListSpan.append($authorListInput);
+	$authorListSpan.append($authorSelectButton);
 
 	backToTopDiscussionRegionButton.addEventListener('click', function() {
 		var $discussionRegion = getDiscussionRegionOfCurrentLocation(),
@@ -757,8 +885,8 @@ function addNavButtons($elem) {
 			scrollTop: $discussionRegion.offset().top + 'px'
 		}, 'fast');   
 	});
-
-					
+	$elem.prepend($authorListSpan);
+	$elem.prepend($(storeLoadTimeButton));
 	$elem.prepend($(backToTopDiscussionRegionButton));
 	$elem.prepend($backToTopButton);
 }
@@ -781,7 +909,11 @@ function addDiscussionRegionEvents($discussionRegion, postId) {
 			mouseout: function hideCollapseThreadButton() {
 				$(this).find('a.kinjamprove-collapse-thread-button').hide();
 			},
-			dblclick: articleClickMark
+			mousedown: startClickTimer,
+			mouseup: articleClickMark,
+			dblclick: function setDoubleClickFlag(){
+				kinjamprove.doubleClick = true;
+			}
 		}, 
 		collapseThreadButtonEventsObj = {
 			click: onCollapseThreadButtonClick
@@ -834,6 +966,15 @@ function addDiscussionRegionEvents($discussionRegion, postId) {
 		},
 		cancelFlagPostEventsObj = {
 			click: FlagCommentReasonDiv.onCancelFlagButtonClick
+		},
+		followForBlogEventsObj = {
+			click: onFollowForBlogLiClick
+		},
+		unfollowForBlogEventsObj = {
+			click: onUnfollowForBlogLiClick
+		},
+		blockForBlogEventsObj = {
+			click: onBlockForBlogLiClick
 		},
 		kinjamproveSortOrderSelectEventsObj = {
 			change: onSortOrderSelectChange
@@ -928,6 +1069,9 @@ function addDiscussionRegionEvents($discussionRegion, postId) {
 		'li.kinjamprove-unflag-post': unflagPostListItemEventsObj,
 		'li.kinjamprove-block-user': blockUserListItemEventsObj,
 		'li.kinjamprove-dismiss-post': dismissPostListItemEventsObj,
+		'li.kinjamprove-follow-for-blog': followForBlogEventsObj,
+		'li.kinjamprove-unfollow-for-blog': unfollowForBlogEventsObj,
+		'li.kinjamprove-block-user-for-blog': blockForBlogEventsObj,
 		'a.kinjamprove-flag-save': saveFlagPostEventsObj,
 		'a.kinjamprove-flag-cancel': cancelFlagPostEventsObj,
 		'select.kinjamproveSortOrder': kinjamproveSortOrderSelectEventsObj,
@@ -961,7 +1105,9 @@ function onDiscussionFilterSelectChange() {
 	}
 	
 	commentTracker.loadedThreads.clear();
-	commentTracker.totalVisible ={all: 0, staff: 0, pending: 0, approved: 0, user: 0, flagged: 0, liked: 0, followed: 0, curated: 0};
+	for(let i in commentTracker.totalVisible){
+		commentTracker.totalVisible[i] = 0;
+	}
 	commentTracker.userUnhiddenArticleMap.clear();
 	
 	if(currentTime - commentTracker.lastChangeTime < 300 || commentTracker.stillFiltering || commentTracker.stillSorting){
@@ -972,7 +1118,7 @@ function onDiscussionFilterSelectChange() {
 				clearInterval(doneFiltering);
 				commentTracker.waitOnFilter = false;
 				commentTracker.stillFiltering = true;
-
+				commentTracker.toggleArticleClass(Array.from(commentTracker.commentsMap.keys()), 'kinjamprove-filter-highlight', false);
 				commentTracker.reorderCommentsOnSortChange(kinjamprove.options.sortOrder);
 				
 				commentTracker.stillFiltering = false;
@@ -981,8 +1127,8 @@ function onDiscussionFilterSelectChange() {
 		}, 50);
 	}else{
 		commentTracker.stillFiltering = true;
-		
 		commentTracker.lastChangeTime = currentTime;
+		commentTracker.toggleArticleClass(Array.from(commentTracker.commentsMap.keys()), 'kinjamprove-filter-highlight', false);
 		commentTracker.reorderCommentsOnSortChange(kinjamprove.options.sortOrder);
 
 		commentTracker.stillFiltering = false;
@@ -1138,14 +1284,34 @@ function onParentCommentLinkMouseOver() {
 	}, 400);
 }
 
-// 0.0.1.8 Highlight on click.
+function startClickTimer(event){
+	kinjamprove.mouseDownTime = Date.now();
+	if(kinjamprove.mouseDownTime - kinjamprove.mouseUpTime < 100 || window.getSelection().toString()){
+		kinjamprove.doubleClick = true;
+	}else{
+		kinjamprove.doubleClick = false;
+	}
+}
+
+// 0.0.1.9 Over-engineered highlight on click.
 function articleClickMark(event){
+	kinjamprove.mouseUpTime = Date.now();
+	if(kinjamprove.clickTimerActive || window.getSelection().toString()){
+		return;
+	} 
+	
 	let $this = $(this),
 		$target = $(event.target);
 	if($target.is('a') || $target.closest('ul').hasClass('kinjamprove-comment-dropdown')){
 		return;
 	}
-	$this.toggleClass('kinjamprove-marked-comment');
+	kinjamprove.clickTimerActive = true;
+	setTimeout(function(){
+			kinjamprove.clickTimerActive = false;
+			if(!kinjamprove.doubleClick && !window.getSelection().toString()){
+				$this.toggleClass('kinjamprove-marked-comment');
+			}
+		}, 200);
 }
 
 // 0.0.1.8 Show hidden replies on click.
@@ -1238,6 +1404,181 @@ function getDiscussionRegionOfCurrentLocation() {
 	return ($discussionRegion.length) ? $discussionRegion : $('section#js_discussion-region');
 }
 
+function showColorPanel(){
+	var $colorPanelDiv = $('div.kinjamprove-color-sidebar'),
+		$sidebar = $('section.sidebar');
+	
+	if(!$sidebar.length){
+		kinjamprove.sidebarAdded = true;
+		$sidebar = $('<section>', {'class':'sidebar'});
+		$('div.page').append($sidebar);
+	}
+	
+	$sidebar.show();
+	$sidebar.children().hide();
+	
+	if($colorPanelDiv.length){
+		$colorPanelDiv.show();
+	}else{
+		$colorPanelDiv = createColorPanel();
+		$sidebar.append($colorPanelDiv);
+	}
+}
+
+function hideColorPanel(){
+	var $colorPanelDiv = $('div.kinjamprove-color-sidebar'),
+		$sidebar = $('section.sidebar');
+	
+	if(kinjamprove.options.hideSidebar || kinjamprove.sidebarAdded){
+		$sidebar.hide();
+	}else{
+		$sidebar.children().show();
+	}
+	
+	$colorPanelDiv.hide();
+	kinjamprove.colorsChanged = false;
+}
+
+function createColorPanel(){
+	var makeColorLi = function(obj){
+			var $li = $('<li>', {'class':'li-'+obj.name}),
+				$span = $('<span>', {'name':obj.name, 'class':obj.name+' kinjamprove-color','id': obj.variableName, 'value':obj.value}),
+				onChangeFunc = function(color){ $span[0].style.background = color.rgbaString;},
+				onDoneFunc = function(color){
+					document.documentElement.style.setProperty($span[0].attributes.id.value, color.rgbaString);
+					$span[0].attributes.value.value = color.rgbaString;
+					kinjamprove.colorsChanged = true;
+				},
+				picker = new Picker({
+					parent: $span[0],
+					editor: true,
+					color: obj.value,
+					onChange: onChangeFunc,
+					onDone: onDoneFunc
+				});
+			
+			picker.onOpen = function(){
+				picker.setColor($span[0].attributes.value.value, true);
+			};
+			
+			picker.onClose = function(){
+				setTimeout(function(){
+					$span[0].style.background = $span[0].attributes.value.value;
+				}, 100);
+			};
+			
+			$span.css('background-color', obj.value);
+			$li.text(obj.itemText);
+			$li.append($span);
+			return $li;
+		};
+		
+	var $colorPanelDiv = $('<div>', {'class':'kinjamprove-color-sidebar'}),
+		$colorPanelUl = $('<ul>', {'class':'colors-ul'}),
+		$resetButtonDiv = $('<div>', {'class':'reset-color-div'}),
+		$restoreButtonDiv = $('<div>', {'class':'restore-color-div'}),
+		$buttonsDiv = $('<div>', {'class':'button-color-div'}),
+		$saveButton = $('<button>', {'class':'save-colors-button colors-button'}).text('Save'),
+		$cancelButton = $('<button>', {'class':'cancel-colors-button colors-button'}).text('Close'),
+		$resetButton = $('<button>', {'class':'reset-colors-button colors-button'}).text('Reset'),
+		$restoreButton = $('<button>', {'class':'restore-colors-button colors-button'}).text('Restore Defaults'),
+		colors = kinjamprove.options.colors,
+		colorValsArr = [
+			{variableName: '--marked-background-color', name: 'marked', value: colors.marked[1],  itemText: "Marked Comment Background: "},
+			{variableName: '--filter-highlight-border-color', name: 'highlight', value: colors.highlight[1],  itemText: "Filter Highlighted Border: "},
+			{variableName: '--user-curated-border-color', name: 'userCurated', value: colors.userCurated[1],  itemText: "Permalink Border: "},
+			{variableName: '--user-border-color', name: 'user', value: colors.user[1],  itemText: "User Comment Border: "},
+			{variableName: '--followed-user-border-color', name: 'followed', value: colors.followed[1],  itemText: "Followed Author Border: "},
+			{variableName: '--staff-border-color', name: 'staff', value: colors.staff[1],  itemText: "Staff Comment Border: "},
+			{variableName: '--staff-curated-border-color', name: 'staffCurated', value: colors.staffCurated[1],  itemText: "Staff Curated Border: "}
+		];
+		
+	for (let i = 0; i < colorValsArr.length; ++i){
+			$colorPanelUl.append(makeColorLi(colorValsArr[i]));
+			$colorPanelUl.append($('<hr>', {'class':'color-hr'}));
+	};
+	
+	$resetButton.click(function(){
+		
+		let $colorSpans = $('span.kinjamprove-color'),
+			colors = kinjamprove.options.colors;
+
+		changeColors(colors);
+		for(let i in colors){
+			let $span = $colorSpans.filter('span#'+colors[i][0]);
+			
+			$span[0].attributes.value.value = colors[i][1];
+			$span[0].style.background = colors[i][1];
+		}
+	});
+	
+	$saveButton.click(function(){
+		let colors = kinjamprove.options.colors,
+			defaultColors;
+		
+		for(let i in colors){
+			let newColor = document.documentElement.style.getPropertyValue(colors[i][0]);
+			if(newColor){
+				colors[i][1] = document.documentElement.style.getPropertyValue(colors[i][0]);
+			}
+		}
+		
+		defaultColors = JSON.stringify(kinjamprove.options.colors) == JSON.stringify(kinjamprove.defaultColors);
+		
+		chrome.storage.sync.set({colors: JSON.stringify(colors), useDefaultColors: defaultColors});
+		hideColorPanel();
+	});
+	
+	$cancelButton.click(function(){
+		var confirmation = !kinjamprove.colorsChanged || confirm("Close without saving changes?");
+		if(confirmation){
+			changeColors(kinjamprove.options.colors);
+			hideColorPanel();
+		}
+	});
+	
+	$restoreButton.click(function(){
+		var confirmation = confirm('Reset all colors to default values?');
+		
+		changeColors(kinjamprove.defaultColors);
+		
+		let $colorSpans = $('span.kinjamprove-color');
+		
+		for(let i = 0; i < $colorSpans.length; ++i){
+			let name = $colorSpans[i].attributes.name.value,
+				color = kinjamprove.defaultColors[name][1];
+
+			$colorSpans[i].attributes.value.value = color;
+			$colorSpans[i].style.background = color;
+		}
+	});
+	
+	$colorPanelDiv.append($colorPanelUl);
+	$resetButtonDiv.append($resetButton);
+	$colorPanelDiv.append($resetButtonDiv);
+	$restoreButtonDiv.append($restoreButton);
+	$colorPanelDiv.append($restoreButtonDiv);
+	$buttonsDiv.append($saveButton);
+	$buttonsDiv.append($cancelButton);
+	$colorPanelDiv.append($buttonsDiv);
+	return $colorPanelDiv;
+}
+
+function changeColors(colorObj){
+	for(let color in colorObj){
+		document.documentElement.style.setProperty(colorObj[color][0], colorObj[color][1]);
+	}
+}
+
+/* 0.0.1.9 Not used
+function createBackToTopButton() {
+	var backToTopButton = createElement('button', { 'class': 'kinjamprove-return-to-top-button' }, 'Back to Top of Page');
+	backToTopButton.addEventListener('click', function() {
+		window.scrollTo(0, 0);
+	});
+
+	return backToTopButton;
+}
 function createBackToTopOfDiscussionRegionButton() {
 	var backToTopDiscussionRegionButton = createElement('button', { 'class': 'kinjamprove-back-to-discussion-region-top' }, 'To top of Comments');
 
@@ -1269,7 +1610,6 @@ function createBackToTopOfDiscussionRegionButton() {
 
 	return backToTopDiscussionRegionButton;	
 }
-
 function createKinjamproveFooter() {
 	var kinjamproveFooterObj = { 
 			id: 'kinjamprove-footer', 
@@ -1277,12 +1617,14 @@ function createKinjamproveFooter() {
 		},
 		kinjamproveFooter = createElement('footer', kinjamproveFooterObj),
 		backToTopOfPageButton = createBackToTopButton(),
-		backToTopOfDiscussionRegionButton = createBackToTopOfDiscussionRegionButton();
+		backToTopOfDiscussionRegionButton = createBackToTopOfDiscussionRegionButton(),
 
-	appendNodesToElement(kinjamproveFooter, [ backToTopOfDiscussionRegionButton, backToTopOfPageButton ]);
+
+	appendNodesToElement(kinjamproveFooter, [ backToTopOfDiscussionRegionButton, backToTopOfPageButton]);
 
 	return kinjamproveFooter;
 }
+*/
 /*
 //0.0.1.8 Turned off
 function trackEvent(category, action, label) {

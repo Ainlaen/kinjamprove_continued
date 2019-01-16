@@ -132,7 +132,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	// chrome.tabs.sendMessage(activeInfo.tabId, {activeTabId: activeTabId});
 // });
 
-/* 0.0.1.10 Deprecated
+/* 0.0.1.9 Deprecated
 // Listen for any changes to the URL of tab
 // chrome.tabs.onUpdated.addListener(checkForValidUrl);
 // chrome.tabs.onActivated.addListener(handleActivated);

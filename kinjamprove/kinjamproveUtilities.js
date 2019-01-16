@@ -1,5 +1,5 @@
-const KINJAMPROVE_WINDOW_VARIABLES_CONTAINER_ID = 'kinjamprove-window-variables-container';
-const KINJAMPROVE_WINDOW_VARIABLES_CONTAINER_SELECTOR = '#' + KINJAMPROVE_WINDOW_VARIABLES_CONTAINER_ID;
+// const KINJAMPROVE_WINDOW_VARIABLES_CONTAINER_ID = 'kinjamprove-window-variables-container';
+// const KINJAMPROVE_WINDOW_VARIABLES_CONTAINER_SELECTOR = '#' + KINJAMPROVE_WINDOW_VARIABLES_CONTAINER_ID;
 
 var Utilities = (function() {
 	const CHROME_EXTENSION_BASE_URL = 'chrome-extension://' + chrome.runtime.id + '/';
@@ -120,7 +120,7 @@ var Utilities = (function() {
 		followingAuthor: function(authorId) {
 			return kinjamprove.accountState.followedAuthorIds.hasOwnProperty(authorId);
 		},
-		/*
+		/* 0.0.1.9 Unused
 		storeVariables: function() {
 			var kinja = kinjamprove.kinja,
 				userData = kinjamprove.userData,
@@ -980,7 +980,7 @@ function createComment(postBody, defaultBlogId, images, original, parentId, toke
 			
 			$dropdown.attr('data-edit-expires-millis', expirationTimeMillis);
 
-			commentTracker.updateFilterSelect("new");
+			commentTracker.updateFilterSelect("newUserComment");
 			return newComment;
 			// The return value isn't used for anything currently.
 		});
@@ -1091,7 +1091,7 @@ function deleteComment(postId, kinjaToken) {
 		$commentLi.remove();
 		tracker.commentListArticlesDescendantMap.delete(deletedCommentId);
 		tracker.userUnhiddenArticleMap.delete(deletedCommentId);
-		tracker.updateFilterSelect("new");
+		tracker.updateFilterSelect("newUserComment");
 	}).catch(function(error) {
 		console.error('Failed to  delete post due to error:', error);
 	});

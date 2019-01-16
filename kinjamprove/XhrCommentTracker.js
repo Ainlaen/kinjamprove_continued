@@ -3,11 +3,11 @@ function XhrCommentTracker(postId) {
 	this.postId = postId;
 	
 	this.threadMap = new Map();
-	this.threadTypes = {staff: new Map(), liked: new Map(), user: new Map(), flagged: new Map(), followed: new Map(), curated: new Map(), community: this.threadMap};
+	this.threadTypes = {staff: new Map(), liked: new Map(), user: new Map(), flagged: new Map(), followed: new Map(), curated: new Map(), community: this.threadMap, new: new Map()};
 	this.loadedThreads = new Map();
 	this.commentsMap = new Map();
 	this.staffScreenNames = { };
-	this.hasBeenSorted = {staff: false, liked: false, user: false, flagged: false, followed: false, curated: false, community: false};
+	this.hasBeenSorted = {staff: false, liked: false, user: false, flagged: false, followed: false, curated: false, community: false, new: false};
 	
 	this.staffCommentIdsMap = new Map();
 	this.approvedCommentIds = [];
@@ -16,12 +16,14 @@ function XhrCommentTracker(postId) {
 	this.userFlaggedCommentIds = [];
 	this.followedAuthorCommentIds = [];
 	this.userLikedCommentIds = [];
+	this.newCommentIds = [];
 	
 	this.commentsPerThread = new Map();
-	this.totalVisible = {all: 0, staff: 0, pending: 0, approved: 0, user: 0, flagged: 0, liked: 0, followed: 0, curated: 0};
+	this.totalVisible = {all: 0, staff: 0, pending: 0, approved: 0, user: 0, flagged: 0, liked: 0, followed: 0, curated: 0, new: 0};
 	
 	this.authorMap = new Map();
-
+	this.authorNameMap = new Map();
+	this.$authorDatalist;
 	
 	this.$story = $story;
 	this.$discussionRegion = $story.closest('section.branch-wrapper').siblings('section.js_discussion-region'); 
@@ -31,7 +33,7 @@ function XhrCommentTracker(postId) {
 	this.$contentRegion = undefined;
 	this.$kinjamproveFilterSelect = undefined;
 	this.$commentList = undefined;
-	
+
 	this.commentLis = {};
 	this.commentArticles = {};
 
@@ -49,6 +51,12 @@ function XhrCommentTracker(postId) {
 	
 	this.userIsAuthor = false;
 	this.userIsStaff = false;
+
+	// 0.0.1.9 New post tracking
+	this.newestPostTime = 0;
+	this.lastNewestPostTime = 0;
+	this.approvedNewPosts = 0;
+	this.$newCommentsInfoSpan;
 	
 	//0.0.1.8 Potential to be used if the user is followed by the blog.
 	//this.userIsApproved = -1;
@@ -82,11 +90,9 @@ XhrCommentTracker.prototype = {
 
 			for (var i = 0; i < data.length; i++) {
 				var id = data[i].objectId;
-				_this.userLikedCommentIds.push(id);
 				kinjamprove.userLikedPostIdsMap.set(id, 1);
 			}
 
-			console.log('Kinjamprove: userLikedCommentIds:', _this.userLikedCommentIds);
 		
 			return _this;
 		});
@@ -104,25 +110,42 @@ XhrCommentTracker.prototype = {
 
 			for (var i = 0; i < data.length; i++) {
 				var id = data[i].postId;
-				_this.userFlaggedCommentIds.push(id);
+
 				kinjamprove.userFlaggedPostIdsMap.set(id, 1);
 			}
 
-			console.log('Kinjamprove: userFlaggedCommentIds:', _this.userFlaggedCommentIds);
 			
 			return _this;
 		});
 	},
+	// 0.0.2.0 Get list of blogs followed by current blog
+	getBlogFollows : function(){
+		var url = CommentApiURLFactory.getBlogFollowedByURL(),
+			_this = this;
+	
+		return CommentPromiseFactory.getJSON(url).then(function(result){
+			var data = result.data;
+			
+			for (var i = 0; i < data.length; i++){
+				kinjamprove.blogsFollowed[data[i]] = 1;
+			}
+			
+			return _this;
+		});
+	},
+	
 	// 0.0.1.8 Fix for use while not logged in
 	load: function(loggedIn = true) {
 
 		var getUserLikesUnderStarterPromise = loggedIn ? this.getLikesOfUserUnderStarter() : new Promise(function(resolve, reject){}),
-			getUserFlagsUnderStarterPromise = loggedIn ? this.getFlagsOfUserUnderStarter() : new Promise(function(resolve, reject){});
+			getUserFlagsUnderStarterPromise = loggedIn ? this.getFlagsOfUserUnderStarter() : new Promise(function(resolve, reject){}),
+			getBlogFollows = this.userIsStaff ? this.getBlogFollows() : new Promise(function(resolve, reject){});
 		
 		
 		return Promise.all([
 			getUserLikesUnderStarterPromise, 
 			getUserFlagsUnderStarterPromise,
+			getBlogFollows,
 			this.loadComments()
 		]);
 	},
@@ -238,12 +261,14 @@ XhrCommentTracker.prototype = {
 		   return items;
 		   
 		}).then(function setCommentsAndFinish(items) {
-
+			
+			_this.lastNewestPostTime = _this.newestPostTime;
+			
 			for (var i = 0; i < items.length; i++) {
 				var item = items[i], 
 					baseComment = item.reply,
 					baseCommentReplies = item.children.items,
-					type = {all: 0, staff: 0, pending: 0, approved: 0, user: 0, flagged: 0, liked: 0, followed: 0, curated: 0};
+					type = {all: 0, staff: 0, pending: 0, approved: 0, user: 0, flagged: 0, liked: 0, followed: 0, curated: 0, new: 0};
 
 				if (_this.recentlyEditedCommentsMap && 
 						_this.recentlyEditedCommentsMap.hasOwnProperty(baseComment.id)) {
@@ -299,6 +324,7 @@ XhrCommentTracker.prototype = {
 					authorComments.push(baseComment.id);
 				}else{
 					_this.authorMap.set(baseComment.authorId, [baseComment.id]);
+					_this.authorNameMap.set(baseComment.authorId, baseComment.author);
 				}
 
 				for (var j = 0; j < baseCommentReplies.length; j++) {
@@ -361,9 +387,12 @@ XhrCommentTracker.prototype = {
 							reply.staffCuratedReply = true;
 							++replyParent.directStaffReplyCount;
 							reply.articleClass += ' kinjamprove-staff-curated';
-							reply.articleTitle = "Staff Curated";
+							reply.articleTitle = reply.articleTitle ? reply.articleTitle + " - Staff Curated" : "Staff Curated";
 						}
 					} else {
+						if (_this.staffCommentIdsMap.has(replyId)) {
+							_this.staffCommentIdsMap.delete(replyId);
+						}
 						reply.articleClass += ' kinjamprove-unapproved';
 						++type.pending;
 						_this.pendingCommentIds.push(replyId);
@@ -373,7 +402,7 @@ XhrCommentTracker.prototype = {
 					}
 					if(reply.authorIsStaff){
 						reply.articleClass += ' kinjamprove-staff';
-						reply.articleTitle = "Staff";
+						reply.articleTitle = reply.articleTitle ? reply.articleTitle + " - Staff": "Staff";
 					}
 					if(_this.notArticle && replyId == _this.referralId){
 						reply.curated = true;
@@ -384,6 +413,7 @@ XhrCommentTracker.prototype = {
 					
 					if (kinjamprove.userLikedPostIdsMap.has(replyId)){
 						reply.likedByUser = true;
+						_this.userLikedCommentIds.push(replyId);
 						++type.liked;
 						reply.articleClass += ' kinjamprove-liked-by-user';
 					}
@@ -401,8 +431,13 @@ XhrCommentTracker.prototype = {
 					}
 					if (Utilities.userFlaggedPost(replyId)){
 						reply.userFlagged = true;
+						_this.userFlaggedCommentIds.push(replyId);
 						++type.flagged;
 						reply.articleClass += ' kinjamprove-flagged-comment';
+					}
+					
+					if(kinjamprove.blogsFollowed[reply.authorBlogId]){
+						reply.followedByBlog = true;
 					}
 
 					reply.depth = replyParent.depth + 1;
@@ -417,10 +452,24 @@ XhrCommentTracker.prototype = {
 						authorComments.push(replyId);
 					}else{
 						_this.authorMap.set(reply.authorId, [replyId]);
+						_this.authorNameMap.set(reply.authorId, reply.author);
+					}
+					if(reply.publishTimeMillis > _this.newestPostTime){
+						_this.newestPostTime = reply.publishTimeMillis;
+					}
+					if(_this.lastNewestPostTime && reply.publishTimeMillis > _this.lastNewestPostTime){
+						++type.new;
+						reply.newComment = true;
+						reply.articleClass += ' kinjamprove-new-comment';
+						_this.newCommentIds.push(replyId);
+						if(reply.approved){
+							++_this.approvedNewPosts;
+						}
 					}
 				}
 				
 				baseComment.authorIsStaff = (baseComment.author && _this.staffScreenNames.hasOwnProperty(baseComment.author.screenName));
+				
 				
 				if(kinjamprove.followingAuthor(baseComment.authorId)){
 					baseComment.followedAuthor = true;
@@ -436,16 +485,19 @@ XhrCommentTracker.prototype = {
 						baseComment.staffCuratedReply = true;
 						++type.staff;
 						baseComment.articleClass += ' kinjamprove-staff-curated';
-						baseComment.articleTitle = "Staff Curated";
+						baseComment.articleTitle = baseComment.articleTitle ? baseComment.articleTitle + " - Staff Curated" : "Staff Curated";
 					}
 				} else{
+					if (_this.staffCommentIdsMap.has(baseComment.id)) {
+						_this.staffCommentIdsMap.delete(baseComment.id);
+					}
 					++type.pending;
 					_this.pendingCommentIds.push(baseComment.id);
 					baseComment.articleClass += ' kinjamprove-unapproved';
 				}
 				if(baseComment.authorIsStaff){
 					baseComment.articleClass += ' kinjamprove-staff';
-					baseComment.articleTitle = "Staff";
+					baseComment.articleTitle = baseComment.articleTitle ? baseComment.articleTitle + " - Staff" : "Staff";
 				}
 				if (baseComment.curatedReply) {
 					baseComment.articleClass += ' kinjamprove-curated';
@@ -453,11 +505,13 @@ XhrCommentTracker.prototype = {
 				if (kinjamprove.userLikedPostIdsMap.has(baseComment.id)){
 					++type.liked;
 					baseComment.likedByUser = true;
+					_this.userLikedCommentIds.push(baseComment.id);
 					baseComment.articleClass += ' kinjamprove-liked-by-user';
 				}
 				if (Utilities.userFlaggedPost(baseComment.id)){
 					++type.flagged;
 					baseComment.userFlagged = true;
+					_this.userFlaggedCommentIds.push(baseComment.id);
 					baseComment.articleClass += ' kinjamprove-flagged-comment';
 				}
 				if(_this.notArticle && baseComment.id == _this.referralId){
@@ -472,9 +526,23 @@ XhrCommentTracker.prototype = {
 					_this.userCommentIds.push(baseComment.id);
 					baseComment.articleClass += ' kinjamprove-user-comment';
 				}
-
+				if(_this.lastNewestPostTime && baseComment.publishTimeMillis > _this.lastNewestPostTime){
+					++type.new;
+					baseComment.newComment = true;
+					baseComment.articleClass += ' kinjamprove-new-comment';
+					_this.newCommentIds.push(baseComment.id);
+					if(baseComment.approved){
+						++_this.approvedNewPosts;
+					}
+				}
+				if(kinjamprove.blogsFollowed[baseComment.authorBlogId]){
+					baseComment.followedByBlog = true;
+				}
 				baseComment.setThreadVals();
 				
+				if(baseComment.publishTimeMillis > _this.newestPostTime){
+					_this.newestPostTime = baseComment.publishTimeMillis;
+				}
 				_this.threadMap.set(baseComment.id, baseComment);
 				if(type.staff){
 					_this.threadTypes.staff.set(baseComment.id, baseComment);
@@ -493,6 +561,9 @@ XhrCommentTracker.prototype = {
 				}				
 				if(type.curated){
 					_this.threadTypes.curated.set(baseComment.id, baseComment);
+				}
+				if(type.new){
+					_this.threadTypes.new.set(baseComment.id, baseComment);
 				}
 				_this.commentsPerThread.set(baseComment.id, type);
 			}
@@ -716,7 +787,7 @@ XhrCommentTracker.prototype = {
 
 			$thread.removeClass('hide').show();
 			if(addClass){
-				$thread.addClass(addClass);
+				$article.addClass(addClass);
 			}
 		}
 	},	
@@ -752,7 +823,13 @@ XhrCommentTracker.prototype = {
 		}else if (filter == "flagged"){
 			numOfVisibleComments = this.totalVisible.flagged;
 			numOfCommentsRemainingToDisplay = this.userFlaggedCommentIds.length - numOfVisibleComments;
-		}else{
+		}else if (filter == "new"){
+			numOfVisibleComments = this.totalVisible.new;
+			numOfCommentsRemainingToDisplay = this.newCommentIds.length - numOfVisibleComments;
+		} else if (this.authorMap.has(filter)){
+			numOfVisisbleComments = 0 || this.totalVisible[filter];
+			numOfCommentsRemainingToDisplay = this.authorMap.get(filter).length - numOfVisibleComments;
+		} else{
 			$kinjamproveButton.hide();
 			this.$discussionRegion.attr('kinjamprove-display-comments-remaining', 0);
 			return;
@@ -761,6 +838,7 @@ XhrCommentTracker.prototype = {
 		numOfCommentsRemainingToDisplay = numOfCommentsRemainingToDisplay || 0;
 		
 		if($kinjamproveButton){
+			$kinjamproveButton.show();
 			$kinjamproveButton.text('Load more comments ('+numOfCommentsRemainingToDisplay+' remaining)');
 			if(!numOfCommentsRemainingToDisplay){
 				$kinjamproveButton.hide();
@@ -779,7 +857,7 @@ XhrCommentTracker.prototype = {
 		this.$discussionRegion.attr('kinjamprove-display-comments-remaining', numOfCommentsRemainingToDisplay);
 	},
 	
-	updateFilterSelect: function (reason) {
+	updateFilterSelect: function (reason, authorId = 0) {
 		var tracker = this,
 			$filterSelect = tracker.$kinjamproveFilterSelect,
 			updateOption = function(filter, number, filterText){
@@ -793,7 +871,14 @@ XhrCommentTracker.prototype = {
 					}
 				}else{
 					if($option.length){
-						$filterSelect.one({click: $option.remove()});
+						var oldVal = $filterSelect.val();
+							removeOption = function(){
+								if($filterSelect.val() != oldVal){
+									$filterSelect.change();
+								}
+							}
+						$option.remove();
+						$filterSelect.one({click: removeOption});
 					}
 				}
 			},
@@ -802,7 +887,7 @@ XhrCommentTracker.prototype = {
 				$pendingSpan.text('Show Pending ('+tracker.pendingCommentIds.length+')');
 			};
 		
-		if(reason == 'new'){
+		if(reason == 'newUserComment'){
 			updateOption('staff', tracker.staffCommentIdsMap.size, 'Staff (' + tracker.staffCommentIdsMap.size+')');
 			updateOption('community', tracker.approvedCommentIds.length, 'Community (' + tracker.approvedCommentIds.length + ')');
 			updateOption('user', tracker.userCommentIds.length, 'Your Comments ('+tracker.userCommentIds.length+')');
@@ -816,13 +901,17 @@ XhrCommentTracker.prototype = {
 			updatePending();
 		}else if(reason == 'unliked'){
 			updateOption('liked', tracker.userLikedCommentIds.length, 'Liked Comments ('+tracker.userLikedCommentIds.length+')');
-		}else if(reason == 'followed'){
+		}else if(reason == 'followedForBlog'){
 			updateOption('staff', tracker.staffCommentIdsMap.size, 'Staff (' + tracker.staffCommentIdsMap.size+')');
 			updateOption('community', tracker.approvedCommentIds.length, 'Community (' + tracker.approvedCommentIds.length + ')');
 			updateOption('followed', tracker.followedAuthorCommentIds.length, 'Followed Authors ('+tracker.followedAuthorCommentIds.length+')');
 			updatePending();
-		}else if(reason == 'unfollowed'){
+		}else if(reason == 'unfollowed' || reason == 'followed' ){
 			updateOption('followed', tracker.followedAuthorCommentIds.length, 'Followed Authors ('+tracker.followedAuthorCommentIds.length+')');
+		}else if(authorId){
+			updateOption(authorId, tracker.authorMap.get(authorId).length, reason + ' (' +tracker.authorMap.get(authorId).length+')');
+			$filterSelect.val(authorId);
+			$filterSelect.change();
 		}
 	},
 
@@ -862,7 +951,7 @@ XhrCommentTracker.prototype = {
 	
 	filterDiscussion: function(filter = this.$kinjamproveFilterSelect.val(), loadMore = false) {
 		var tracker = this,
-			defaultFilter = function(commentIdsArray) {
+			defaultFilter = function(commentIdsArray, addClass = false) {
 			
 				if(loadMore && tracker.loadedThreads.size < tracker.threadTypes[filter].size){
 					tracker.displayMoreCommentsWrapper(loadMore);
@@ -871,13 +960,23 @@ XhrCommentTracker.prototype = {
 				toggleComments(tracker.commentLis,Object.keys(tracker.commentLis), false);
 				
 				commentIdsArray.forEach(function(id){
-					tracker.showThreadUntilComments(id);
+					tracker.showThreadUntilComments(id, addClass);
 				});
+				
+				if(filter == 'new' && tracker.hidePending){
+					toggleComments(tracker.commentLis, tracker.pendingCommentIds, false);
+					tracker.followedAuthorCommentIds.forEach(function(id){
+						tracker.showThreadUntilComments(id);
+					});
+					tracker.userCommentIds.forEach(function(id){
+						tracker.showThreadUntilComments(id);
+					});
+				}
 				
 				tracker.userUnhiddenArticleMap.forEach(function(value, key){
 					value[0].siblings(value[1]).show();
 				});
-
+				
 				tracker.commentListArticlesDescendantMap.forEach( function(value, key) {
 					updateCommentRepliesDiv(value[1], key, tracker);
 				});
@@ -942,28 +1041,47 @@ XhrCommentTracker.prototype = {
 			});
 			tracker.updateKinjamproveButton(filter);
 
+		} else if(filter == "new") {
+			
+			defaultFilter(tracker.newCommentIds);
+			
 		} else if(filter == "curated") {
 			
 			defaultFilter([tracker.referralId]);
 			
 		} else if(filter == "liked") {
-			
-			defaultFilter(tracker.userLikedCommentIds);
-			
+
+			defaultFilter(tracker.userLikedCommentIds, 'kinjamprove-filter-highlight');
+
 		} else if(filter == "user") {
-			
-			defaultFilter(tracker.userCommentIds);
-			
+
+			defaultFilter(tracker.userCommentIds, 'kinjamprove-filter-highlight');
+
 		} else if(filter == "followed") {
-			
-			defaultFilter(tracker.followedAuthorCommentIds);
-			
+
+			defaultFilter(tracker.followedAuthorCommentIds, 'kinjamprove-filter-highlight');
+
 		} else if(filter == "flagged") {
-			
-			defaultFilter(tracker.userFlaggedCommentIds);
+
+			defaultFilter(tracker.userFlaggedCommentIds, 'kinjamprove-filter-highlight');
+
+		} else if(tracker.authorMap.has(filter)){
+
+			defaultFilter(tracker.authorMap.get(filter), 'kinjamprove-filter-highlight');
 
 		}
 	},
+	
+	toggleArticleClass: function(ids, articleClass, add = true) {
+		let tracker = this,
+			$article;
+		ids.forEach(function(id){
+			$article = tracker.commentArticles[id];
+			if($article){
+				$article.toggleClass(articleClass, add);
+			}
+		});
+	}, 
 	
 	removeListItemsFromUnorderedList: function() {
 		if (!this.$commentList || !this.$commentList.length) {
@@ -1081,10 +1199,6 @@ XhrCommentTracker.prototype = {
 
 		
 		return newMap;
-		// 0.0.1.8 Have a new way of handling this.
-		// if (this.referralId && this.referralId !== this.postId) {
-			// this.moveCommentToTop(this.referralId);	
-		// }
 		
 		function sortThreadsOldestFirst(threadA, threadB) {
 			return threadA[1].publishTimeMillis - threadB[1].publishTimeMillis;
@@ -1092,7 +1206,7 @@ XhrCommentTracker.prototype = {
 		function sortThreadsNewestFirst(threadA, threadB) {
 			return threadB[1].newest - threadA[1].newest;
 		}
-		// 0.0.1.8 Fixed sorting!
+
 		function sortThreadsMostRepliesFirst(threadA, threadB) {
 			if (threadA[1].numOfDescendants !== threadB[1].numOfDescendants) {
 				return threadB[1].numOfDescendants - threadA[1].numOfDescendants;
@@ -1123,9 +1237,10 @@ XhrCommentTracker.prototype = {
 		this.userFlaggedCommentIds = [];
 		this.followedAuthorCommentIds = [];
 		this.userLikedCommentIds = [];
+		this.newCommentIds = [];
 
 		this.commentsPerThread.clear();
-		this.totalVisible ={all: 0, staff: 0, pending: 0, approved: 0, user: 0, flagged: 0, liked: 0, followed: 0, curated: 0};
+		this.totalVisible = {all: 0, staff: 0, pending: 0, approved: 0, user: 0, flagged: 0, liked: 0, followed: 0, curated: 0, new: 0};
 		
 		this.commentLis = {};
 		this.commentArticles = {};
@@ -1134,13 +1249,14 @@ XhrCommentTracker.prototype = {
 		this.userUnhiddenArticleMap.clear();
 		this.commentsMap.clear();
 		this.authorMap.clear();
+		this.authorNameMap.clear();
 		
 		this.finished = false;
 		
 		this.loadedThreads.clear();
 		this.threadMap.clear();
-		this.threadTypes = {staff: new Map(), liked: new Map(), user: new Map(), flagged: new Map(), followed: new Map(), curated: new Map(), community: this.threadMap};
-		this.hasBeenSorted = {staff: false, liked: false, user: false, flagged: false, followed: false, curated: false, community: false};
+		this.threadTypes = {staff: new Map(), liked: new Map(), user: new Map(), flagged: new Map(), followed: new Map(), curated: new Map(), community: this.threadMap, new: new Map()};
+		this.hasBeenSorted = {staff: false, liked: false, user: false, flagged: false, followed: false, curated: false, community: false, new: false};
 		
 		this.$kinjamproveFilterSelect.parentsUntil('ul').remove();
 		this.$contentRegion.hide();
@@ -1157,7 +1273,10 @@ XhrCommentTracker.prototype = {
 			$contentRegion = $('<div>', {'class':'kinjamprove-content-region'});
 			commentTracker.$discussionRegion.find('div.replies-wrapper').children('div.js_replycol').before($contentRegion);
 		}
-
+		
+		var newEvent = new CustomEvent('disableWaypoints');
+		document.dispatchEvent(newEvent);
+		
 		var kinjamproveSpinnerBounce = createKinjamproveSpinnerBounce();
 		
 		
@@ -1175,10 +1294,8 @@ XhrCommentTracker.prototype = {
 			$discussionHeader.append($kinjamproveDiscussionHeaderPanel);
 		}
 		
-		
-		
 		commentTracker.$kinjamproveFilterSelect = appendFilterSelect(commentTracker.postId);
-		commentTracker.$discussionRegion.on({change: onDiscussionFilterSelectChange}, 'select.kinjamprove-filter-select');
+		commentTracker.$kinjamproveFilterSelect.on({change: onDiscussionFilterSelectChange});
 		commentTracker.setContentRegion($contentRegion);
 		commentTracker.$discussionRegion.find('.spinner.bounce').remove();
 		commentTracker.$discussionRegion.attr('starter-id', commentTracker.postId);
@@ -1220,9 +1337,29 @@ XhrCommentTracker.prototype = {
 			$reloadButton.show();
 		}
 		
-		var newEvent = new CustomEvent('disableWaypoints');
-		document.dispatchEvent(newEvent);
+		if(commentTracker.$authorDatalist){
+			commentTracker.$authorDatalist.remove();
+		}
+		let $sharingFooter = $('div.sharingfooter__wrapper'),
+			$authorlistInput = $sharingFooter.find('input#kinjamprove-authorlist-input');
 
+		commentTracker.$authorDatalist = commentTracker.createAuthorDatalist();
+		$authorlistInput.append(commentTracker.$authorDatalist);
+		$authorlistInput.val('');
+		
+		if(commentTracker.lastNewestPostTime){
+			if(commentTracker.$newCommentsInfoSpan){
+				commentTracker.$newCommentsInfoSpan.remove();
+			}
+			let time = new Date(commentTracker.lastNewestPostTime),
+				timeText = time.toLocaleTimeString()+' '+time.toLocaleDateString(),
+				spanText = 'New comments since '+timeText+': '+commentTracker.newCommentIds.length+'.';
+			if(commentTracker.newCommentIds.length){
+				spanText += ' Approved new comments: ' + commentTracker.approvedNewPosts + '.';
+			}
+			commentTracker.$newCommentsInfoSpan = $("<span>", {'class': 'kinjamprove-new-comments-info', 'text': spanText});
+			commentTracker.$discussionRegion.find('div.kinjamprove-reload-button-container').append(commentTracker.$newCommentsInfoSpan);
+		}
 		/*
 		*	vvv FOR DEBUGGING ONLY: Adding commentsArr to DOM vvv
 		*/
@@ -1235,8 +1372,71 @@ XhrCommentTracker.prototype = {
 
 	},
 
-
-
+	createAuthorDatalist() {
+		var Option = function(value, text, key) {
+			return {
+				value: value,
+				key: key,
+				text: text,
+				toHTML: function() {
+					return '<option value="' + value + '" key="'+key+'" lowercase="'+value.toLowerCase()+'">'+text+'</option>';
+				}
+			};
+		};
+		var sortAuthorsAlpha = function(a, b){
+			if(a[1].displayName.toLowerCase() > b[1].displayName.toLowerCase()){
+				return 1;
+			}
+			return -1;
+		};
+		var commentTracker = this,
+			authorMap = commentTracker.authorMap,
+			authorNameMap = commentTracker.authorNameMap,
+			$datalist = $('<datalist>', {'class':'kinjamprove-author-datalist', 'id':'kinjamprove-author-datalist'}),
+			optionsArr = [];
+			
+		authorNameMap = new Map([...authorNameMap.entries()].sort(sortAuthorsAlpha));
+		authorNameMap.forEach(function(value, key, map){
+			let displayName = value.displayName,
+				text = "(" + authorMap.get(key).length + ")";
+			optionsArr.push(Option(displayName, text, key));
+		});
+		
+		for(var option of optionsArr){
+			$datalist.append(option.toHTML());
+		}
+		
+		return $datalist;
+	},
+	
+	displayAuthorPosts(authorId){
+		var commentTracker = this,
+			authorPostIds = commentTracker.authorMap.get(authorId),
+			selectedAuthor = new Map(),
+			authorName = commentTracker.authorNameMap.get(authorId).displayName;
+		
+		if(!commentTracker.threadTypes[authorId]){
+			commentTracker.totalVisible[authorId] = 0;
+			commentTracker.commentsPerThread.forEach(function(value){
+				value[authorId] = 0;
+			});
+			
+			authorPostIds.forEach(function(id){
+				let comment = commentTracker.commentsMap.get(id),
+					baseComment = commentTracker.commentsMap.get(comment.threadId);
+				
+				++commentTracker.commentsPerThread.get(baseComment.id)[authorId];
+				selectedAuthor.set(baseComment.id, baseComment);
+				if(commentTracker.commentLis[id]){
+					++commentTracker.totalVisible[authorId];
+				}
+			});
+			commentTracker.hasBeenSorted[authorId] = false;
+			commentTracker.threadTypes[authorId] = selectedAuthor;
+		}
+		commentTracker.updateFilterSelect(authorName, authorId);
+	},
+	
 	collapseAllThreadsAtRoot() {
 	    // $discussionRegion = $discussionRegion || $('#js_discussion-region');
 	    
