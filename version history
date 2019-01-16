@@ -1,3 +1,42 @@
+0.0.2.0 (01/16/2019)
+
+New:
+  Check for new posts
+    A new button has been added to the footer to save the time of the most recent post on an article. Once saved, the next 
+    time you visit that article, all new posts since the saved time will be marked and filtered for by default. Articles
+    you have saved will be listed in the Options page, where they can be removed individually or all at once.
+    *Due to storage limits, only information on the newest 35 articles will be synced. The rest are only stored locally.*
+    In addition, new comments will also be highlighted and filtered for when hitting the reload button. This will not
+    save article information for future visits.
+
+  Filter for specified author
+    Added to the footer is a list of all authors who have commented on an article. Selecting an author and hitting the
+    "Select" button will create and display a filter for all of that author's posts. The same will occur when clicking the
+    "Replies from author" link in any post.
+
+  Basic support for blog staff actions in the comment dropdown menu (Follow for blog, unfollow for blog, block for blog).
+    *To see the full effect of these actions, it will be necessary to wait for Kinja to update (which usually takes a few minutes) 
+    and reload the page*
+
+  Added color sidebar for customization of border and highlight colors.
+  Icon popup has new buttons for opening the extension options and showing the color panel.
+
+Changes:
+  Reduced permissions.
+  Highlight on click changed to a background color, is more specific on when it triggers.
+    *e.g. Probably won't fire on double-click or when you're hightlighting text.
+  Followed users will update on the fly.
+
+Fixes:
+  Better fix for timeout issues.
+  Better checking for permalinked comments.
+  Posts will no longer show as having unhidden approved posts when those posts are already visible.
+
+Known Issues:
+  Spinner doesn't always show when it should.
+  Dismissing comments still requires a workaround.
+
+
 0.0.1.9 (12/20/2018)
 
 New: 
