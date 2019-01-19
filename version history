@@ -45,7 +45,7 @@ Changes:
 Fixes:
   Better fix for timeout issues.
   Better checking for permalinked comments.
-  Posts will no longer show as having unhidden approved posts when those posts are already visible.
+  Posts will no longer show as having hidden approved posts when those posts are already visible.
 
 Known Issues:
   Spinner doesn't always show when it should.
