@@ -71,7 +71,9 @@ CommentEditorAPI.prototype = {
                 $comment.siblings('.js_editor-placeholder').children('.editor').length) {
             console.log('Kinjamprove: This comment already has editor');
             this.focusEditorInnerScribe();
-            return;
+			if(this.$editor.css('display') != 'none'){
+				return;
+			}
         }
 
         if (this.$editor && this.$editor.length) {

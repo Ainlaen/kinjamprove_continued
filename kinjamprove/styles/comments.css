@@ -886,9 +886,6 @@ div.discussion-sorting-wrapper{
 	display: none !important;
 }
 
-option[value="newest"]:before{
-	content:'aga';
-}
 li.cGENvi{
 	display: none !important;
 }
@@ -900,4 +897,9 @@ div.js_region--warning{
 span.kinjamprove-failure{
     color: #32d706;
     font-size: 26px;
+}
+
+div.kinjamprove-post-content > h1,h2,h3,h4{
+	margin-left: 0 !important;
+	margin-right: 0 !important;
 }

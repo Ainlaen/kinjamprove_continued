@@ -396,6 +396,18 @@ function createAvatarContainer(comment) {
 }
 // 0.0.1.8 Added author comment count.
 function createReplyPublishTimeDiv(comment) {
+	if(!comment.publishTime){
+		comment.publishTime = {};
+		let publishTime = comment.publishTimeMillis,
+			newDate = new Date(publishTime),
+			offset = newDate.getTimezoneOffset(),
+			blogOffset = kinjamprove.kinja.meta.blog.timezoneOffset;
+		
+		newDate = new Date(publishTime + blogOffset + offset);
+		
+		comment.publishTime.Mddyyhmma = newDate.toLocaleDateString() + " " + newDate.toLocaleTimeString();
+		
+	}
 	var blogTimezoneFormattedDate = comment.publishTime.Mddyyhmma,
 		localizedFormattedDate = Utilities.publishTimeFormatter(comment.publishTimeMillis),
 		replyPublishTimeLinkSpanText = kinjamprove.options.localizePublishTime 
@@ -559,21 +571,10 @@ function createPostDropdownDiv(comment) {
 	return postDropdownDiv;
 }
 
-
-
-
-function $createReplyContentDiv(comment) {
-	var postBody = createPostBody(comment),
-		replyContentDivClass = 'reply__content js_reply-content post-content blurable whitelisted-links',
-		$replyContentDiv = $('<div>', { 'class': replyContentDivClass }).append(...postBody);
-	
-	return $replyContentDiv;
-}
-
 function createReplyContentDiv(comment) {
 	var postBody = createPostBody(comment),
 		replyContentDivObj = { 
-			'class': 'reply__content js_reply-content post-content blurable whitelisted-links' 
+			'class': 'reply__content js_reply-content post-content blurable whitelisted-links kinjamprove-post-content' 
 		},
 		replyContentDiv = createElement('div', replyContentDivObj); 
 	
@@ -592,7 +593,7 @@ function createPostBody(comment) {
 			type = bodyPart.type,
 			containers = bodyPart.containers || [],
 			postBodyComponent;
-		
+			
 		switch(type) {
 			case 'Paragraph':
 				postBodyComponent = 
@@ -662,8 +663,32 @@ function createPostBodyParagraph(commentBodyPart, containers) {
 
 	containersHtmlEnd = getClosingTagsLastInFirstOut(containersHtmlBeg)
 	p = containersHtmlBeg + p;
+	
+	p = creatPostBodyParagraphParts(bodyPartValues, p);
 
-	for (var i = 0; i < bodyPartValues.length; i++) {
+	p += '</p>' + containersHtmlEnd;
+	
+	if (isList) {
+		p = p.replace(/<(\/?)p>/g, '<$1li>');
+		// p = p.replace(/<(\/?)p>/g, '');
+		// p = p.replace(/<li>(\s|<br>|&nbsp;)*<\/li>/g, '');
+	}
+	
+	return p;
+
+	function getClosingTagsLastInFirstOut(openTagsHtml) {
+		return openTagsHtml
+			.replace(/>/g, '>#KINJAMPROVE_SPLIT')
+			.split('#KINJAMPROVE_SPLIT')
+			.reverse()
+			.slice(1)
+			.join('')
+			.replace(/</g, '</');
+	}
+}
+
+function creatPostBodyParagraphParts(bodyPartValues, p){
+ 	for (var i = 0; i < bodyPartValues.length; i++) {
 		var bodyPartValue = bodyPartValues[i],
 			bodyPartType = bodyPartValue.type,
 			textValue;
@@ -678,9 +703,12 @@ function createPostBodyParagraph(commentBodyPart, containers) {
 				break;
 			case 'Link': 
 				textValue = '<a href="' + bodyPartValue.reference + '" target="_blank">';
-				for (var j = 0; j < bodyPartValue.value.length; j++) {
-					textValue += bodyPartValue.value[j].value;
+				if(bodyPartValue.value){
+					textValue = creatPostBodyParagraphParts(bodyPartValue.value, textValue);
 				}
+				// for (var j = 0; j < bodyPartValue.value.length; j++) {
+					// textValue += bodyPartValue.value[j].value;
+				// }
 				textValue += '</a>';
 				break;
 			default: 
@@ -714,26 +742,8 @@ function createPostBodyParagraph(commentBodyPart, containers) {
 		// 	p += '</li>';
 		// }
 	} // end of paragraphs loop
-
-	p += '</p>' + containersHtmlEnd;
-	
-	if (isList) {
-		p = p.replace(/<(\/?)p>/g, '<$1li>');
-		// p = p.replace(/<(\/?)p>/g, '');
-		// p = p.replace(/<li>(\s|<br>|&nbsp;)*<\/li>/g, '');
-	}
 	
 	return p;
-
-	function getClosingTagsLastInFirstOut(openTagsHtml) {
-		return openTagsHtml
-			.replace(/>/g, '>#KINJAMPROVE_SPLIT')
-			.split('#KINJAMPROVE_SPLIT')
-			.reverse()
-			.slice(1)
-			.join('')
-			.replace(/</g, '</');
-	}
 }
 
 function createPostBodyHeader(commentBodyPart, containers) {
