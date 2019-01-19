@@ -7,4 +7,4 @@ Version 0.0.2.1 is now available via the Chrome webstore at https://chrome.googl
 
 There is a bug in 0.0.2.1 when replying to the base article which prevents the editor from closing properly after hitting publish. A fixed version has been submitted to the Chrome store and should be available soon.
 
-See version history for the latest changes.
+See https://github.com/Ainlaen/kinjamprove_continued/blob/master/version%20history for the latest changes.
