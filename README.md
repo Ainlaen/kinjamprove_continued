@@ -5,4 +5,6 @@ This project makes use of JQuery, vanilla-picker (https://vanilla-picker.js.org/
 
 Version 0.0.2.1 is now available via the Chrome webstore at https://chrome.google.com/webstore/detail/kinjamprove-continued/mcoeilbaljapapgpnokmhdgnmgdbimgo.
 
+There is a bug in 0.0.2.1 when replying to the base article which prevents the editor from closing properly after hitting publish. A fixed version has been submitted to the Chrome store and should be available soon.
+
 See version history for the latest changes.
