@@ -1082,6 +1082,10 @@ function createReplySidebar(comment) {
 function likeCommentOnClick(event) {
 	event.preventDefault();
     event.stopPropagation();
+	if(!kinjamprove.loggedIn){
+		mustBeLoggedIn();
+		return;
+	}
 	var $this = $(this),
 		$comment = $this.closest('article'),
 		$likeCount = $this.find('.like-count'),

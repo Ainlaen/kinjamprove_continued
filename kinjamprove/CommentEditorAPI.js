@@ -531,7 +531,11 @@ function onReplyLinkClick(event) {
     console.log('Kinjamprove: onReplyLinkClick; event:', event);
     event.preventDefault();
     event.stopPropagation();
-
+	if(!kinjamprove.loggedIn){
+		mustBeLoggedIn();
+		return;
+	}
+	
     var $comment = $(this).closest('article');
 
     if (!commentEditorAPI) {

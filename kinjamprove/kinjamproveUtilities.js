@@ -961,7 +961,7 @@ function createComment(postBody, defaultBlogId, images, original, parentId, toke
 				commentTracker.authorMap.set(newComment.authorId, [newComment.id]);
 			}
 			
-			if ($parentPost.length) {
+			if ($parentPost && $parentPost.length) {
 				var $editorPlaceholder = $parentPost.siblings('.js_editor-placeholder'),
 					parentDepth = Number.parseInt($parentPost.attr('depth'));
 				$publishedReplyLi = createCommentListItem(newComment);

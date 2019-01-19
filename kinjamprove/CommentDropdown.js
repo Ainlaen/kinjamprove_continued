@@ -430,6 +430,10 @@ function onDeleteCommentLinkClick() {
 function onFollowLiClick(event) {
 	event.preventDefault();
 	event.stopPropagation();
+	if(!kinjamprove.loggedIn){
+		mustBeLoggedIn();
+		return;
+	}
 	// console.log('onFollowLiClick:', event);
 	
 	var $this = $(this),
@@ -508,7 +512,7 @@ function followUser(targetUserId, userId, token) {
 function onFollowForBlogLiClick(event) {
 	event.preventDefault();
 	event.stopPropagation();
-	
+
 	var $this = $(this),
 		$article = $this.closest('article'),
 		targetUserId = $article.attr('data-authorid'),
@@ -561,7 +565,10 @@ function onUnfollowLiClick(event) {
 	event.preventDefault();
 	event.stopPropagation();
 	// console.log('onUnfollowLiClick:', event);
-	
+	if(!kinjamprove.loggedIn){
+		mustBeLoggedIn();
+		return;
+	}
 	var $this = $(this),
 		$article = $this.closest('article'),
 		targetUserId = $article.attr('data-authorid'),
@@ -746,7 +753,10 @@ function blockUserForBlog(blogId, targetBlogId, token) {
 
 function onUnflagLiClick(event) {
 	event.preventDefault();
-	
+	if(!kinjamprove.loggedIn){
+		mustBeLoggedIn();
+		return;
+	}
 	var $this = $(this), 
 		$article = $this.closest('article'),
 		postId = $article.attr('data-id'),
@@ -806,6 +816,10 @@ function unflagPost(postId, token) {
 
 function onFlagLiClick(event) {
 	event.preventDefault();
+	if(!kinjamprove.loggedIn){
+		mustBeLoggedIn();
+		return;
+	}
 	var $this = $(this), 
 		$article = $this.closest('article'),
 		$flaggedIndicatorDiv = $article.find('.js_reply-flagged'),

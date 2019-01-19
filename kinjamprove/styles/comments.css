@@ -629,10 +629,17 @@ input:focus + .slider {
 	color: white;	
 }
 
+.kinjamprove-publish-button,
+.kinjamprove-publish-button:active,
+.kinjamprove-publish-button:focus{
+	width: 30% !important;
+}
 
 .kinjamprove-cancel-button,
 .kinjamprove-cancel-button:active,
 .kinjamprove-cancel-button:focus {
+	width: 20% !important;
+	margin-right: 5px !important;
 	background-color: rgb(51, 153, 255);
     color: white;
 }

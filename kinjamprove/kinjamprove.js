@@ -943,16 +943,16 @@ function addDiscussionRegionEvents($discussionRegion, postId) {
 			click: onDeleteCommentLinkClick
 		},
 		//0.0.1.8
-		followForUserListItemEventsObj = !kinjamprove.loggedIn ? { click: mustBeLoggedIn } : {
+		followForUserListItemEventsObj = {
 			click: onFollowLiClick
 		},
-		unfollowForUserListItemEventsObj = !kinjamprove.loggedIn ? { click: mustBeLoggedIn } : {
+		unfollowForUserListItemEventsObj = {
 			click: onUnfollowLiClick
 		},
-		flagPostListItemEventsObj = !kinjamprove.loggedIn ? { click: mustBeLoggedIn } : {
+		flagPostListItemEventsObj = {
 			click: onFlagLiClick
 		},
-		unflagPostListItemEventsObj = !kinjamprove.loggedIn ? { click: mustBeLoggedIn } : {
+		unflagPostListItemEventsObj = {
 			click: onUnflagLiClick
 		},
 		blockUserListItemEventsObj = {
@@ -995,11 +995,15 @@ function addDiscussionRegionEvents($discussionRegion, postId) {
 				}
 			}
 		}
-		replyLinkEventsObj = !kinjamprove.loggedIn ? { click: mustBeLoggedIn } : {
+		replyLinkEventsObj = {
 			click: onReplyLinkClick
 		},
-		kinjamproveReplyButtonEventsObj = !kinjamprove.loggedIn ? { click: mustBeLoggedIn } : {
+		kinjamproveReplyButtonEventsObj = {
 			click: function() {
+				if(!kinjamprove.loggedIn){
+					mustBeLoggedIn();
+					return;
+				}
 				//console.log('kinjamproveReplyButtonEventsObj:', this);
 
 				var $discussionRegion = $(this).closest('.js_discussion-region'),
@@ -1015,7 +1019,7 @@ function addDiscussionRegionEvents($discussionRegion, postId) {
 			    commentEditorAPI.attachEditorToComment(starterId, 'reply');
 			}
 		},
-		likeButtonEventsObj = !kinjamprove.loggedIn ? { click: mustBeLoggedIn } : {
+		likeButtonEventsObj = {
 			click: likeCommentOnClick
 		},
 		discussionRegionEmptyStateLinkEventsObj = {
