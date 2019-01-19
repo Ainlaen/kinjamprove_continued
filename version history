@@ -1,10 +1,9 @@
 0.0.2.2 (01/19/2019)
 
 Fixes:
-	Resolved issue with replying to base article. (This one was my fault, sorry)
-	More consistent checks for if the user is logged in.
+  Resolved issue with replying to base article. (This one was my fault, sorry)
+  More consistent checks for if the user is logged in.
 	
-
 
 0.0.2.1 (01/19/2019)
 
