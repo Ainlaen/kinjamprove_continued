@@ -1,3 +1,11 @@
+0.0.2.1 (01/19/209)
+
+Fixes: 
+  Resolved issue with posting new comments. (API return values had changed)
+  Comment editor will show properly when canceling and reopening the editor on the same post.
+  Minor changes to the way links display.
+  
+
 0.0.2.0 (01/16/2019)
 
 New:
