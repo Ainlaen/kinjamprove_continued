@@ -1,3 +1,12 @@
+0.0.2.3 (01/21/2019)
+
+Kinja has been making changes to their API recently, so please report any issues.
+
+Fixes: 
+  Updated API call for retrieving staff curated comments list. This was preventing comments from loading on
+  any article with staff comments.
+
+
 0.0.2.2 (01/19/2019)
 
 Fixes:
