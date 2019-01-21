@@ -57,6 +57,7 @@ function XhrCommentTracker(postId) {
 	this.lastNewestPostTime = 0;
 	this.approvedNewPosts = 0;
 	this.$newCommentsInfoSpan;
+	this.$failedStaffLoadSpan;
 	
 	//0.0.1.8 Potential to be used if the user is followed by the blog.
 	//this.userIsApproved = -1;
@@ -167,11 +168,16 @@ XhrCommentTracker.prototype = {
 			    numOfCommentsRemaining = totalNumOfComments,
 			  	currentIndex = 0,
 			  	articleId = _this.postId,
-				authorScreenName = response.author.screenName;
+				authorID = response.author.id;
 			  
 			_this.staffScreenNames = response.staffScreenNames;
 			if(kinjamprove.kinja.postMeta.curatedReplyCounts.curated){
-				_this.staffCommentIdsMap = await CommentPromiseFactory.getStaffListDataXhr(authorScreenName, articleId);
+				_this.staffCommentIdsMap = await CommentPromiseFactory.getStaffListDataXhr(authorID, articleId);
+				if(!_this.staffCommentIdsMap.size){
+					_this.$failedStaffLoadSpan = $("<span>", {"class":"kinjamprove-failed-staff-loading"});
+					_this.$failedStaffLoadSpan.text('Failed to load Staff Curated Comments list');
+					_this.$failedStaffLoadSpan.css("color", "red");
+				}
 			}
 
 
@@ -1258,6 +1264,10 @@ XhrCommentTracker.prototype = {
 		this.threadTypes = {staff: new Map(), liked: new Map(), user: new Map(), flagged: new Map(), followed: new Map(), curated: new Map(), community: this.threadMap, new: new Map()};
 		this.hasBeenSorted = {staff: false, liked: false, user: false, flagged: false, followed: false, curated: false, community: false, new: false};
 		
+		if(this.$failedStaffLoadSpan){
+			this.$failedStaffLoadSpan.remove();
+			this.$failedStaffLoadSpan = undefined;
+		}
 		this.$kinjamproveFilterSelect.parentsUntil('ul').remove();
 		this.$contentRegion.hide();
 		this.$contentRegion.siblings('span.spinner').show();
@@ -1347,6 +1357,10 @@ XhrCommentTracker.prototype = {
 		$authorlistInput.append(commentTracker.$authorDatalist);
 		$authorlistInput.val('');
 		
+		if(commentTracker.$failedStaffLoadSpan){
+			commentTracker.$discussionRegion.find('div.discussion-header').append(commentTracker.$failedStaffLoadSpan);
+		}
+		
 		if(commentTracker.lastNewestPostTime){
 			if(commentTracker.$newCommentsInfoSpan){
 				commentTracker.$newCommentsInfoSpan.remove();
@@ -1360,6 +1374,8 @@ XhrCommentTracker.prototype = {
 			commentTracker.$newCommentsInfoSpan = $("<span>", {'class': 'kinjamprove-new-comments-info', 'text': spanText});
 			commentTracker.$discussionRegion.find('div.kinjamprove-reload-button-container').append(commentTracker.$newCommentsInfoSpan);
 		}
+		
+		
 		/*
 		*	vvv FOR DEBUGGING ONLY: Adding commentsArr to DOM vvv
 		*/

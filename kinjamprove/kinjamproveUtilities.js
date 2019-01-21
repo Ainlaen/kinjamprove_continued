@@ -436,7 +436,7 @@ var CommentApiURLFactory = (function(){
 			return createURL(flatRepliesPathname, queryParameters);
 		},
 
-		getStaffRepliesURL: function(staffMemberName, starterId, maxReturned, cacheIt, refId = null) {
+		getStaffRepliesURL: function(staffMemberID, refId = null, starterId, maxReturned, cacheIt) {
 			starterId = starterId || Utilities.getStarterIdOfFirstStory();
 			maxReturned = maxReturned || MAX_NUM_OF_COMMENTS_PER_REQUEST;
 			cacheIt = cacheIt || true;
@@ -444,7 +444,7 @@ var CommentApiURLFactory = (function(){
 			// Example url: 'https://www.avclub.com/api/comments/views/curatedReplies/1798398429?query=seanoneal&maxReturned=5&cache=true&refId=1798521900';
 		    var apiPathname = '/api/comments/views/curatedReplies/' + starterId, 
 		    	queryParameters = { 
-		    		query: staffMemberName, 
+		    		userIds: staffMemberID, 
 		    		maxReturned: maxReturned,
 		    		cache: cacheIt
 		    	};
@@ -455,7 +455,7 @@ var CommentApiURLFactory = (function(){
 		    return createURL(apiPathname, queryParameters);
 		},
 		
-		getCuratedRepliesURL: function(starterId, maxReturned, cacheIt, refId, userIds) {
+		getCuratedRepliesURL: function(userIds, refId, starterId, maxReturned, cacheIt) {
 			starterId = starterId || Utilities.getStarterIdOfFirstStory();
 			maxReturned = maxReturned || MAX_NUM_OF_COMMENTS_PER_REQUEST;
 			cacheIt = cacheIt || true;
@@ -463,11 +463,13 @@ var CommentApiURLFactory = (function(){
 			// Example url: https://www.theroot.com/ajax/comments/views/curatedReplies/1830695539?maxReturned=1&cache=true&refId=1830699409&userIds=5876237249238334001
 		    var apiPathname = '/ajax/comments/views/curatedReplies/' + starterId, 
 		    	queryParameters = { 
-		    		refId: refId, 
 		    		maxReturned: maxReturned,
 		    		cache: cacheIt,
 					userIds : userIds
 		    	};
+			if(refId){
+				queryParameters.refId = refId;
+			}
 		    return createURL(apiPathname, queryParameters);
 		},
 		
@@ -612,8 +614,8 @@ var CommentPromiseFactory = (function() {
 		});
 	};
 	// 0.0.1.8
-	var getStaffListDataXhr = async function(screenName, starterId) {
-		var url = CommentApiURLFactory.getStaffRepliesURL(screenName, starterId);
+	var getStaffListDataXhr = async function(authorId, starterId) {
+		var url = CommentApiURLFactory.getStaffRepliesURL(authorId, false, starterId);
 			staffCommentIds = new Map(),
 			more = false;
 		do {
@@ -626,18 +628,22 @@ var CommentPromiseFactory = (function() {
 				}
 				if(response.data.pagination.next){
 					more = true;
-					url = CommentApiURLFactory.getStaffRepliesURL(screenName, starterId, 100, true, response.data.pagination.next.refId);
+					url = CommentApiURLFactory.getStaffRepliesURL(authorId, response.data.pagination.next.refId, starterId);
 				} else {
 					more = false;
 				}
+			 }, async function(err){
+				 console.log("Kinjamprove: Failed to retrieve staff list. Using backup.")
+				 more = false;
+				 staffCommentIds = await getCuratedListDataXhr(starterId, authorId, false);
 			 });
 		} while(more);
 		return staffCommentIds; 
 	};
 	// 0.0.1.8
-	var getCuratedListDataXhr = async function(starterId, refId, userIds) {
+	var getCuratedListDataXhr = async function(starterId, userIds, refId) {
 		// getCuratedRepliesURL: function(starterId, maxReturned, cacheIt, refId, userIds)
-		var url = CommentApiURLFactory.getCuratedRepliesURL(starterId, 100, true, refId, userIds);
+		var url = CommentApiURLFactory.getCuratedRepliesURL(userIds, refId, starterId);
 			curatedMap = new Map(),
 			more = false;
 		do {
@@ -650,10 +656,13 @@ var CommentPromiseFactory = (function() {
 				}
 				if(response.data.pagination.next){
 					more = true;
-					url = CommentApiURLFactory.getCuratedRepliesURL(starterId, 100, true, response.data.pagination.next.refId, userIds);
+					url = CommentApiURLFactory.getCuratedRepliesURL(userIds, response.data.pagination.next.refId, starterId);
 				} else {
 					more = false;
 				}
+			 }, function(err){
+				 console.log("Kinjamprove: Error retrieving curated replies");
+				 more = false;
 			 });
 		} while(more);
 		return curatedMap; 
