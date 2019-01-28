@@ -702,7 +702,7 @@ function createHidePendingCommentsToggleSwitch(numOfPendingComments) {
 	return $hidePendingCommentsDiv;
 }
 
-function createKinjamproveReloadButton($discussionRegion) {
+function createKinjamproveReloadButton($discussionRegion, loadTime) {
 	var kinjamproveReloadButtonObj = {
 			'class': 'kinjamprove-reload-button',
 			title: 'Reload'
@@ -710,12 +710,12 @@ function createKinjamproveReloadButton($discussionRegion) {
 		kinjamproveReloadButtonText = 'Reload Comments',
 		kinjamproveReloadButton = createElement('button', kinjamproveReloadButtonObj, kinjamproveReloadButtonText);
 
-		var currentTimeFormatted = Utilities.publishTimeFormatter(Date.now()).split(' ')[1],
+		var currentTimeFormatted = new Date(loadTime),
 			lastReloadTimeSpanClass = 'kinjamprove-last-load-time',
 			lastReloadTimeSpanObj = { 
 				'class':  lastReloadTimeSpanClass
 			},
-			lastReloadTimeText = 'Last loaded at ' + currentTimeFormatted + '.';
+			lastReloadTimeText = 'Last loaded at ' + currentTimeFormatted.toLocaleString() + '.';
 
 		var lastReloadTimeSpan = createElement('span', lastReloadTimeSpanObj, lastReloadTimeText);
 
@@ -770,6 +770,7 @@ function createStoreLoadTimeButton(){
 			commentTracker = kinjamprove.commentTrackers[starterId],
 			hostname = window.location.hostname,
 			storedLocal = false,
+			time = commentTracker.newestPostTime,
 			string;
 			
 		hostname = hostname.substring(0, hostname.lastIndexOf('.'));
@@ -777,8 +778,12 @@ function createStoreLoadTimeButton(){
 			hostname = hostname.substring(4);
 		}
 		
+		if(!time){
+			time = commentTracker.lastLoadTime || Date.now();
+		}
+		
 		storedArticleLoadTimes[starterId] = {
-			postTime: commentTracker.newestPostTime, 
+			postTime: time, 
 			headline: kinjamprove.kinja.postMeta.post.headline, 
 			url: kinjamprove.kinja.postMeta.post.permalink, 
 			hostname: hostname
@@ -1047,9 +1052,9 @@ function addDiscussionRegionEvents($discussionRegion, postId) {
 				$this.attr('disabled', true).css('cursor', 'not-allowed');
 				commentTracker.reloadDiscussionRegion();
 
-				var currentTimeFormatted = Utilities.publishTimeFormatter(Date.now()).split(' ')[1],
+				var currentTimeFormatted = new Date(),
 					lastReloadTimeSpanClass = 'kinjamprove-last-load-time',
-					lastReloadTimeText = 'Last loaded at ' + currentTimeFormatted + '.';
+					lastReloadTimeText = 'Last loaded at ' + currentTimeFormatted.toLocaleString() + '.';
 
 				$this.prevAll('span.kinjamprove-last-load-time').text(lastReloadTimeText).show();
 

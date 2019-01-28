@@ -311,10 +311,6 @@ article[depth="0"]:after {
 	border-right-color: var(--followed-user-border-color, orange) !important;
 }
 
-.kinjamprove-staff {
-	border-left-color: var(--staff-border-color, green) !important;
-	border-right-color: var(--staff-border-color, green) !important;
-}
 
 .kinjamprove-user-comment {
 	border-left-color: var(--user-border-color, rgb(51, 153, 255)) !important;
@@ -324,6 +320,11 @@ article[depth="0"]:after {
 .kinjamprove-staff-curated {
 	border-left-color: var(--staff-curated-border-color, #ea08ea) !important;
 	border-right-color: var(--staff-curated-border-color, #ea08ea) !important;
+}
+
+.kinjamprove-staff {
+	border-left-color: var(--staff-border-color, green) !important;
+	border-right-color: var(--staff-border-color, green) !important;
 }
 
 /*

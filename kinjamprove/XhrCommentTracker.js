@@ -59,6 +59,8 @@ function XhrCommentTracker(postId) {
 	this.$newCommentsInfoSpan;
 	this.$failedStaffLoadSpan;
 	
+	this.lastLoadTime;
+	
 	//0.0.1.8 Potential to be used if the user is followed by the blog.
 	//this.userIsApproved = -1;
 
@@ -154,7 +156,8 @@ XhrCommentTracker.prototype = {
 	loadComments: function() {
 		var _this = this,
 			items = [];
-			
+		
+		_this.lastLoadTime = Date.now();
 		
 //getTotalNumOfCommentsUrl = CommentApiURLFactory.getAPIBaseURLFromID(this.postId, 0, 1, 0, false),
 			
@@ -1341,7 +1344,7 @@ XhrCommentTracker.prototype = {
 		var $reloadButton = commentTracker.$discussionRegion.find('button.kinjamprove-reload-button');
 		
 		if (!$reloadButton.length) {
-			$reloadButton = createKinjamproveReloadButton(commentTracker.$discussionRegion);
+			$reloadButton = createKinjamproveReloadButton(commentTracker.$discussionRegion, commentTracker.lastLoadTime);
 			commentTracker.$discussionRegion.find('div.kinjamprove-discussion-header-container').append($reloadButton);
 		}else {
 			$reloadButton.show();
