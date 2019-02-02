@@ -14,7 +14,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
 			// That fires when a page's URL matches ...
 			conditions: [
 				new chrome.declarativeContent.PageStateMatcher({
-					pageUrl: { urlMatches: '(kinja|jezebel|jalopnik|gizmodo|deadspin|fusion|kotaku|lifehacker|theroot|splinternews|avclub|earther|thetakeout|clickhole|theinventory|univision).com', },
+					pageUrl: { urlMatches: '(kinja|jezebel|jalopnik|gizmodo|deadspin|kotaku|lifehacker|theroot|splinternews|avclub|earther|thetakeout|clickhole|theinventory).com', },
 					css: ['section#js_discussion-region'],
 				})
 			],

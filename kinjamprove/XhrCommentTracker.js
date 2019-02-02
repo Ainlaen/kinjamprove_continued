@@ -84,9 +84,11 @@ XhrCommentTracker.prototype = {
 	
 	getLikesOfUserUnderStarter: function() {
 		var url = Utilities.getLikesOfUserUnderStarterURL(this.postId),
-			_this = this;
-	
-		return CommentPromiseFactory.getJSON(url).then(function(result) {
+			_this = this,
+			token = Utilities.getKinjaToken(),
+			headers = {'Authorization':'Bearer '+token};
+		
+		return CommentPromiseFactory.getJSON(url, headers).then(function(result) {
 			console.log('Kinjamprove: liked comment IDs result:', result);
 
 			var data = result.data;
@@ -103,10 +105,12 @@ XhrCommentTracker.prototype = {
 
 	getFlagsOfUserUnderStarter: function() {
 		var url = Utilities.getFlagsOfUserUnderStarterURL(this.postId),
-			_this = this;
+			_this = this,
+			token = Utilities.getKinjaToken(),
+			headers = {'Authorization':'Bearer '+token};
 		
 		
-		return CommentPromiseFactory.getJSON(url).then(function(result) {
+		return CommentPromiseFactory.getJSON(url, headers).then(function(result) {
 			console.log('Kinjamprove: flagged comment IDs result:', result);
 
 			var data = result.data;

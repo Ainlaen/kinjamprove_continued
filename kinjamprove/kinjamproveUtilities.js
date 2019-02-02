@@ -265,10 +265,8 @@ var Utilities = (function() {
 			//console.log('getLikesOfUserUnderStarter called w/ starterId=' + starterId);
 			
 			var origin = window.location.origin,
-				token = Utilities.getKinjaToken(),
 				likesOfUserUnderStarterUrl = origin +
-					'/api/likes/views/likesOfUserUnderStarter?token=' + 
-					token + '&starterId=' + starterId;
+					'/api/likes/views/likesOfUserUnderStarter?starterId=' + starterId;
 
 			return likesOfUserUnderStarterUrl;
 		},
@@ -280,8 +278,7 @@ var Utilities = (function() {
 			
 			var origin = window.location.origin,
 				flaggedPostsPathname = '/api/moderation/flagging/views/flagsByStarter',
-				token = Utilities.getKinjaToken(),
-				flaggedPostsQueryStr = '?token=' + token + '&starterId=' + starterId,
+				flaggedPostsQueryStr = '?starterId=' + starterId,
 				flagsOfUserUnderStarterUrl = 
 					origin + flaggedPostsPathname + flaggedPostsQueryStr;
 
@@ -394,18 +391,15 @@ var CommentApiURLFactory = (function(){
 			return ORIGIN + '/api/core/post/' + postId + '/update?';
 		},
 
-		getDeleteCommentURL: function(postId, kinjaToken) {
-			kinjaToken = kinjaToken || Utilities.getKinjaToken();
+		getDeleteCommentURL: function(postId) {
 
-			var apiPathname = '/api/core/post/' + postId + '/delete',
-				queryParameters = { token: kinjaToken };
+			var apiPathname = '/api/core/post/' + postId + '/delete';
+				
 
-        	return createURL(apiPathname, queryParameters);
+        	return ORIGIN + apiPathname;
 		},
 
-		getDismissPostURL: function(postId, defaultBlogId, kinjaToken) {
-			defaultBlogId = defaultBlogId || Utilities.getUserDefaultBlogId();
-			kinjaToken = kinjaToken || Utilities.getKinjaToken();
+		getDismissPostURL: function() {
 			// 0.0.1.8
 			var apiPathname = '/api/comments/dismiss/dismiss';
 				//apiPathname = '/ajax/post/' + postId + '/dismiss/' + defaultBlogId,
@@ -541,13 +535,18 @@ var CommentApiURLFactory = (function(){
 
 
 var CommentPromiseFactory = (function() {
-	var xhrPromiseGet = function(url) {
+	var xhrPromiseGet = function(url, headers = null) {
 		// Return a new promise.
 	    return new Promise(function(resolve, reject) {
 	        // Do the usual XHR stuff
 	        var req = new XMLHttpRequest();
 	        req.open('GET', url);
-	        
+	        if(headers){
+				for(let i in headers){
+					req.setRequestHeader(i, headers[i]);
+				}
+			}
+			
 	        req.onload = function() {
 	            // This is called even on 404 etc.
 	            // so check the status
@@ -571,8 +570,8 @@ var CommentPromiseFactory = (function() {
 	    });
 	};
 
-	var getJSON = function(url) {
-	 	return CommentPromiseFactory.xhrPromiseGet(url).then(JSON.parse);
+	var getJSON = function(url, headers = null) {
+	 	return CommentPromiseFactory.xhrPromiseGet(url, headers).then(JSON.parse);
 	};
 
 	var getArticleDataXhr = function(starterId) {
@@ -795,7 +794,7 @@ var CommentPromiseFactory = (function() {
 })();
 
 
-function xhrPromisePost(url, payload) {
+function xhrPromisePost(url, payload, headers = null) {
 	// Return a new promise.
     return new Promise(function(resolve, reject) {
         // Do the usual XHR stuff
@@ -803,7 +802,13 @@ function xhrPromisePost(url, payload) {
         req.open('POST', url);
 		
 		req.setRequestHeader('Content-type', 'application/json; charset=UTF-8');
-
+		
+		if(headers){
+			for(let i in headers){
+				req.setRequestHeader(i, headers[i]);
+			}
+		}
+		
         req.onload = function() {
             // This is called even on 404 etc.
             // so check the status
@@ -828,8 +833,8 @@ function xhrPromisePost(url, payload) {
     });
 }
 
-function postJSON(url, payload) {
-	return xhrPromisePost(url, payload).then(JSON.parse);
+function postJSON(url, payload, headers = null) {
+	return xhrPromisePost(url, payload, headers).then(JSON.parse);
 }
 
 function postCreateComment(postBody, defaultBlogId, images, original, parentId, token, hidePendingReplies) {
@@ -996,10 +1001,10 @@ function createComment(postBody, defaultBlogId, images, original, parentId, toke
 }
 
 function postDeleteComment(postId, kinjaToken) {
-	var url = CommentApiURLFactory.getDeleteCommentURL(postId, kinjaToken),
-		payload = JSON.stringify({ id: postId });
+	var url = CommentApiURLFactory.getDeleteCommentURL(postId),
+		payload = JSON.stringify({ id: postId});
 
-	return postJSON(url, payload);
+	return postJSON(url, payload, {'Authorization': 'Bearer '+kinjaToken});
 }
 
 function deleteComment(postId, kinjaToken) {
@@ -1119,11 +1124,10 @@ function getCreateCommentURL(parentId, hidePendingReplies) {
 	return createCommentURL;
 }
 
-function getDeletePostURL(postId, kinjaToken) {
+function getDeletePostURL(postId) {
 	var origin = window.location.origin,
         apiPathname = '/api/core/post/' + postId + '/delete',
-        queryStrParameters = '?token=' + kinjaToken,
-        deletePostURL = origin + apiPathname + queryStrParameters;
+        deletePostURL = origin + apiPathname;
 
     return deletePostURL;
 }

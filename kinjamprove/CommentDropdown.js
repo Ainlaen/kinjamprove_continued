@@ -496,8 +496,7 @@ function followUser(targetUserId, userId, token) {
 	token = token || kinjamprove.token.token;
 	
 	var followPathname = '/api/profile/userfollow/follow',
-		followQueryStr = '?token=' + token,
-		followUrl = window.location.origin + followPathname + followQueryStr,
+		followUrl = window.location.origin + followPathname,
 		requestPayload = {
 			target: targetUserId,
 			targetType: 'User',
@@ -506,7 +505,7 @@ function followUser(targetUserId, userId, token) {
 		},
 		requestPayloadStr = JSON.stringify(requestPayload);
 
-	return postJSON(followUrl, requestPayloadStr);	
+	return postJSON(followUrl, requestPayloadStr, {'Authorization':'Bearer '+token});	
 }
 
 function onFollowForBlogLiClick(event) {
@@ -548,7 +547,7 @@ function followUserForBlog(starterId, targetBlogId, blogId, authorId, postId, to
 	token = token || kinjamprove.token.token;
 	
 	var followPathname = '/ajax/post/'+starterId+'/followAndApprove/blog/'+targetBlogId+'/by/'+blogId,
-		followQueryStr = '?authorId='+authorId+'&token=' + token,
+		followQueryStr = '?authorId='+authorId,
 		followUrl = window.location.origin + followPathname + followQueryStr,
 		requestPayload = {
 			authorId: authorId,
@@ -558,7 +557,7 @@ function followUserForBlog(starterId, targetBlogId, blogId, authorId, postId, to
 		},
 		requestPayloadStr = JSON.stringify(requestPayload);
 
-	return postJSON(followUrl, requestPayloadStr);	
+	return postJSON(followUrl, requestPayloadStr,{'Authorization':'Bearer '+token});	
 }
 
 function onUnfollowLiClick(event) {
@@ -628,8 +627,7 @@ function unfollowUser(targetUserId, userId, token) {
 	token = token || kinjamprove.token.token;
 	
 	var unfollowPathname = '/api/profile/userfollow/unfollow',
-		unfollowQueryStr = '?token=' + token,
-		unfollowUrl = window.location.origin + unfollowPathname + unfollowQueryStr,
+		unfollowUrl = window.location.origin + unfollowPathname,
 		requestPayload = {
 			target: targetUserId,
 			targetType: 'User',
@@ -638,7 +636,7 @@ function unfollowUser(targetUserId, userId, token) {
 		},
 		requestPayloadStr = JSON.stringify(requestPayload);
 
-	return postJSON(unfollowUrl, requestPayloadStr);
+	return postJSON(unfollowUrl, requestPayloadStr, {'Authorization':'Bearer '+token});
 }
 
 function onUnfollowForBlogLiClick(event) {
@@ -679,15 +677,14 @@ function unfollowUserForBlog(blogId, targetBlogId, token) {
 	token = token || kinjamprove.token.token;
 	
 	var unfollowPathname = '/api/profile/blogfollow/unfollow',
-		unfollowQueryStr = '?token=' + token,
-		unfollowUrl = window.location.origin + unfollowPathname + unfollowQueryStr,
+		unfollowUrl = window.location.origin + unfollowPathname,
 		requestPayload = {
 			sourceBlogId: blogId,
 			targetBlogId: targetBlogId
 		},
 		requestPayloadStr = JSON.stringify(requestPayload);
 
-	return postJSON(unfollowUrl, requestPayloadStr);
+	return postJSON(unfollowUrl, requestPayloadStr, {'Authorization':'Bearer '+token});
 }
 
 function onBlockForBlogLiClick(event){
@@ -740,15 +737,14 @@ function blockUserForBlog(blogId, targetBlogId, token) {
 	token = token || kinjamprove.token.token;
 	
 	var blockPathname = '/api/profile/blogblock/block',
-		blockQueryStr = '?token=' + token,
-		blockUrl = window.location.origin + blockPathname + blockQueryStr,
+		blockUrl = window.location.origin + blockPathname,
 		requestPayload = {
 			blocked: targetBlogId,
 			blocking: blogId
 		},
 		requestPayloadStr = JSON.stringify(requestPayload);
 
-	return postJSON(blockUrl, requestPayloadStr);
+	return postJSON(blockUrl, requestPayloadStr,{'Authorization':'Bearer '+token});
 }
 
 function onUnflagLiClick(event) {
@@ -803,15 +799,17 @@ function onUnflagLiClick(event) {
 }
 
 function unflagPost(postId, token) {
+	token = token || kinjamprove.token.token;
+	
 	var unflagPathname = '/api/moderation/flagging/unflag',
 		unflagUrl = window.location.origin + unflagPathname,
 		requestPayload = {
 			postId: postId,
-			token: (token || kinjamprove.token.token)
+			token: token
 		},
 		requestPayloadStr = JSON.stringify(requestPayload);
 
-	return postJSON(unflagUrl, requestPayloadStr);
+	return postJSON(unflagUrl, requestPayloadStr, {'Authorization':'Bearer '+token});
 }
 
 function onFlagLiClick(event) {
@@ -969,16 +967,18 @@ var FlagCommentReasonDiv = (function() {
 })();
 
 function flagPost(postId, reason, token) {
+	token = token || kinjamprove.token.token;
+	
 	var flagPathname = '/api/moderation/flagging/flag',
 		flagUrl = window.location.origin + flagPathname,
 		requestPayload = {
 			postId: postId,
 			reason: reason,
-			token: (token || kinjamprove.token.token)
+			token: token
 		},
 		requestPayloadStr = JSON.stringify(requestPayload);
 
-	return postJSON(flagUrl, requestPayloadStr);
+	return postJSON(flagUrl, requestPayloadStr, {'Authorization':'Bearer '+token});
 }
 
 function blockUserPosts(blockedUserAuthorId) {
@@ -996,96 +996,38 @@ function blockUserPosts(blockedUserAuthorId) {
 }
 
 
-// 0.0.1.8
+// 0.0.2.4
 function onDismissDropdownClick() {
-	var $this = $(this),
-		postId = $this.closest('ul').attr('data-postid');
-		$existingNativePost = $('div.js_content-region article#reply_'+postId);
-	// Check if the post has been loaded by Kinja, then use native dismiss if it has been.
-	if($existingNativePost.length){
-		let $dismissButton = $existingNativePost.find('ul#dropdown-'+postId+' a.dismiss');
-		if($dismissButton.length){
-			$dismissButton.click();
-			return;
-		}
-	}
-	
-	var url = (window.location.origin + "/" + postId);
-	
-	var dismissCommentConfirmation = confirm("Dismiss currently cannot be handled by Kinjamprove. Click okay to pause Kinjamprove and be redirected to this post's permalink ("+url+"), where you'll be able to dismiss it using the native interface. Kinjamprove will automatically unpause after 5 seconds or when the page has loaded, whichever comes first.");
-	if (dismissCommentConfirmation){
-		var msgObj = { to: "background", val: "dismiss", url: url };
-		
-		chrome.runtime.sendMessage(msgObj);
-	}
-}
-/* 0.0.1.8 Disabled for now.
+
 	var dismissCommentConfirmation = confirm('Are you sure you want to dismiss this comment?');
 	
 	if (!dismissCommentConfirmation) {
 		return;
 	}
 	
-	var authorizeRequest = confirm('In order to complete this action, a secure token tied to your account must be requested from Kinja.com. This token will only be used to complete this action, and will only be transmitted to the site you are currently viewing. Requesting this token requires transmitting site specific cookie data including Kinja session id. Do you consent to having this secure token requested from Kinja.com on your behalf?');
 	
-	if (!authorizeRequest) {
-		alert('Unable to complete request.');
-		return;
-	} else	{
-		
-		var postId = $(this).closest('ul').attr('data-postid'),
-			defaultBlogId = Utilities.getUserDefaultBlogId(),
-			kinjaToken = Utilities.getKinjaToken();
-			url = 'https://kinja.com/api/profile/token/createSecure',
-			payload = {};
-		//JSON.stringify({ token: kinjaToken });
+	var postId = $(this).closest('ul').attr('data-postid'),
+		defaultBlogId = Utilities.getUserDefaultBlogId(),
+		kinjaToken = Utilities.getKinjaToken(),
+		payload = JSON.stringify({postId: postId}),
+		url = CommentApiURLFactory.getDismissPostURL();
+	
+	postJSON(url, payload, {'Authorization':'Bearer '+kinjaToken}).then(function(dismissedComment){
+		var $dismissedComment = $('article[data-id="'+postId+'"]'),
+			$dismissedCommentBody = $dismissedComment.find('div.kinjamprove-post-content'),
+			$newText = $('<p>', {});
 
-		 postJSON(url, payload)
-			.then(function(response) {
-				var secureToken = response.data.token;
-				payload = JSON.stringify({postId: postId});
-				url = CommentApiURLFactory.getDismissPostURL(postId, defaultBlogId, kinjaToken);
-				
-				return new Promise(function(resolve, reject) {
-
-					var req = new XMLHttpRequest();
-					req.open('POST', url);
-					
-					req.setRequestHeader('Content-type', 'application/json; charset=UTF-8');
-					req.setRequestHeader('Authorization', 'Bearer ' + secureToken);
-
-					req.onload = function() {
-						// This is called even on 404 etc.
-						// so check the status
-						if (req.status === 200) {
-							// Resolve the promise w/ the response text
-							resolve(req.response);
-						} else {
-							// Otherwise reject w/ the status text
-							// which will hopefully be a meaningful error
-							// reject(Error(req.statusText));
-							reject(req.responseText);
-						}
-					};
-					
-					// Handle network errors
-					req.onerror = function() {
-						reject(Error('Network Error'));
-					};
-					
-					// Make the request!
-					req.send(payload);
-				}).then(JSON.parse);
-			})
-			.then(function(dismissedComment) {		
-				// 0.0.1.8
-				var $dismissedComment = $('#reply_' + dismissedComment.data.postId),
-					$dismissedCommentLi = $dismissedComment.closest('li');
-
-				console.log('Kinjamprove: Successfully dismissed comment: ', dismissedComment);
-				$dismissedCommentLi.remove();
-		}).catch(function(error) {
-			console.error('Error dismissing comment: ', error);
-		});
-	}		
-}*/
+		$dismissedComment.find('ul.kinjamprove-comment-dropdown').children().hide();
+		$dismissedComment.find('div.reply__sidebar').hide();
+		$dismissedComment.find('div.reply__tools').hide();
+		$newText.text('This post has been dismissed. Refresh the page to see full results of this action.');
+		$newText.css('color', 'red');
+		$newText.css('font-style', 'italic');
+		$dismissedCommentBody.children().remove();
+		$dismissedCommentBody.append($newText);
+			
+	}).catch(function(error) {
+		alert('Error dismissing comment: ', error);
+	});
+			
+}

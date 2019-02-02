@@ -1114,8 +1114,8 @@ function likeComment($comment) {
 	var postId = $comment.attr('data-id'),
 		token = Utilities.getKinjaToken(),
 		origin = window.location.origin,
-		likeUrl = origin + '/ajax/post/' + postId + '/likeAndApprove?token=' + token,
-		payload = { postId: postId },
+		likeUrl = origin + '/ajax/post/' + postId + '/likeAndApprove',
+		payload = { postId: postId , token: token},
 		payloadStr = JSON.stringify(payload),
 		xhr = new XMLHttpRequest(),
 		starterId = $comment.closest('section.discussion-region').attr('starter-id'),
@@ -1123,6 +1123,7 @@ function likeComment($comment) {
 
 	xhr.open('POST', likeUrl, true);
 	xhr.setRequestHeader('Content-type', 'application/json; charset=UTF-8');
+	xhr.setRequestHeader('Authorization', 'Bearer '+token);
 	xhr.onload = function() {
 		console.log(this);
 		var response = JSON.parse(this.responseText),
@@ -1234,6 +1235,7 @@ function unlikeComment($comment) {
 
 	xhr.open('POST', unlikeUrl, true);
 	xhr.setRequestHeader('Content-type', 'application/json; charset=UTF-8');
+	xhr.setRequestHeader('Authorization', 'Bearer '+token);
 	xhr.onload = function() {
 		
 		postId = Number.parseInt(postId);

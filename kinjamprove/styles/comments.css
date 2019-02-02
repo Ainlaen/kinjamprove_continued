@@ -722,6 +722,7 @@ input:focus + .slider {
 
 .kinjamprove-authorlist-label{
 	display: inherit;
+	font-weight: bold;
 	width: 150px;
 }
 

@@ -83,8 +83,10 @@ a.reply-to-post--mobile,
 img.avatar:not(.blog-avatar) {
 	border-radius: 3px !important;
 }
-.replies-wrapper,.reply:not(.kinjamprove-marked-comment):not(.kinjamprove-curated-comment):not(.kinjamprove-filter-highlight){
-	border-top: none !important;
+
+div.kinjamprove-content-region > .replies-wrapper,.reply:not(.kinjamprove-marked-comment):not(.kinjamprove-curated-comment):not(.kinjamprove-filter-highlight){
+	border-top: 1px solid #e5e5e57d !important;
+	margin-top: 1px;
 }
 li.commentlist__item.collapsed > article[depth="0"] {
 	padding: 0px 0px 22px 5px !important;
@@ -302,6 +304,7 @@ article[depth="0"]:after {
 }
 
 .kinjamprove-marked-comment{
+	margin-top: 1px;
 	background-color: var(--marked-background-color, #fdefdd8f) !important;
 	border-radius: 6px;
 }
