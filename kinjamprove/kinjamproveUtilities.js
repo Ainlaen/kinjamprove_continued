@@ -849,7 +849,7 @@ function postCreateComment(postBody, defaultBlogId, images, original, parentId, 
 		},
 		requestPayloadStr = JSON.stringify(requestPayload);
 		
-		return postJSON(url, requestPayloadStr);
+		return postJSON(url, requestPayloadStr, {'Authorization':'Bearer '+token});
 }
 
 
@@ -997,6 +997,9 @@ function createComment(postBody, defaultBlogId, images, original, parentId, toke
 			commentTracker.updateFilterSelect("newUserComment");
 			return newComment;
 			// The return value isn't used for anything currently.
+		}, function(error){
+			console.log('Kinjamprove: Error creating new post', error);
+			alert('Kinjamprove: Error posting comment. Please contact developer if problem persists.');
 		});
 }
 
@@ -1146,7 +1149,7 @@ function postUpdateComment(postId, $textEditor, parentCommentId) {
 	var url = CommentApiURLFactory.getUpdateCommentURL(postId),
 		payload = getCreateCommentPayload($textEditor, parentCommentId);
 	
-	return postJSON(url, payload);
+	return postJSON(url, payload, {'Authorization':'Bearer '+Utilities.getKinjaToken()});
 }
 
 function updateComment(postId, $textEditor, parentCommentId) {
@@ -1163,6 +1166,9 @@ function updateComment(postId, $textEditor, parentCommentId) {
 			$replyContentDiv.empty().append(...updatedCommentBody);
 
 			return updatedComment;
+		}, function(error){
+			console.log('Kinjamprove: Error updating comment ', error);
+			alert("Kinjamprove: Error updating comment. If this problem persists, please contact the developer.");
 		});
 }
 

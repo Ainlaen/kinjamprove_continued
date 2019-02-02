@@ -488,6 +488,7 @@ function onFollowLiClick(event) {
 
 	}, function(err) {
 		console.error('Error in onFollowLiClick: ', err);
+		alert('Kinjamprove: Error following user. If the problem persists, please contact the developer.');
 	});
 }
 
@@ -539,6 +540,7 @@ function onFollowForBlogLiClick(event) {
 		
 	}, function(err) {
 		console.error('Error in onFollowForBlogLiClick: ', err);
+		alert('Kinjamprove: Error following user for blog. If the problem persists, please contact the developer.');
 	});
 	
 }
@@ -620,6 +622,7 @@ function onUnfollowLiClick(event) {
 		commentTracker.updateFilterSelect("unfollowed");
 	}, function(err) {
 		console.error('Error in onUnfollowLiClick: ', err);
+		alert('Kinjamprove: Error unfollowing user. If the problem persists, please contact the developer.');
 	});
 }
 
@@ -669,7 +672,8 @@ function onUnfollowForBlogLiClick(event) {
 		}
 		
 	}, function(err) {
-		console.error('Error in onUnfollowLiClick: ', err);
+		console.error('Error in onUnfollowForBlogLiClick: ', err);
+		alert('Kinjamprove: Error unfollowing user for blog. If the problem persists, please contact the developer.');
 	});
 }
 
@@ -729,6 +733,7 @@ function onBlockForBlogLiClick(event){
 		
 	}, function(err) {
 		console.error('Error in onBlockForBlogLiClick: ', err);
+		alert('Kinjamprove: Error blocking user for blog. If the problem persists, please contact the developer.');
 	});
 
 }
@@ -795,6 +800,7 @@ function onUnflagLiClick(event) {
 	}, function(err) {
 		var str = 'Error trying to unflag post w/ id ' + postId + ': ';
 		console.error(str, error);
+		alert('Kinjamprove: Error unflagging post. If the problem persists, please contact the developer.');
 	});
 }
 
@@ -957,6 +963,7 @@ var FlagCommentReasonDiv = (function() {
 				}, function(err) {
 					var str = 'Error trying to flag post w/ id ' + postId + ': ';
 					console.error(str, error);
+					alert('Kinjamprove: Error flagging post. If the problem persists, please contact the developer.');
 				});
 			} else {
 				var $warningMessageDiv = $flagReasonForm.find('.warningmessage').parent();
@@ -1027,7 +1034,8 @@ function onDismissDropdownClick() {
 		$dismissedCommentBody.append($newText);
 			
 	}).catch(function(error) {
-		alert('Error dismissing comment: ', error);
+		console.log('Kinjamprove: Error dismissing comment: ', error);
+		alert('Kinjamprove: Error dismissing post. If the problem persists, please contact the developer.');
 	});
 			
 }

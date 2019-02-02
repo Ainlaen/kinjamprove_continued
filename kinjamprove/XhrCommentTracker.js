@@ -100,6 +100,8 @@ XhrCommentTracker.prototype = {
 
 		
 			return _this;
+		}, function(error){
+			console.log('Kinjamprove: Error retrieving user liked comments.');
 		});
 	},
 
@@ -123,6 +125,8 @@ XhrCommentTracker.prototype = {
 
 			
 			return _this;
+		}, function(error){
+			console.log('Kinjamprove: Error retrieving user flagged comments.');
 		});
 	},
 	// 0.0.2.0 Get list of blogs followed by current blog
@@ -1305,10 +1309,15 @@ XhrCommentTracker.prototype = {
 				postId = commentTracker.postId,
 				$kinjamproveDiscussionHeaderPanel = $('<div>', { 'class': 'kinjamprove-discussion-header-container' });
 
-			createKinjamproveDiscussionHeaderLi(postId, $discussionRegion, $discussionHeader.find('ul'));
+			createKinjamproveDiscussionHeaderLi(postId, $discussionHeader.find('ul'));
 			
 			addDiscussionRegionEvents($discussionRegion, postId);
 			$discussionHeader.append($kinjamproveDiscussionHeaderPanel);
+		}
+		
+		let $pendingSpan = commentTracker.$discussionRegion.find('span.kinjamprove-hide-pending-comments-span');
+		if($pendingSpan.length){
+			$pendingSpan.text('Show Pending ('+commentTracker.pendingCommentIds.length+')');
 		}
 		
 		commentTracker.$kinjamproveFilterSelect = appendFilterSelect(commentTracker.postId);

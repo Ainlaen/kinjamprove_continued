@@ -358,21 +358,16 @@ CommentEditorAPI.prototype = {
         });
 
         $kinjamproveCancelButton = $('<button>', { 
-             'class': 'kinjamprove-cancel-button', 
-             'onclick': 'onKinjamproveCancelButtonClick(this)'
+             'class': 'kinjamprove-cancel-button'
             })
             .text('Cancel')
-            .click(onKinjamproveCancelButtonClick2);
+            .click(onKinjamproveCancelButtonClick);
         
         $nativeCancelButton.after($kinjamproveCancelButton);
         
        this.$nativeCancelButton = $nativeCancelButton;
        this.$kinjamproveCancelButton = $kinjamproveCancelButton;
 
-       
-       function onKinjamproveCancelButtonClick2() {
-            console.log('Kinjamprove: commentEditorAPI onKinjamproveCancelButtonClick');
-       }
     },
 
     addAutomaticCancelButton: function() {
@@ -386,7 +381,6 @@ CommentEditorAPI.prototype = {
             $kinjamproveAutoCancelButton = $('<button>', { 
                     'class': AUTO_CANCEL_BUTTON_CLASS, 
                     'style': 'display: none;'
-                    ,'onclick': 'Utilities.clearWindowOnbeforeunload();'
                 })
                 .text('Auto Cancel')
                 .click(_onKinjamproveAutoCancelButtonClick);
@@ -396,6 +390,7 @@ CommentEditorAPI.prototype = {
         
         function _onKinjamproveAutoCancelButtonClick() {
             console.log('Kinjamprove: _onKinjamproveAutoCancelButtonClick:', this);
+			Utilities.clearWindowOnbeforeunload();
             commentEditorAPI.reset();
         }
     },
@@ -564,7 +559,7 @@ function onEditClick(event) {
 function onKinjamproveCancelButtonClick(elem) {
 	//console.log('onKinjamproveCancelButtonClick called on elem:', elem);
 
-	var $this = $(elem),
+	var $this = $(elem.target),
 		$editor = $this.closest('div.editor'),
 		// $discussionRegion = $this.closest('.js_discussion-region'),
 		// $editor = $discussionRegion.find('div.editor'),

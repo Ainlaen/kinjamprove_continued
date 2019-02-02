@@ -1087,31 +1087,21 @@ function likeCommentOnClick(event) {
 		return;
 	}
 	var $this = $(this),
-		$comment = $this.closest('article'),
-		$likeCount = $this.find('.like-count'),
-		currentLikeCountText = $likeCount.text(),
-		currentLikeCount = (currentLikeCountText.length) ? Number.parseInt(currentLikeCountText) : 0,
-		newLikeCount = 0,
-		newLikeCountText = '';
+		$comment = $this.closest('article');
 
 	if ($this.hasClass('active')) {
-		unlikeComment($comment);
-		$this.removeClass('active');
-		newLikeCount = Math.max(0, currentLikeCount - 1);//(currentLikeCount > 0) ? currentLikeCount - 1 : 0;
+		unlikeComment($comment, $this);
 	} else {
-		likeComment($comment);
-		$this.addClass('active');	
-		newLikeCount = currentLikeCount + 1;
+		likeComment($comment, $this);
 	}
 	
-	newLikeCountText = newLikeCount ? newLikeCount : '';
-	// console.log('newLikeCount="' + newLikeCount + '"');
-	
-	$likeCount.text(newLikeCountText);
 }
 
-function likeComment($comment) {
+function likeComment($comment, $likeDiv) {
 	var postId = $comment.attr('data-id'),
+		$likeCount = $likeDiv.find('.like-count'),
+		currentLikeCountText = $likeCount.text(),
+		currentLikeCount = (currentLikeCountText.length) ? Number.parseInt(currentLikeCountText) : 0,
 		token = Utilities.getKinjaToken(),
 		origin = window.location.origin,
 		likeUrl = origin + '/ajax/post/' + postId + '/likeAndApprove',
@@ -1126,6 +1116,9 @@ function likeComment($comment) {
 	xhr.setRequestHeader('Authorization', 'Bearer '+token);
 	xhr.onload = function() {
 		console.log(this);
+		$likeDiv.addClass('active');
+		++currentLikeCount;
+		$likeCount.text(currentLikeCount);
 		var response = JSON.parse(this.responseText),
 			repliesToAdd = {n: 0, a: 0, s: 0, p: 0, type: 0};
 		
@@ -1219,10 +1212,16 @@ function likeComment($comment) {
 			}
 		}
 	};
+	
+	xhr.onerror = function(){
+		console.log('Kinjamprove: Error liking comment', this);
+		alert('Kinjamprove: Error liking comment. If this problem persists, please contact developer.');
+	};
+	
 	xhr.send(payloadStr);
 }
 
-function unlikeComment($comment) {
+function unlikeComment($comment, $likeDiv) {
 	var postId = $comment.attr('data-id'),
 		token = Utilities.getKinjaToken(),
 		origin = window.location.origin,
@@ -1231,15 +1230,22 @@ function unlikeComment($comment) {
 		payloadStr = JSON.stringify(payload),
 		xhr = new XMLHttpRequest(),
 		starterId = $comment.closest('section.discussion-region').attr('starter-id'),
-		commentTracker = kinjamprove.commentTrackers[starterId];
+		commentTracker = kinjamprove.commentTrackers[starterId],
+		$likeCount = $likeDiv.find('.like-count'),
+		currentLikeCountText = $likeCount.text(),
+		currentLikeCount = (currentLikeCountText.length) ? Number.parseInt(currentLikeCountText) : 0;
 
 	xhr.open('POST', unlikeUrl, true);
 	xhr.setRequestHeader('Content-type', 'application/json; charset=UTF-8');
 	xhr.setRequestHeader('Authorization', 'Bearer '+token);
 	xhr.onload = function() {
 		
-		postId = Number.parseInt(postId);
+		$likeDiv.removeClass('active');
+		currentLikeCount = Math.max(0, currentLikeCount - 1);
+		currentLikeCountText = currentLikeCount || '';
+		$likeCount.text(currentLikeCountText);
 		
+		postId = Number.parseInt(postId);
 		$comment.removeClass('kinjamprove-liked-by-user');
 		
 		var comment = commentTracker.commentsMap.get(postId),
@@ -1274,6 +1280,12 @@ function unlikeComment($comment) {
 		
 		commentTracker.updateFilterSelect("unliked");
 	};
+	
+	xhr.onerror = function(){
+		console.log('Kinjamprove: Error unliking comment', this);
+		alert('Kinjamprove: Error unliking comment. If this problem persists, please contact developer.');
+	};
+	
 	xhr.send(payloadStr);
 }
 

@@ -396,7 +396,7 @@ function updatePageArticle(summaries) {
 		// }
 		if(!kinjamprove.headers[postId]){
 			kinjamprove.headers[postId] = true;
-			createKinjamproveDiscussionHeaderLi(postId, $discussionRegion, $discussionHeader.find('ul'));
+			createKinjamproveDiscussionHeaderLi(postId, $discussionHeader.find('ul'));
 			//console.log('kinjamprove.options.sortOrder=' + kinjamprove.options.sortOrder);
 			
 			addDiscussionRegionEvents($discussionRegion, postId);
@@ -492,11 +492,10 @@ function createKinjamproveReplyButton($nativeReplyButton) {
     return $kinjamproveReplyButton;
 }
 
-function createKinjamproveDiscussionHeaderLi(postId, $discussionRegion, $filterUl) {
+function createKinjamproveDiscussionHeaderLi(postId, $filterUl) {
 	var $sortOrderSelect = createSortOrderSelect(postId),
 		$sortOrderText = createElement('span', { 'class': 'kinjamprove-sortorder-text-span' }, 'Sort By: '),
-		numOfPendingComments = $discussionRegion.attr('data-reply-count-pending'),
-		$hidePendingCommentsToggleSwitch = createHidePendingCommentsToggleSwitch(numOfPendingComments),
+		$hidePendingCommentsToggleSwitch = createHidePendingCommentsToggleSwitch(),
 		$kinjamprovePendingSwitchLi = 
 			$('<li>', { 'class': 'kinjamprove-discussion-header-li-pending' })
 				.append($hidePendingCommentsToggleSwitch);
@@ -679,7 +678,7 @@ function onSortOrderSelectChange() {
 	}
 }
 
-function createHidePendingCommentsToggleSwitch(numOfPendingComments) {
+function createHidePendingCommentsToggleSwitch() {
 	var hidePendingCommentsCheckboxObj = { 
 			type: 'checkbox', 
 			'class': 'kinjamprove-hide-pending-comments-checkbox' 
@@ -691,7 +690,7 @@ function createHidePendingCommentsToggleSwitch(numOfPendingComments) {
 			$('<label>', { 'class': 'switch kinjamprove-hide-pending-comments-switch' })
 				.append($hidePendingCommentsCheckbox, $hidePendingCommentsCheckboxSlider),
 		$hidePendingCommentsTextSpan = 
-			createElement('span', { 'class': 'kinjamprove-hide-pending-comments-span' }, 'Show Pending ('+numOfPendingComments+')'), 
+			createElement('span', { 'class': 'kinjamprove-hide-pending-comments-span' }, 'Show Pending '), 
 		$hidePendingCommentsDiv = $('<div>',  { 'class': 'kinjamprove-hide-pending-comments-div' })
 			.append($hidePendingCommentsTextSpan, $hidePendingCommentsToggleSwitch);
 
