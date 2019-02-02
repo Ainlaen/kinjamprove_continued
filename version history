@@ -7,7 +7,7 @@ Changes:
   Displayed load time is now more accurate.
 
 Fixes:
-  Updated API calls for a variety of functions.
+  Updated API calls for a variety of functions. Posting, liking, flagging, and following should all work again.
 
 
   
