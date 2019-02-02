@@ -1,3 +1,15 @@
+0.0.2.4 (02/01/2019)
+
+Changes:
+  Dismiss function can now be handled by Kinjamprove. 
+  Staff comment color now takes priority over staff curated color.
+  Displayed load time is now more accurate.
+
+Fixes:
+  Updated API calls for a variety of functions.
+
+
+  
 0.0.2.3 (01/21/2019)
 
 Kinja has been making changes to their API recently, so please report any issues.
