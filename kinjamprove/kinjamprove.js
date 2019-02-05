@@ -1287,7 +1287,7 @@ function articleClickMark(event){
 	
 	let $this = $(this),
 		$target = $(event.target);
-	if($target.is('a') || $target.closest('ul').hasClass('kinjamprove-comment-dropdown')){
+	if($target.is('a') || $target.parents('a').length || $target.closest('ul').hasClass('kinjamprove-comment-dropdown')){
 		return;
 	}
 	kinjamprove.clickTimerActive = true;

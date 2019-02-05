@@ -4,7 +4,7 @@ div.reading-list section.sidebar {
 
 .replies-wrapper,
 .discussion-header {
-	max-width: none !important;
+	max-width: 800px !important;
 }
 .reply__content,
 .reply--depth-0>.reply__content {
@@ -857,9 +857,6 @@ div.editor-buttons {
 }
 .pe_newlayout .main {
 	border-left: none !important;
-}
-.pe_newlayout.featured-post .main__content {
-	max-width: 800px !important;
 }
 
 li.commentlist__item.collapsed > article > :not(header),
