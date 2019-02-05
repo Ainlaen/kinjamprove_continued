@@ -31,6 +31,8 @@ function createPostDropdownUl(comment) {
 		$unflagLi = createDropdownUnflagLi(comment),
 		$dismissLi = createDismissDropdownLi(comment),
 		$blockUserLi = createDropdownBlockUserLi(comment),
+		$saveCommentIdLi = createDropdownSaveCommentLi(comment),
+		$deleteCommentIdLi = createDropdownDeleteCommentIdLi(comment),
 		$listItems = [
 			$editCommentLi, 
 			$deleteCommentLi, 
@@ -39,7 +41,9 @@ function createPostDropdownUl(comment) {
 			$flagLi, 
 			$unflagLi, 
 			$dismissLi, 
-			$blockUserLi
+			$blockUserLi,
+			$saveCommentIdLi,
+			$deleteCommentIdLi
 		],
 		starterId = comment.starterId,
 		userIsStaff = kinjamprove.commentTrackers[starterId].userIsStaff;
@@ -77,6 +81,11 @@ function createPostDropdownUl(comment) {
 	if (Utilities.userFlaggedPost(comment.id)) {
 		$flagLi.addClass('hide');
 		$unflagLi.removeClass('hide');
+	}
+	
+	if(kinjamprove.options.saved_comment_ids[comment.id]){
+		$saveCommentIdLi.addClass('hide');
+		$deleteCommentIdLi.removeClass('hide');
 	}
 	
 	$postDropdownUl = $('<ul>', postDropdownUlObj)
@@ -296,6 +305,41 @@ function createDismissDropdownLi(comment) {
 	return $dismissDropdownLi;
 }
 
+function createDropdownDeleteCommentIdLi(comment) {
+	var $saveLi,
+		$saveLink,
+		saveLiText = 'Delete Saved Comment',
+		saveLiObj = { 
+			'class': 'kinjamprove_save icon--svg hover-icon hide kinjamprove-delete-comment-id',
+			title: 'Open the options page to see all saved comments'
+		};
+	
+	$saveLink = $('<a>', { 'class': 'icon--svg u-darkened--onhover u-prepended' })
+		.append(saveLiText);
+
+	$saveLi = $('<li>', saveLiObj)
+		.append($saveLink);
+	
+	return $saveLi;
+}	
+
+function createDropdownSaveCommentLi(comment) {
+	var $saveLi,
+		$saveLink,
+		saveLiText = 'Save Comment',
+		saveLiObj = { 
+			'class': 'kinjamprove_save icon--svg hover-icon kinjamprove-save-comment-id',
+			title: 'Open the options page to see all saved comments'
+		};
+	
+	$saveLink = $('<a>', { 'class': 'icon--svg u-darkened--onhover u-prepended' })
+		.append(saveLiText);
+
+	$saveLi = $('<li>', saveLiObj)
+		.append($saveLink);
+	
+	return $saveLi;
+}	
 
 function createDropdownBlockUserLi(comment) {
 	var $blockUserLi,
@@ -1038,4 +1082,30 @@ function onDismissDropdownClick() {
 		alert('Kinjamprove: Error dismissing post. If the problem persists, please contact the developer.');
 	});
 			
+}
+
+function onSaveCommentIdLiClick(){
+	var $this = $(this),
+		saved_comment_ids = kinjamprove.options.saved_comment_ids,
+		postId = $this.closest('ul').attr('data-postid');
+	
+	saved_comment_ids[postId] = 1;
+	
+	chrome.storage.sync.set({'saved_comment_ids':JSON.stringify(saved_comment_ids)});
+	$this.siblings('.kinjamprove-delete-comment-id').removeClass('hide');
+	$this.addClass('hide');
+	$this.closest('article').addClass('kinjamprove-saved');
+}
+
+function onDeleteCommentIdLiClick() {
+	var $this = $(this),
+		saved_comment_ids = kinjamprove.options.saved_comment_ids,
+		postId = $this.closest('ul').attr('data-postid');
+	
+	delete saved_comment_ids[postId];
+		
+	chrome.storage.sync.set({'saved_comment_ids':JSON.stringify(saved_comment_ids)});
+	$this.siblings('.kinjamprove-save-comment-id').removeClass('hide');
+	$this.addClass('hide');
+	$this.closest('article').removeClass('kinjamprove-saved');
 }

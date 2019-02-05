@@ -720,6 +720,36 @@ input:focus + .slider {
     background-position-x: 100%;
 }
 
+li.kinjamprove-block-user > a, li.kinjamprove_save > a {
+	background-image: url('chrome-extension://__MSG_@@extension_id__/icons/kinjamprove-logo-21x40-green.png');
+    background-repeat: no-repeat;
+    background-position-x: right;
+    background-position-y: center;
+	background-size: 1rem;
+}
+
+article.kinjamprove-saved > header.reply__header:after{
+	content: "SAVED";
+    position: absolute;
+    right: 1rem;
+    top: 0.1rem;
+    color: #0080008f;
+}
+
+li.kinjamprove_save > a{
+	padding-top: 0px;
+}
+
+li.kinjamprove_save > a:before{
+    position: relative;
+    content: "♡";
+    font-size: 1.7rem;
+    color: lightgrey;
+    padding-right: 0.6rem;
+    top: 0.25rem;
+}
+
+
 .kinjamprove-authorlist-label{
 	display: inherit;
 	font-weight: bold;

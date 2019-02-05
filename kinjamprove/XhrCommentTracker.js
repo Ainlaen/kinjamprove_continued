@@ -354,6 +354,10 @@ XhrCommentTracker.prototype = {
 					reply.threadId = baseComment.id;
 					++replyParent.directReplyCount;
 					
+					if(kinjamprove.options.saved_comment_ids[replyId]){
+						reply.articleClass += ' kinjamprove-saved';
+					}
+					
 					if (!reply.author) {
 						reply.author = { 
 							displayName: '',
@@ -487,7 +491,9 @@ XhrCommentTracker.prototype = {
 				
 				baseComment.authorIsStaff = (baseComment.author && _this.staffScreenNames.hasOwnProperty(baseComment.author.screenName));
 				
-				
+				if(kinjamprove.options.saved_comment_ids[baseComment.id]){
+						baseComment.articleClass += ' kinjamprove-saved';
+				}
 				if(kinjamprove.followingAuthor(baseComment.authorId)){
 					baseComment.followedAuthor = true;
 					++type.followed;

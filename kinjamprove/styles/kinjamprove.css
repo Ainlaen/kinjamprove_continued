@@ -219,60 +219,6 @@ article.kinjamprove-new-comment > div.reply__sidebar:before{
     font-weight: bold;
 }
 
-/* 
-article[depth="0"]:before {
-    content: ''; 
-	width: 30px; 
-	height: 30px;
-	top: -3px; 
-	left: 0px;
-	background: orange;
-	position: absolute; 
-	z-index: -1;
-	opacity: 0.7; 
-	border-radius: 3px
-}
-
-article[depth="0"]:after {
-    content: ''; 
-	width: 30px; 
-	height: 30px;
-	background: rgb(51, 153, 255); 
-	position: absolute; 
-	top: 25px; 
-	z-index: -1;
-	left: 28px; 
-	opacity: 0.7;
-	border-radius: 3px
-}
- */
-
-
-
-
-/*
-article[depth="0"]:before {
-    content: ''; 
-	width: 40px; 
-	height: 3px;
-	background: gray; 
-	position: absolute; 
-	top: -1px; 
-}
-
-article[depth="0"]:after {
-    content:''; 
-	width: 36px; 
-	height: 3px; 
-	background:gray; 
-	position:absolute; 
-	top: 16px; 
-	left: -12px;
-	-webkit-transform: rotate(-90deg);
-	
-}
-*/
-
 .kinjamprove-filter-highlight {
 	border-top: 2px solid !important;
 	border-right: 2px solid !important;
@@ -330,18 +276,6 @@ article[depth="0"]:after {
 	border-right-color: var(--staff-border-color, green) !important;
 }
 
-/*
-.kinjamprove-user-comment.kinjamprove-staff-curated:before {
-  content: " ";
-  position: absolute;
-  z-index: -1;
-  top: 0px;
-  left: 2px;
-  right: 0px;
-  bottom: 0px;
-  border-left: 2px solid rgb(51, 153, 255);
-}
-*/
 .kinjamprove-curated-comment {
 	border-top: 2px solid !important;
 	border-right: 2px solid !important;
@@ -363,7 +297,6 @@ article[depth="0"]:not(.collapsed):not(.kinjamprove-blockedUser) .reply__header>
 	height: 48px !important;
 }
 
-/*vvv Just added vvv*/
 
 li.commentlist__item.collapsed > article[depth="0"] .reply__header > .avatar img {
     width: 32px !important;
@@ -374,9 +307,7 @@ li.commentlist__item.collapsed > article .reply__header > .avatar img {
     width: 24px !important;
     height: 24px !important;
 }
-/* ^^^ Just added ^^^*/
 
-/* 0.0.1.8 */
 li.commentlist__item.collapsed > article[depth="0"] .reply__pending-label.hide-for-small {
 	top: 34px !important;
     left: -15px !important;

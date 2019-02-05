@@ -20,7 +20,8 @@
    },
    "options_ui": {
       "chrome_style": true,
-      "page": "options.html"
+      "page": "options.html",
+	  "open_in_tab": true
    },
    "page_action": {
       "default_icon": {

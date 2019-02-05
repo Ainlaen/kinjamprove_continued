@@ -1,5 +1,4 @@
-// const KINJAMPROVE_WINDOW_VARIABLES_CONTAINER_ID = 'kinjamprove-window-variables-container';
-// const KINJAMPROVE_WINDOW_VARIABLES_CONTAINER_SELECTOR = '#' + KINJAMPROVE_WINDOW_VARIABLES_CONTAINER_ID;
+// 0.0.2.4 Kinja API calls updated
 
 var Utilities = (function() {
 	const CHROME_EXTENSION_BASE_URL = 'chrome-extension://' + chrome.runtime.id + '/';
@@ -707,43 +706,6 @@ var CommentPromiseFactory = (function() {
 	var getItemsPromise = function(url) {
 		return CommentPromiseFactory.getJSON(url).then(function(response) {
 			return response.data.items;
-			/* 0.0.1.8 None of this should be needed.
-			var items = response.data.items,
-				promises = [];
-			for(var i = 0; i < items.length; i++){
-				promises.push(getCommentDataXhr(items[i].reply.id));
-				for(var j = 0; j < items[i].children.items.length; j++){
-					promises.push(getCommentDataXhr(items[i].children.items[j].id));
-				}
-			}
-			return Promise.all(promises).then(function(responses){
-				var i = 0,
-					j = 0;
-					//savedID;
-				responses.forEach(function(response){
-					
-					if(!items[i].reply.body){
-						//savedID = parseInt(items[i].reply.id);
-						for(var attr in response){
-							items[i].reply[attr] = response[attr];
-						}
-						//items[i].reply.id = savedID;
-					}else{
-						//savedID = parseInt(items[i].children.items[j].id);
-						for(var attr in response){
-							items[i].children.items[j][attr] = response[attr];
-						}
-						//items[i].children.items[j].id = savedID;
-						j++;
-					}
-					if(!(j < items[i].children.items.length)){
-						j = 0;
-						i++;
-					}
-				});
-				return items;
-			}); 
-			*/
 		}); 
 	};
 
@@ -1184,19 +1146,3 @@ function getCreateCommentPayload($textEditor, parentCommentId) {
 		token: Utilities.getKinjaToken(), 
 	});
 }
-// 0.0.1.8
-/*
-function postDismissComment(postId, defaultBlogId, kinjaToken) {
-	var url = 'https://kinja.com/api/profile/token/createSecure',
-		payload = {};
-	//JSON.stringify({ token: kinjaToken });
-	
-	return postJSON(url, payload)
-		.then(function(response) {
-			var secureToken = response.data.token;
-			payload = JSON.stringify({postId: postId});
-			url = CommentApiURLFactory.getDismissPostURL(postId, defaultBlogId, kinjaToken);
-			return CommentPromiseFactory.postJSON(url, payload, secureToken);
-		});
-}
-*/

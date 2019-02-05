@@ -13,7 +13,8 @@ var kinjamprove = {
 		minCommentsToLoad: undefined,
 		storedArticleLoadTimes: undefined,
 		colors: undefined,
-		useDefaultColors: undefined
+		useDefaultColors: undefined,
+		saved_comment_ids: undefined
 	},
 	userLikedPostIdsMap: new Map(),
 	userFlaggedPostIdsMap: new Map(),
@@ -42,14 +43,6 @@ var kinjamprove = {
 
 var showParentCommentTooltipTimer,
 	hideParentCommentTooltipTimer;
-
-// var removedButton = false;
-// var didScroll;
-// var scrollInterval;
-// var lastScrollTop;
-// var delta;
-// var navbarHeight;
-// var firstDiscussionRegionScrollTop;
 
 
 $(function() {
@@ -130,7 +123,8 @@ $(function() {
 		defaultToCommunity: false,
 		minCommentsToLoad: 50,
 		storedArticleLoadTimes: '{}',
-		itemsStoredLocal: false
+		itemsStoredLocal: false, 
+		saved_comment_ids: '{}'
 	}, optionsCallback);
 	
 	$('body')
@@ -162,6 +156,12 @@ function optionsCallback(items) {
 	
 	if (kinjamprove.options.preferredStyle  !== 'classic') {
 		Utilities.addStyleToPage('kinjamprove.css');
+	}
+	
+	if(!kinjamprove.options.saved_comment_ids){
+		kinjamprove.options.saved_comment_ids = {};
+	} else {
+		kinjamprove.options.saved_comment_ids = JSON.parse(kinjamprove.options.saved_comment_ids);
 	}
 	
 	if(!kinjamprove.options.storedArticleLoadTimes) {
@@ -292,6 +292,7 @@ function kinjamproveFunc() {
 			commentTracker.userIsAuthor = userIsAuthor;
 			commentTracker.userIsStaff = userIsStaff;
 			commentTracker.notArticle = notArticle;
+
 			if(kinjamprove.options.storedArticleLoadTimes[firstStoryStarterId]){
 				commentTracker.newestPostTime = kinjamprove.options.storedArticleLoadTimes[firstStoryStarterId].postTime;
 			}
@@ -980,6 +981,12 @@ function addDiscussionRegionEvents($discussionRegion, postId) {
 		blockForBlogEventsObj = {
 			click: onBlockForBlogLiClick
 		},
+		saveCommentIdEventsObj = {
+			click: onSaveCommentIdLiClick
+		},
+		deleteCommentIdEventsObj = {
+			click: onDeleteCommentIdLiClick
+		},
 		kinjamproveSortOrderSelectEventsObj = {
 			change: onSortOrderSelectChange
 		},
@@ -1080,6 +1087,8 @@ function addDiscussionRegionEvents($discussionRegion, postId) {
 		'li.kinjamprove-follow-for-blog': followForBlogEventsObj,
 		'li.kinjamprove-unfollow-for-blog': unfollowForBlogEventsObj,
 		'li.kinjamprove-block-user-for-blog': blockForBlogEventsObj,
+		'li.kinjamprove-delete-comment-id': deleteCommentIdEventsObj,
+		'li.kinjamprove-save-comment-id': saveCommentIdEventsObj,
 		'a.kinjamprove-flag-save': saveFlagPostEventsObj,
 		'a.kinjamprove-flag-cancel': cancelFlagPostEventsObj,
 		'select.kinjamproveSortOrder': kinjamproveSortOrderSelectEventsObj,
@@ -1164,38 +1173,6 @@ function onCollapseThreadButtonClick(event) {
 			.removeClass('collapsed');
 	}
 
-
-	// var $this = $(this),
-	// 	$comment = $this.closest('article'),
-	// 	depth = Number.parseInt($comment.attr('depth'));
-		
-	// if (depth === 0) {
-	// 	$comment.toggleClass('collapsed');
-	// }
-			
-	// if ($this.hasClass('collapse')) {	
-	// 	$comment
-	// 		.siblings().hide()
-	// 			.find('article').addClass('collapsed')
-	// 			.end()
-	// 		.end()
-	// 		.children('header').nextAll().hide();	
-		
-	// 	$this.removeClass('collapse').attr('title', 'Expand').text('+');
-	// } else {
-	// 	$comment
-	// 		.children(':not(div.js_reply-flagged)').show()
-	// 		.end()
-	// 		.siblings().show()
-	// 			.find('a.kinjamprove-collapse-thread-button')
-	// 				.addClass('collapse')
-	// 				.attr('title', 'Collapse').text('−')
-	// 			.end()
-	// 			.find('article').removeClass('collapsed')
-	// 			.children('header').nextAll(':not(div.js_reply-flagged)').show();
-
-	// 	$this.addClass('collapse').attr('title', 'Collapse').text('−')
-	// }
 }
 
 function dropdownCommentIsDismissible($dropdown, userAuthorId) {
