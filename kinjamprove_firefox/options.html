@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kinjamprove Options</title>
+  <script src="jquery-3.3.1.js"></script>
+  <script src="options.js"></script>
+  <link rel="stylesheet" href="styles/options.css">
+  <style>
+    
+
+
+  </style>
+</head>
+
+<body>
+	<div class="tabs">
+		<span class="options_tab active tab"> Options </span>
+		<span class="comments_tab tab"> Saved Comments </span>
+		<span id="remove_saved" class="hide"> Delete Checked Posts</button>
+	</div>
+	<div class="flex">
+		<div class="main">
+			<p style="text-align: center;">
+				<b><u>Hit "SAVE" button to store changes</u></b>
+			</p>
+			<!-- <br/> -->
+
+			Preferred Kinja Style: 
+			<select id="preferredStyle">
+				<option value="kinjamprove">Kinjamproved (Recommended)</option>
+				<option value="classic">Classic (Legacy, unsupported)</option>
+			</select>
+			<hr/>
+
+
+			Sort comments by 
+			<select id="sortOrder">
+				<!-- <option value="popular">Best</option> -->
+				<option value="likes">Most Likes</option>
+				<option value="replies">Most Replies</option>
+				<option value="newest">Newest</option>	
+				<option value="oldest">Oldest</option>
+			</select>
+			<p>
+			<span id="defaultToCommunitySpan"> 
+				Prefer Community filter to Staff 
+				<input type="checkbox" id="defaultToCommunity" value="defaultToCommunity"/> 
+			</span>
+			</p>
+			<p>
+			<span id="minCommentsToLoadSpan" title="Setting this higher than default (50) will lead to longer load times.">
+				Minimum comments to load at once
+				<input type="number" id="minCommentsToLoad" min="1"/>
+			</span>
+			</p>
+			<hr/>
+
+			<span id="timezoneSpan">
+				Adjust publish times for local timezone
+				<input type="checkbox" id="localizePublishTime" value="localizePublishTime"/> 
+			</span>
+				
+			<hr/>
+
+			<table id="hideElementsTable" >
+				<tr>
+					<th colspan="2">Hide...</th>
+				</tr>
+				<tr>
+					<td>...pending replies</td>
+					<td class="checkboxCol"><input type="checkbox" id="hidePendingReplies" value="hidePendingReplies"/></td>
+				</tr>
+				<tr>
+					<td>...sidebar</td>
+					<td class="checkboxCol"><input type="checkbox" id="hideSidebar" value="hideSidebar"/></td>
+				</tr>
+				<tr>
+					<td>...social media buttons</td>
+						<td class="checkboxCol"><input type="checkbox" id="hideSocialMediaButtons" value="hideSocialMediaButtons"/></td>
+				</tr>
+			</table>
+			
+			<hr/>
+			
+
+			<table id="blockedUsersTable">
+				<tr>
+					<th colspan="2">Blocked Users</th>
+				</tr>
+			</table>
+			<hr/>
+			<table id="savedTimeTable"> 
+				<tr>
+				<th colspan="2">Saved Article Times</th>
+				</tr>
+			</table>
+			<span id="clearAllTimesSpan"> 
+				Clear All Saved Articles Times 
+				<input type="checkbox" id="clear"/>
+			</span>
+			<br/>
+			<br/>
+			<br/>
+			<br/>
+			<div id="fixed">
+				<button id="save">Save</button>
+			</div>
+			<input id="blockedUsers" type="hidden"/>
+			
+			<div id="blockedUsersContainer">
+				<span>Blocked Users</span>
+					<textarea id="blockedUsersText" cols="50" rows="10" ></textarea>
+			
+			</div>
+		</div>
+		<div class="saved_posts hide">
+			<span class="loading_span hide">Loading Saved Comments...</span>
+		</div>
+	</div>
+</body>
+</html>
