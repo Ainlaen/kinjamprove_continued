@@ -48,7 +48,7 @@ var showParentCommentTooltipTimer,
 $(function() {
 	var pageHasDiscussionRegion = !!$('section.js_discussion-region').length;
 
-	if (!pageHasDiscussionRegion) {
+	if (!pageHasDiscussionRegion || $('section.discussion-region--liveblog').length ) {
 		console.log("Page does not have discussion region, therefore Kinjamprove won't be run.");
 		return;
 	}
