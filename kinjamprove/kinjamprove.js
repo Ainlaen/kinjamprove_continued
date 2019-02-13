@@ -48,6 +48,17 @@ var showParentCommentTooltipTimer,
 $(function() {
 	var pageHasDiscussionRegion = !!$('section.js_discussion-region').length;
 
+	if(window.location.pathname == "/"){
+		$('div.ad-container').remove();
+		let $articles = $('article'),
+			$links = $articles.find('a');
+		for(let i = 0; i < $links.length; ++i){
+			if($links[i].href.indexOf("theinventory.com") > -1){
+				$($links[i]).parents('article').hide();
+			}
+		}
+	}
+	
 	if (!pageHasDiscussionRegion || $('section.discussion-region--liveblog').length ) {
 		console.log("Page does not have discussion region, therefore Kinjamprove won't be run.");
 		return;

@@ -846,11 +846,16 @@ function createPostBodyHeader(commentBodyPart, containers) {
 function createPostBodyPullQuote(commentBodyPart) {
 	var alignment = commentBodyPart.alignment.toLowerCase(),
 		pullquoteAside = '<aside class="pullquote align--' + alignment + '">' +
-			'<span class="pullquote__content">' + commentBodyPart.value[0].value +
-			'</span></aside>';
+			'<span class="pullquote__content">';
+		for(let i = 0; i < commentBodyPart.value.length; ++i){
+			pullquoteAside += commentBodyPart.value[i].value;
+		}
+
+		pullquoteAside += '</span></aside>';
 			
 	return pullquoteAside;
 }
+
 
 function createPostBodyHorizontalRule(commentBodyPart) {		
 	switch (commentBodyPart.style) {

@@ -862,7 +862,7 @@ div.editor-buttons {
 li.commentlist__item.collapsed > article > :not(header),
 li.commentlist__item.collapsed > li
 {
-    display: none;
+    display: none !important;
 }
 
 a.tab-item--active{
