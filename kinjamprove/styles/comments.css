@@ -934,7 +934,7 @@ span.kinjamprove-failure{
     font-size: 26px;
 }
 
-div.kinjamprove-post-content > h1,h2,h3,h4{
+div.kinjamprove-post-content h1,div.kinjamprove-post-content h2,div.kinjamprove-post-content h3,div.kinjamprove-post-content h4{
 	margin-left: 0 !important;
 	margin-right: 0 !important;
 }
