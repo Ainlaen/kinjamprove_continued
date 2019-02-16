@@ -38,10 +38,10 @@ function setNodeText(node, text) {
 	node.appendChild(document.createTextNode(text));
 }
 
+// Should only be called for pre-defined content. Should remove in future versions.
 function getNodeFromHTML(html) {
 	var tempContainer = document.createElement('div');
 	tempContainer.innerHTML = html;
-
 	return tempContainer.childNodes[0];
 }
 
@@ -49,8 +49,12 @@ function appendNodesToElement(elem, nodesArr) {
 	for (var i = 0; i < nodesArr.length; i++) {
 		var node = nodesArr[i];
 		
+		
 		if (typeof node === 'string') {
-			node = getNodeFromHTML(node);
+			console.log('Kinjamprove: getNodeFromHTML', node);
+			//Insecure
+			//node = getNodeFromHTML(node);
+			node = document.createTextNode(node);
 		} else if (node[0]) {
 			node = node[0];
 		}
@@ -596,9 +600,8 @@ function createPostBody(comment) {
 			
 		switch(type) {
 			case 'Paragraph':
-				postBodyComponent = 
-					createPostBodyParagraph(bodyPart, containers)
-						.replace(/<li>(\s|<br\/?>|&nbsp;)*<\/li>/g, ''); 
+				postBodyComponent = createPostBodyParagraph(bodyPart, containers);
+						//.replace(/<li>(\s|<br\/?>|&nbsp;)*<\/li>/g, ''); 
 				break;
 			case 'Image':
 				postBodyComponent = createPostBodyImage(bodyPart); 
@@ -636,10 +639,9 @@ function createPostBody(comment) {
 function createPostBodyParagraph(commentBodyPart, containers) {
 	containers = containers || [];
 
-	var p = '<p>',
+	var p = document.createElement('p'),
 		isList = false,
-		containersHtmlBeg = '',
-		containersHtmlEnd,
+		containersHtmlBeg,
 		bodyPartValues = commentBodyPart.value;
 
 	for (var i = 0; i < containers.length; i++) {
@@ -648,99 +650,96 @@ function createPostBodyParagraph(commentBodyPart, containers) {
 
 		switch(containerType.toLowerCase()) {
 			case 'blockquote': 
-				containersHtmlBeg += '<blockquote>';
+				containersHtmlBeg = document.createElement('blockquote');
 				break;
 			case 'list': 
 				if (container.style.toLowerCase() === 'bullet') {
-					containersHtmlBeg += '<ul>';
+					containersHtmlBeg = document.createElement('ul');
 				} else {
-					containersHtmlBeg += '<ol>';
+					containersHtmlBeg = document.createElement('ol');
 				}
 				isList = true;
 				break;
 		}
 	}
 
-	containersHtmlEnd = getClosingTagsLastInFirstOut(containersHtmlBeg)
-	p = containersHtmlBeg + p;
-	
-	p = creatPostBodyParagraphParts(bodyPartValues, p);
-
-	p += '</p>' + containersHtmlEnd;
-	
 	if (isList) {
-		p = p.replace(/<(\/?)p>/g, '<$1li>');
-		// p = p.replace(/<(\/?)p>/g, '');
-		// p = p.replace(/<li>(\s|<br>|&nbsp;)*<\/li>/g, '');
+		p = document.createElement('li');
 	}
+	if(containersHtmlBeg){
+		containersHtmlBeg.appendChild(p);
+	}else{
+		containersHtmlBeg = p;
+	}
+
+	p = creatPostBodyParagraphParts(bodyPartValues, containersHtmlBeg);
+
 	
 	return p;
 
-	function getClosingTagsLastInFirstOut(openTagsHtml) {
-		return openTagsHtml
-			.replace(/>/g, '>#KINJAMPROVE_SPLIT')
-			.split('#KINJAMPROVE_SPLIT')
-			.reverse()
-			.slice(1)
-			.join('')
-			.replace(/</g, '</');
-	}
+	// function getClosingTagsLastInFirstOut(openTagsHtml) {
+		// return openTagsHtml
+			// .replace(/>/g, '>#KINJAMPROVE_SPLIT')
+			// .split('#KINJAMPROVE_SPLIT')
+			// .reverse()
+			// .slice(1)
+			// .join('')
+			// .replace(/</g, '</');
+	// }
 }
 
 function creatPostBodyParagraphParts(bodyPartValues, p){
  	for (var i = 0; i < bodyPartValues.length; i++) {
 		var bodyPartValue = bodyPartValues[i],
 			bodyPartType = bodyPartValue.type,
-			textValue;
+			innerElement = null;
 
-		// if (isList) {
-		// 	p += '<li>';
-		// }
+
 
 		switch (bodyPartType) {
 			case 'LineBreak': 
-				textValue = '<br/>'; 
+				innerElement = document.createElement('br');
 				break;
 			case 'Link': 
-				textValue = '<a href="' + bodyPartValue.reference + '" target="_blank">';
+				//textValue = '<a href="' + bodyPartValue.reference + '" target="_blank">';
+				innerElement = document.createElement('a');
+				innerElement.href = bodyPartValue.reference;
+				innerElement.target = "_blank";
 				if(bodyPartValue.value){
-					textValue = creatPostBodyParagraphParts(bodyPartValue.value, textValue);
+					innerElement = creatPostBodyParagraphParts(bodyPartValue.value, innerElement);
 				}
-				// for (var j = 0; j < bodyPartValue.value.length; j++) {
-					// textValue += bodyPartValue.value[j].value;
-				// }
-				textValue += '</a>';
 				break;
 			default: 
-				textValue = bodyPartValue.value;
+				innerElement = document.createTextNode(bodyPartValue.value);
 		 }
 
 
 		var styles = bodyPartValue.styles || [],
-			stylesHtmlBeg = '',
-			stylesHtmlEnd;
+			stylesElements = [];
 
 		for (var j = 0; j < styles.length; j++) {
 			var style = styles[j];
 
 			switch (style) {
-				case 'Italic':    stylesHtmlBeg += '<em>'; break;
-				case 'Bold':      stylesHtmlBeg += '<strong>'; break;
-				case 'Struck':    stylesHtmlBeg += '<strike>'; break;
-				case 'Underline': stylesHtmlBeg += '<u>'; break;
-				case 'Code':      stylesHtmlBeg += '<code>'; break;
-				case 'Small':     stylesHtmlBeg += '<small>'; break;
+				case 'Italic':    stylesElements.push(document.createElement('em')); break;
+				case 'Bold':      stylesElements.push(document.createElement('strong')); break;
+				case 'Struck':    stylesElements.push(document.createElement('strike')); break;
+				case 'Underline': stylesElements.push(document.createElement('u')); break;
+				case 'Code':      stylesElements.push(document.createElement('code')); break;
+				case 'Small':     stylesElements.push(document.createElement('small')); break;
 			}
 		} // end of styles loop
+		
+		if(stylesElements.length){
+			stylesElements[stylesElements.length - 1].appendChild(innerElement);
+			for(var j = stylesElements.length - 1; j > 1; j--) {
+				stylesElements[j-1].appendChild(stylesElements[j]);
+			}
+			p.appendChild(stylesElements[0]);
+		}else {
+			p.appendChild(innerElement);
+		}
 
-
-
-		stylesHtmlEnd = stylesHtmlBeg.replace(/</g, '</');
-		p += stylesHtmlBeg + textValue + stylesHtmlEnd;
-
-		// if (isList) {
-		// 	p += '</li>';
-		// }
 	} // end of paragraphs loop
 	
 	return p;
@@ -752,20 +751,26 @@ function createPostBodyHeader(commentBodyPart, containers) {
 	var paragraph = createPostBodyParagraph(commentBodyPart, containers),
 	  	level = commentBodyPart.level,
 	 	headerTag = 'h' + level,
-	  	header = paragraph.replace('p', headerTag).replace(/p>$/, headerTag+'>');
+	  	header = document.createElement(headerTag);
+	
+	header.append(paragraph.childNodes);
 	  
 	return header;
 }
 
 function createPostBodyPullQuote(commentBodyPart) {
 	var alignment = commentBodyPart.alignment.toLowerCase(),
-		pullquoteAside = '<aside class="pullquote align--' + alignment + '">' +
-			'<span class="pullquote__content">';
-		for(let i = 0; i < commentBodyPart.value.length; ++i){
-			pullquoteAside += commentBodyPart.value[i].value;
-		}
+		pullquoteAside = document.createElement('aside'),
+		pullquoteSpan = document.createElement('span');
+	
+	pullquoteAside.classList.add('pullquote','align--'+alignment);
+	pullquoteSpan.classList.add('pullquote__content');
 
-		pullquoteAside += '</span></aside>';
+	for(let i = 0; i < commentBodyPart.value.length; ++i){
+		pullquoteSpan.textContent += commentBodyPart.value[i].value;
+	}
+
+	pullquoteAside.appendChild(pullquoteSpan);
 			
 	return pullquoteAside;
 }
@@ -940,8 +945,6 @@ function createLightboxOverlayDiv(imgSource) {
 		// svgIconTempContainer = document.createElement('div'),
 		closeIconSvg = getNodeFromHTML(closeIconSvgHTML);
 		
-	// svgIconTempContainer.innerHTML = closeIconSvgHTML;
-	// closeIconSvg = svgIconTempContainer.childNodes[0];
 		
 	img = document.createElement('img'); 
 	img.className = 'kinjamprove-post-body-image';
