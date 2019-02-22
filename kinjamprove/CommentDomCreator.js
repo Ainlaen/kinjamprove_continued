@@ -38,22 +38,12 @@ function setNodeText(node, text) {
 	node.appendChild(document.createTextNode(text));
 }
 
-// Should only be called for pre-defined content. Should remove in future versions.
-function getNodeFromHTML(html) {
-	var tempContainer = document.createElement('div');
-	tempContainer.innerHTML = html;
-	return tempContainer.childNodes[0];
-}
-
 function appendNodesToElement(elem, nodesArr) {
 	for (var i = 0; i < nodesArr.length; i++) {
 		var node = nodesArr[i];
 		
 		
 		if (typeof node === 'string') {
-			console.log('Kinjamprove: getNodeFromHTML', node);
-			//Insecure
-			//node = getNodeFromHTML(node);
 			node = document.createTextNode(node);
 		} else if (node[0]) {
 			node = node[0];
@@ -380,7 +370,7 @@ function createCommentHeader(comment) {
 function createAvatarContainer(comment) {
 	const IMG_SRC_BASE = 'https://i.kinja-img.com/gawker-media/image/upload/c_fill,fl_progressive,g_center,h_80,q_80,w_80/',
 		  AVATAR_CONTAINER_CLASS = 'avatar avatar-container js_avatar-container',
-		  AVATAR_ICON_SVG_HTML = '<span class="icon--svg"><svg class="svg-icon small svg-checkmark--small"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#iconset-checkmark--small"></use></svg></span>',
+		  //AVATAR_ICON_SVG_HTML = '<span class="icon--svg"><svg class="svg-icon small svg-checkmark--small"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#iconset-checkmark--small"></use></svg></span>',
 		  AVATAR_HREF_BASE = '//kinja.com/';
 	
 	var imgSrc = IMG_SRC_BASE + comment.author.avatar.id + '.' + comment.author.avatar.format,
@@ -391,10 +381,19 @@ function createAvatarContainer(comment) {
 			href: avatarHref, 
 			'class': AVATAR_CONTAINER_CLASS 
 		},
-		checkmarkSvgIcon = getNodeFromHTML(AVATAR_ICON_SVG_HTML),
+		svgSpan = createElement('span', {'class':'icon--svg'}),
+		svgElement = document.getElementsByClassName('svg-icon'),
 		avatarContainer = createElement('a', avatarContainerObj);
-		
-	appendNodesToElement(avatarContainer, [ checkmarkSvgIcon, avatarImg, avatarHideSpan ]);
+	
+	if(svgElement.length){
+		svgElement = svgElement[0].cloneNode(true);
+		svgElement.classList.value = "svg-icon small svg-checkmark--small";
+		svgElement.firstChild.attributes['xlink:href'] = '#iconset-checkmark--small';
+		svgElement.firstChild.attributes[0].nodeValue = '#iconset-checkmark--small';
+		svgSpan.appendChild(svgElement);
+	}
+	
+	appendNodesToElement(avatarContainer, [ svgSpan, avatarImg, avatarHideSpan ]);
 
 	return avatarContainer;
 }
@@ -406,6 +405,8 @@ function createReplyPublishTimeDiv(comment) {
 			newDate = new Date(publishTime),
 			offset = newDate.getTimezoneOffset(),
 			blogOffset = kinjamprove.kinja.meta.blog.timezoneOffset;
+		
+		offset *= 60 * 1000;
 		
 		newDate = new Date(publishTime + blogOffset + offset);
 		
@@ -455,11 +456,6 @@ function createReplyPublishTimeDiv(comment) {
 	replyAuthorCommentsLink.appendChild(replyAuthorCommentsSpan);
 	replyPublishTimeDiv.appendChild(replyAuthorCommentsLink);
 	
-	//replyPublishTimeDiv.className = 'reply__publish-time';
-	// var newestText = ' (newest: ' + Utilities.publishTimeFormatter(comment.newest) + ')';
-	// var newestSpan = createElement('span', { 'class': 'kinjamprove-newest' }, newestText);
-	// replyPublishTimeDiv.appendChild(newestSpan);
-	// $replyPublishTimeDiv.append('<span class="kinjamprove-newest"> (newest: '+publishTimeFormatter(comment.newest)+')</span>');
 
 	return replyPublishTimeDiv;
 }
@@ -561,14 +557,21 @@ function createPostDropdownDiv(comment) {
 		   'class': postDropdownLinkClass, 
 		   'data-dropdown': 'dropdown-' + comment.id, 
 		},
-		dropdownLinkIconOuterHTML = createSvgIconHtml('tools--giant'),
-		dropdownSvgIcon = getNodeFromHTML(dropdownLinkIconOuterHTML),
+		dropdownSvgIcon = document.getElementsByClassName('svg-icon'),
 		postDropdownLink = createElement('a', postDropdownLinkObj), 
 		collapseThreadButton = createCollapseThreadButton(),
 		postDropdownUl = createPostDropdownUl(comment),
 		postDropdownDiv = createElement('div', postDropdownDivObj); 
 			
-
+	if(dropdownSvgIcon.length){
+		dropdownSvgIcon = dropdownSvgIcon[0].cloneNode(true);
+		dropdownSvgIcon.classList.value = "svg-icon giant stroked svg-tools--giant";
+		dropdownSvgIcon.firstChild.attributes['xlink:href'] = '#iconset-tools--giant';
+		dropdownSvgIcon.firstChild.attributes[0].nodeValue = '#iconset-tools--giant';
+	}else{
+		dropdownSvgIcon = document.createTextNode('...');
+	}
+	
 	postDropdownLink.appendChild(dropdownSvgIcon);
 	appendNodesToElement(postDropdownDiv, [ collapseThreadButton, postDropdownUl, postDropdownLink ]);
 		
@@ -666,29 +669,19 @@ function createPostBodyParagraph(commentBodyPart, containers) {
 	if (isList) {
 		p = document.createElement('li');
 	}
+
+	p = createPostBodyParagraphParts(bodyPartValues, p);
+
 	if(containersHtmlBeg){
 		containersHtmlBeg.appendChild(p);
 	}else{
 		containersHtmlBeg = p;
 	}
-
-	p = creatPostBodyParagraphParts(bodyPartValues, containersHtmlBeg);
-
 	
-	return p;
-
-	// function getClosingTagsLastInFirstOut(openTagsHtml) {
-		// return openTagsHtml
-			// .replace(/>/g, '>#KINJAMPROVE_SPLIT')
-			// .split('#KINJAMPROVE_SPLIT')
-			// .reverse()
-			// .slice(1)
-			// .join('')
-			// .replace(/</g, '</');
-	// }
+	return containersHtmlBeg;
 }
 
-function creatPostBodyParagraphParts(bodyPartValues, p){
+function createPostBodyParagraphParts(bodyPartValues, p){
  	for (var i = 0; i < bodyPartValues.length; i++) {
 		var bodyPartValue = bodyPartValues[i],
 			bodyPartType = bodyPartValue.type,
@@ -706,7 +699,7 @@ function creatPostBodyParagraphParts(bodyPartValues, p){
 				innerElement.href = bodyPartValue.reference;
 				innerElement.target = "_blank";
 				if(bodyPartValue.value){
-					innerElement = creatPostBodyParagraphParts(bodyPartValue.value, innerElement);
+					innerElement = createPostBodyParagraphParts(bodyPartValue.value, innerElement);
 				}
 				break;
 			default: 
@@ -732,7 +725,7 @@ function creatPostBodyParagraphParts(bodyPartValues, p){
 		
 		if(stylesElements.length){
 			stylesElements[stylesElements.length - 1].appendChild(innerElement);
-			for(var j = stylesElements.length - 1; j > 1; j--) {
+			for(var j = stylesElements.length - 1; j > 0; j--) {
 				stylesElements[j-1].appendChild(stylesElements[j]);
 			}
 			p.appendChild(stylesElements[0]);
@@ -749,11 +742,14 @@ function createPostBodyHeader(commentBodyPart, containers) {
 	containers = containers || [];
 
 	var paragraph = createPostBodyParagraph(commentBodyPart, containers),
+		childNodes = paragraph.childNodes,
 	  	level = commentBodyPart.level,
 	 	headerTag = 'h' + level,
 	  	header = document.createElement(headerTag);
 	
-	header.append(paragraph.childNodes);
+	for(let i = 0; i < childNodes.length; ++i){
+		header.append(childNodes[i]);
+	}
 	  
 	return header;
 }
@@ -939,12 +935,20 @@ function createLightboxOverlayDiv(imgSource) {
 		lightboxContainerDiv,
 		closeLightboxAnchor,
 		img,
-		closeIconSvgHTML = '<svg class="svg-icon svg-close">' +
-			'<svg class="svg-icon svg-close" xmlns:xlink="http://www.w3.org/1999/xlink" ' + 
-			'xmlns="http://www.w3.org/2000/svg"><use xlink:href="#iconset-close"></use></svg>',
+		//closeIconSvgHTML = '<svg class="svg-icon svg-close">' +
+			// '<svg class="svg-icon svg-close" xmlns:xlink="http://www.w3.org/1999/xlink" ' + 
+			// 'xmlns="http://www.w3.org/2000/svg"><use xlink:href="#iconset-close"></use></svg>',
 		// svgIconTempContainer = document.createElement('div'),
-		closeIconSvg = getNodeFromHTML(closeIconSvgHTML);
-		
+		closeIconSvg = document.getElementsByClassName('svg-icon');
+	
+	if(closeIconSvg.length){
+		closeIconSvg = closeIconSvg[0].cloneNode(true);
+		closeIconSvg.classList.value = "svg-icon svg-close";
+		closeIconSvg.firstChild.attributes['xlink:href'] = '#iconset-close';
+		closeIconSvg.firstChild.attributes[0].nodeValue = '#iconset-close';
+	}else{
+		closeIconSvg = createElement('span', {'style':'color: white; font-size:2em;'}, 'x');
+	}
 		
 	img = document.createElement('img'); 
 	img.className = 'kinjamprove-post-body-image';
@@ -1044,19 +1048,13 @@ function createReplySidebar(comment) {
 		},
 		replySidebar = createElement('div', replySidebarObj),
 		likedByUser = comment.likedByUser;
-	
-	// if(comment.newComment){
-		// let replySpan = createElement('span', {'class': 'kinjamprove-new-comment-span'});
-		// replySpan.textContent = "New Comment";
-		// replySidebar.appendChild(replySpan);
-	// }
 
 	replySidebar.appendChild(replySidebarLikeElem);
 
 	return replySidebar;
 
 	function createReplySidebarLikeElem(likeCount) {
-		var replySidebarStarSvg = getNodeFromHTML(createSvgIconHtml('star--giant')),
+		var replySidebarStarSvg = document.getElementsByClassName('svg-icon'),
 			replySidebarLikeCountSpanObj = { 
 				'class': 'like-count js_like_count' 
 			},
@@ -1074,7 +1072,15 @@ function createReplySidebar(comment) {
 			},
 			replySidebarLikeElem = createElement('a', replySidebarLikeObj);
 		
-		replySidebarStarSvg.classList.add('stroked', 'giant');
+		if(replySidebarStarSvg.length){
+			replySidebarStarSvg = replySidebarStarSvg[0].cloneNode(true);
+			replySidebarStarSvg.classList.value = "svg-icon giant stroked svg-star--giant";
+			replySidebarStarSvg.firstChild.attributes['xlink:href'] = '#iconset-star--giant';
+			replySidebarStarSvg.firstChild.attributes[0].nodeValue = '#iconset-star--giant';
+		} else{
+			replySidebarStarSvg = document.createTextNode('*');
+		}
+		
 		appendNodesToElement(replySidebarLikeElem, [ replySidebarStarSvg, replySidebarLikeCountSpan ]);
 
 		if (kinjamprove.userLikedPostIdsMap.has(comment.id)) {
