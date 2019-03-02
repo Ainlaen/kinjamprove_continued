@@ -7,6 +7,7 @@ New:
   Added option to the Options page to increase the width of the comments section
 
 Changes: 
+  No longer runs on live blogs. (Kinjamprove does not load correctly for live blogs and prevented them from being viewed)
   kinjamprove.css merged into comments.css. "Classic" style option is no longer available.
   Various other CSS fixes and adjustments
   Added addition content security policy settings
