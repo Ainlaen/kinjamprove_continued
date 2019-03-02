@@ -1,3 +1,20 @@
+0.0.2.5 (03/02/2019)
+NOTE: Not yet available via Chrome Webstore.
+
+New:
+  Added option to the Options page to hide TheInventory.com articles and other ads in main article lists
+  Added option to the Options page to hide articles shared from other Kinja sites in main article lists
+  Added option to the Options page to increase the width of the comments section
+
+Changes: 
+  kinjamprove.css merged into comments.css. "Classic" style option is no longer available.
+  Various other CSS fixes and adjustments
+  Added addition content security policy settings
+  Changed the way post bodies are generated
+  Additional user feedback when publishing comments
+
+
+
 0.0.2.4 (02/01/2019)
 
 New: 
