@@ -10,7 +10,7 @@ Changes:
   No longer runs on live blogs. (Kinjamprove does not load correctly for live blogs and prevented them from being viewed)
   kinjamprove.css merged into comments.css. "Classic" style option is no longer available.
   Various other CSS fixes and adjustments
-  Added addition content security policy settings
+  Added additional content security policy settings
   Changed the way post bodies are generated
   Additional user feedback when publishing comments
 
