@@ -25,9 +25,7 @@ function toggleTabs(){
 
 // Saves options to chrome.storage.sync.
 function save_options() {
-	var style = document.getElementById('preferredStyle').value,
-		// defaultComments = document.getElementById('defaultComments').value,
-		sortOrder = document.getElementById('sortOrder').value,
+	var sortOrder = document.getElementById('sortOrder').value,
 		blockedUsers = document.getElementById('blockedUsers').value,
 		hidePendingReplies = document.getElementById('hidePendingReplies').checked,
 		hideSidebar = document.getElementById('hideSidebar').checked,
@@ -37,6 +35,9 @@ function save_options() {
 		minCommentsToLoad = document.getElementById('minCommentsToLoad').value,
 		clearSaved = document.getElementById('clear').checked,
 		storedLocal = false,
+		removeInventoryLinks = document.getElementById('removeInventoryLinks').checked,
+		hideSharedArticles = document.getElementById('hideSharedArticles').checked,
+		increaseWidth = document.getElementById('increaseWidth').checked,
 		string;
 	
 	if (!blockedUsers.length) {
@@ -96,7 +97,6 @@ function save_options() {
 	setSavedTimesTable(articleTimes);
 	
 	chrome.storage.sync.set({
-		preferredStyle: style,
 		hidePendingReplies: hidePendingReplies,
 		sortOrder: sortOrder,
 		hideSocialMediaButtons: hideSocialMediaButtons,
@@ -106,7 +106,10 @@ function save_options() {
 		defaultToCommunity: defaultToCommunity,
 		minCommentsToLoad: minCommentsToLoad, 
 		storedArticleLoadTimes: string,
-		itemsStoredLocal: storedLocal
+		itemsStoredLocal: storedLocal,
+		removeInventoryLinks: removeInventoryLinks,
+		hideSharedArticles: hideSharedArticles,
+		increaseWidth: increaseWidth
 	}, updateStatus);
 	
 
@@ -127,7 +130,6 @@ function restore_options() {
 // 	chrome.storage.sync.clear();
 	
 	chrome.storage.sync.get({
-		preferredStyle: 'kinjamprove',
 		sortOrder: 'likes',
 		hidePendingReplies: false,
 		hideSocialMediaButtons: false,
@@ -139,14 +141,15 @@ function restore_options() {
 		minCommentsToLoad: 50,
 		storedArticleLoadTimes: '{}',
 		itemsStoredLocal: false,
-		saved_comment_ids: '{}'
+		saved_comment_ids: '{}',
+		removeInventoryLinks: false,
+		hideSharedArticles: false,
+		increaseWidth: false
 	}, setValues);
 		
 	function setValues(items) { 
 		console.log('Kinjamprove: restored options: ', items);
-		
-		document.getElementById('preferredStyle').value = items.preferredStyle;
-		// document.getElementById('defaultComments').value = items.defaultComments;
+
 		document.getElementById('sortOrder').value = items.sortOrder;
 		setBlockedUsersTable(items.blockedUsers);
 		articleTimes = JSON.parse(items.storedArticleLoadTimes);
@@ -169,13 +172,15 @@ function restore_options() {
 		saved_comment_ids = JSON.parse(items.saved_comment_ids);
 		document.getElementById('blockedUsers').value = items.blockedUsers;
 		document.getElementById('blockedUsersText').value = items.blockedUsers;
-		
+		document.getElementById('removeInventoryLinks').checked = items.removeInventoryLinks;
+		document.getElementById('hideSharedArticles').checked = items.hideSharedArticles;
 		document.getElementById('hidePendingReplies').checked = items.hidePendingReplies;
 		document.getElementById('hideSocialMediaButtons').checked = items.hideSocialMediaButtons;
 		document.getElementById('hideSidebar').checked = items.hideSidebar;
 		document.getElementById('localizePublishTime').checked = items.localizePublishTime;
 		document.getElementById('defaultToCommunity').checked = items.defaultToCommunity;
 		document.getElementById('minCommentsToLoad').value = items.minCommentsToLoad;
+		document.getElementById('increaseWidth').checked = items.increaseWidth;
 	}
 } // end of restore_options
 		
@@ -448,23 +453,12 @@ function setNodeText(node, text) {
 	node.appendChild(document.createTextNode(text));
 }
 
-// Should only be called for pre-defined content. Should remove in future versions.
-function getNodeFromHTML(html) {
-	var tempContainer = document.createElement('div');
-	tempContainer.innerHTML = html;
-
-	return tempContainer.childNodes[0];
-}
-
 function appendNodesToElement(elem, nodesArr) {
 	for (var i = 0; i < nodesArr.length; i++) {
 		var node = nodesArr[i];
 		
 		
 		if (typeof node === 'string') {
-			console.log('Kinjamprove: getNodeFromHTML', node);
-			//Insecure
-			//node = getNodeFromHTML(node);
 			node = document.createTextNode(node);
 		} else if (node[0]) {
 			node = node[0];
@@ -755,31 +749,26 @@ function createPostBodyParagraph(commentBodyPart, containers) {
 	if (isList) {
 		p = document.createElement('li');
 	}
+
+	p = createPostBodyParagraphParts(bodyPartValues, p);
+
 	if(containersHtmlBeg){
 		containersHtmlBeg.appendChild(p);
 	}else{
 		containersHtmlBeg = p;
 	}
-
-	p = creatPostBodyParagraphParts(bodyPartValues, containersHtmlBeg);
-
 	
-	return p;
-
+	return containersHtmlBeg;
 }
 
 
-function creatPostBodyParagraphParts(bodyPartValues, p){
+function createPostBodyParagraphParts(bodyPartValues, p){
  	for (var i = 0; i < bodyPartValues.length; i++) {
 		var bodyPartValue = bodyPartValues[i],
 			bodyPartType = bodyPartValue.type,
 			innerElement = null;
 
 				  
-				  
-	  
-
-
 		switch (bodyPartType) {
 			case 'LineBreak': 
 				innerElement = document.createElement('br');
@@ -790,11 +779,8 @@ function creatPostBodyParagraphParts(bodyPartValues, p){
 				innerElement.href = bodyPartValue.reference;
 				innerElement.target = "_blank";
 				if(bodyPartValue.value){
-					innerElement = creatPostBodyParagraphParts(bodyPartValue.value, innerElement);
+					innerElement = createPostBodyParagraphParts(bodyPartValue.value, innerElement);
 				}
-															 
-												  
-		
 						
 				break;
 			default: 
@@ -821,7 +807,7 @@ function creatPostBodyParagraphParts(bodyPartValues, p){
 		
 		if(stylesElements.length){
 			stylesElements[stylesElements.length - 1].appendChild(innerElement);
-			for(var j = stylesElements.length - 1; j > 1; j--) {
+			for(var j = stylesElements.length - 1; j > 0; j--) {
 				stylesElements[j-1].appendChild(stylesElements[j]);
 			}
 			p.appendChild(stylesElements[0]);
@@ -841,11 +827,14 @@ function createPostBodyHeader(commentBodyPart, containers) {
 	containers = containers || [];
 
 	var paragraph = createPostBodyParagraph(commentBodyPart, containers),
+		childNodes = paragraph.childNodes,
 	  	level = commentBodyPart.level,
 	 	headerTag = 'h' + level,
 	  	header = document.createElement(headerTag);
 	
-	header.append(paragraph.childNodes);
+	for(let i = 0; i < childNodes.length; ++i){
+		header.append(childNodes[i]);
+	}
 	  
 	return header;
 }
@@ -939,7 +928,7 @@ function createPostBodyImage(commentBodyPart) {
 		smallMediaSource = smallMediaSourceBase + source;
 
 	var marqueeFigureObj = { 'class': 'js_marquee-assetfigure align--center' }, 
-		imgWrapperDivObj = { 'class': 'img-wrapper lazy-image ', style: 'max-width: '+maxWidth+';' },
+		imgWrapperDivObj = { 'class': 'img-wrapper lazy-image '},
 		imgPermalinkSubWrapperDivObj = { 'class': 'img-permalink-sub-wrapper img-permalink-sub-wrapper--nobackground'},
 		source1_obj = { 
 			'class': 'ls-small-media-source', 

@@ -257,6 +257,8 @@ CommentEditorAPI.prototype = {
         $nativePublishButton.hide();
 
         function onKinjamprovePublishButtonClick() {
+			$(this).text('Publishing...');
+			$(this).toggleClass('publishing');
             if (commentEditorAPI.replyOrEdit === 'edit') {
                 onKinjamprovePublishButtonClick_publishEdit();
             } else {
@@ -292,12 +294,15 @@ CommentEditorAPI.prototype = {
                 var confirmPublishReply = true;//confirm('Kinjamprove: Are you sure you want to publish this reply?');
 
                 if (confirmPublishReply) {                    
-                    createComment(payload.body, payload.defaultBlogId, payload.images, 
+					createComment(payload.body, payload.defaultBlogId, payload.images, 
                                   payload.original, payload.parentId, payload.token, false)
                         .then(function(response) {
                             commentEditorAPI.closeEditor();
                         }).catch(function(error) {
                             console.error(error);
+							alert('Error publishing reply: ' + error);
+							$kinjamprovePublishButton.toggleClass('publishing');
+							$kinjamprovePublishButton.text('Publish Update');
                             $kinjamprovePublishButton.one('click', onKinjamprovePublishButtonClick);
                         });
                 }
@@ -336,6 +341,9 @@ CommentEditorAPI.prototype = {
                             commentEditorAPI.closeEditor();
                         }).catch(function(error) {
                             console.error(error);
+							alert('Error editing comment: ' + error);
+							$kinjamprovePublishButton.toggleClass('publishing');
+							$kinjamprovePublishButton.text('Publish Reply');
                             $kinjamprovePublishButton.one('click', onKinjamprovePublishButtonClick);
                         });
                 }

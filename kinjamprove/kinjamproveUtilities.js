@@ -814,7 +814,6 @@ function postCreateComment(postBody, defaultBlogId, images, original, parentId, 
 		return postJSON(url, requestPayloadStr, {'Authorization':'Bearer '+token});
 }
 
-
 function createComment(postBody, defaultBlogId, images, original, parentId, token, hidePendingReplies) {
 	return postCreateComment(
 			postBody, 

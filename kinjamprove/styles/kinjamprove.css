@@ -15,12 +15,6 @@
 .postlist__item .excerpt p {
 	font-family: "Noto Serif", Georgia, "Times New Roman", Times, serif !important;
 }
-/* 
-.pe_newlayout .sidebar {
-	display: none !important;
-}
- */
-
 
 body,
 h1,
@@ -153,36 +147,6 @@ article:not(.collapsed) .reply__pending-label.hide-for-small {
     font-weight: bold;
     text-align: center;
 }
-
-/*
-.reply__pending-label.hide-for-small,
-.kinjamprove-creator-label {
-	-webkit-transform: rotate(90deg);
-	top: 50px !important;
-	left: 150px !important;
-	position: relative;
-	width: 10%;
-	word-wrap: normal;
-}
-*/
-
-/*
-article.reply--unapproved ~ .js_region--warning:before {
-	transform: rotate(90deg) !important;
-	content: 'Pending Approval';
-	text-transform: uppercase;
-	display: inline-block;
-	display: none;
-	width: 10%;
-	font-size: 12px;
-	font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
-	position: relative;
-	top: -35px !important;
-	left: 800px !important;
-	margin: -50px !important;
-}
-*/
-
 
 article[depth="0"]:not(.collapsed, .kinjamprove-blockedUser) header:before {
     content: ''; 
