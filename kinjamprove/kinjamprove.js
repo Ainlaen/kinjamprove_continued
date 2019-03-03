@@ -210,10 +210,15 @@ function optionsCallback(items) {
 	}
 	
 	let $sharingFooterContainer = $('div.sharingfooter');
-	$sharingFooterContainer[0].id = 'kinja_footer';
-	$sharingFooterContainer[0].classList.value = 'kinjamprove-footer-container';
-	$sharingFooterContainer[0].attributes['data-analytics-target'].value ='null';
-	
+	if($sharingFooterContainer.length){
+		$sharingFooterContainer[0].id = 'kinja_footer';
+		$sharingFooterContainer[0].classList.value = 'kinjamprove-footer-container';
+		$sharingFooterContainer[0].attributes['data-analytics-target'].value ='null';
+	} else {
+		$sharingFooterContainer = $('<div>', {class:'kinjamprove-footer-container', id:'kinja_footer'});
+		$('div.page').after($sharingFooterContainer);
+		$sharingFooterContainer.append($('<div>',{class:'sharingfooter_wrapper'}));
+	}
 	let $sharingFooter = $('div.sharingfooter__wrapper');
 	addNavButtons($sharingFooter);
 	kinjamprove.options.colors = JSON.parse(kinjamprove.options.colors);
