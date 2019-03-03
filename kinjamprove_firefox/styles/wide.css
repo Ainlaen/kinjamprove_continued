@@ -1,0 +1,54 @@
+.pe_newlayout .page {
+	max-width: 100% !important;
+	margin: 0 !important;
+}
+
+.pe_newlayout .main__content {
+	max-width: none !important;
+}
+
+body:not(.featured-post) section.branch-wrapper {
+	margin: 0 auto;
+	max-width: 800px;
+}
+
+section.sidebar {
+	max-width: 22em;
+}
+
+div.replies-wrapper {
+	max-width: 75em !important;
+}
+
+div.discussion-header {
+	max-width: none !important;
+}
+
+.kinjamprove-commentlist article{
+	max-width: 100%;
+}
+
+.kinjamprove-post-content > p {
+	max-width: 80% !important;
+}
+
+section.main {
+	width: -moz-available !important;
+	padding: 0 !important;
+}
+
+article[depth],
+article[depth] ~ div.js_editor-placeholder  {
+	margin-left: 440px;
+}
+
+article[depth="9"],
+article[depth="8"] ~ div.js_editor-placeholder {
+	margin-left: 400px !important;
+}
+
+article[depth="10"],
+article[depth="9"] ~ div.js_editor-placeholder {
+	margin-left: 420px !important;
+}
+

@@ -1140,3 +1140,17 @@ button.publishing, button.publishing:hover, button.publishing:active, button.pub
 	background-color: red;
 	cursor: progress;
 }
+
+div.kinjamprove-footer-container {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: #fff;
+	z-index: 98;
+	box-shadow: 0 0 1px rgba(0,0,0,0.4);
+	height: 38px;
+	line-height: 38px;
+	vertical-align: middle;
+	font-size: 13px;
+}

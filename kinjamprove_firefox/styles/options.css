@@ -8,6 +8,9 @@ div.flex{
 	flex-wrap: nowrap;
 }
 
+p#save-notice{
+	text-align: center;
+}					
 div.tabs {
 	position: fixed;
     width: 100%;
@@ -173,11 +176,16 @@ table#savedTimeTable,
     justify-content: flex-end;
  }
  
+ .img-wrapper{
+	 max-width: fit-content;
+ }
+ 
  li, ul.commentlist{
 	list-style-type: none;
  }
  
  ul.commentlist {
+	width: 80em;
 	border: 1px solid #bfbfbf;
     border-top: none;
 	padding: 0;
@@ -287,6 +295,7 @@ span.like-count:before{
 
 p {	
 	max-width: 90%;
+	margin-bottom: 0.5rem;
 }
 
 span.reply__pending-label {

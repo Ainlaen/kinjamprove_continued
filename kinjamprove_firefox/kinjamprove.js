@@ -48,20 +48,42 @@ var showParentCommentTooltipTimer,
 
 $(function() {
 	var pageHasDiscussionRegion = !!$('section.js_discussion-region').length;
-	
-	if(window.location.pathname == "/"){
-		$('div.ad-container').remove();
-		let $articles = $('article'),
-			$links = $articles.find('a');
-		for(let i = 0; i < $links.length; ++i){
-			if($links[i].href.indexOf("theinventory.com") > -1){
-				$($links[i]).parents('article').hide();
+	chrome.storage.sync.get({
+		removeInventoryLinks: false,
+		hideSharedArticles: false
+	}, function(items){
+		if((items.removeInventoryLinks || items.hideSharedArticles) && window.location.pathname == "/"){
+			$('div.ad-container').remove();
+			let $articles = $('article'),
+				//$links = $articles.find('a'),
+				$headlineLinks = $articles.find('.headline').find('a'),
+				hostname = window.location.host.split('.');
+			
+			if(hostname.length == 2){
+				hostname = hostname[0];
+			}else{
+				hostname = hostname[1];
 			}
+			
+			for(let i = 0; i < $headlineLinks.length; ++i){
+				if(items.hideSharedArticles){
+					if($headlineLinks[i].href.indexOf(hostname) == -1){
+						$($headlineLinks[i]).parents('article').hide();
+					}
+				}
+				else if(hostname != "theinventory"){
+					if($headlineLinks[i].href.indexOf("theinventory.com") > -1){
+						$($headlineLinks[i]).parents('article').hide();
+					}
+				}
+			}
+
 		}
-	}
+	});
 	
-	if (!pageHasDiscussionRegion || $('section.discussion-region--liveblog').length) {
-		console.log("Page does not have discussion region, therefore Kinjamprove won't be run.");
+	
+	if (!pageHasDiscussionRegion || $('section.discussion-region--liveblog').length ) {
+		console.log("Kinjamprove: Page does not have discussion region or is a liveblog.");
 		return;
 	}
 	
@@ -124,7 +146,7 @@ $(function() {
 	chrome.storage.sync.get({
 		colors: JSON.stringify(kinjamprove.defaultColors),
 		useDefaultColors: true,
-		preferredStyle: 'kinjamprove',
+		increaseWidth: false,
 		sortOrder: 'likes',
 		hidePendingReplies: false,
 		hideSocialMediaButtons: false,
@@ -166,10 +188,12 @@ function optionsCallback(items) {
 	// 0.0.1.8 Stop infinite scrolling
 	$('div.js_reading-list').remove();
 	
-	if (kinjamprove.options.preferredStyle  !== 'classic') {
-		Utilities.addStyleToPage('kinjamprove.css');
+	//0.0.2.5 Hide ads in the middle of articles
+	$('div.ad-wrapper').hide();
+	Utilities.addStyleToPage('comments.css');
+	if (kinjamprove.options.increaseWidth) {
+		Utilities.addStyleToPage('wide.css');
 	}
-	
 	if(!kinjamprove.options.saved_comment_ids){
 		kinjamprove.options.saved_comment_ids = {};
 	} else {
@@ -181,12 +205,17 @@ function optionsCallback(items) {
 	} else {
 		kinjamprove.options.storedArticleLoadTimes = JSON.parse(kinjamprove.options.storedArticleLoadTimes);
 	}
+	let $sharingFooterContainer = $('div.sharingfooter');
+	$sharingFooterContainer[0].id = 'kinja_footer';
+	$sharingFooterContainer[0].classList.value = 'kinjamprove-footer-container';
+	$sharingFooterContainer[0].attributes['data-analytics-target'].value ='null';
 	
 	let $sharingFooter = $('div.sharingfooter__wrapper'),
 		$kinjamproveFooter = $('<div>', {'class':'kinjamprove-footer'});
 	$sharingFooter.prepend($kinjamproveFooter);
 	addNavButtons($kinjamproveFooter);
-	Utilities.addStyleToPage('comments.css');
+	$('div.sharingfooter').show();
+
 	kinjamprove.options.colors = JSON.parse(kinjamprove.options.colors);
 
 	if(!kinjamprove.options.useDefaultColors){
@@ -250,13 +279,7 @@ function kinjamproveFunc() {
 	if (!isNaN(Number.parseInt(referralId))) {
 		referralId = Number.parseInt(referralId);
 	}
-
-	// 0.0.1.9 Replaced with more reliable check below.
-	// if (referralId == window.location.pathname.substring(1, window.location.pathname.length)){
-		// notArticle = true;
-	// }
-
-
+	
 	var commentTracker,
 		$spinner;
 		
@@ -375,7 +398,7 @@ function kinjamproveFunc() {
 
 function updatePageArticle(summaries) {
 	// 0.0.1.8 Stop from loading too many trackers.
-	if(Object.keys(kinjamprove.commentTrackers).length > 2){
+	if(Object.keys(kinjamprove.commentTrackers).length > 1){
 		return;
 	}
     var summaryIndex = 0,

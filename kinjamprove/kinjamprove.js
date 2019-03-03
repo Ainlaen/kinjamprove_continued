@@ -209,6 +209,11 @@ function optionsCallback(items) {
 		kinjamprove.options.storedArticleLoadTimes = JSON.parse(kinjamprove.options.storedArticleLoadTimes);
 	}
 	
+	let $sharingFooterContainer = $('div.sharingfooter');
+	$sharingFooterContainer[0].id = 'kinja_footer';
+	$sharingFooterContainer[0].classList.value = 'kinjamprove-footer-container';
+	$sharingFooterContainer[0].attributes['data-analytics-target'].value ='null';
+	
 	let $sharingFooter = $('div.sharingfooter__wrapper');
 	addNavButtons($sharingFooter);
 	kinjamprove.options.colors = JSON.parse(kinjamprove.options.colors);
@@ -1248,7 +1253,7 @@ function dropdownCommentIsDismissible($dropdown, userAuthorId) {
 function onParentCommentLinkClick(event) {
 	//trackEvent('Button', 'click', 'Parent Comment Link');
 	event.stopPropagation();
-	console.log(event);
+
 	let $link = $(event.currentTarget),
 		starterId = parseInt($link.attr('starter-id')),
 		parentId = parseInt($link.attr('parent-id')),
