@@ -56,7 +56,7 @@ $(function() {
 			$('div.ad-container').remove();
 			let $articles = $('article'),
 				//$links = $articles.find('a'),
-				$headlineLinks = $articles.find('.headline').find('a'),
+				$headlineLinks = $articles.find('a'),
 				hostname = window.location.host.split('.');
 			
 			if(hostname.length == 2){
