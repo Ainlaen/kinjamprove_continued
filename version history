@@ -1,3 +1,14 @@
+0.0.2.6 (03/27/2019)
+
+Changes:
+  Adjusted footer class names to avoid conflicts with some ad blockers.
+
+Fixes:
+  Fix for hiding articles to adjust for new layout on Kinja sites.
+
+Known issues:
+  Hiding shared articles hides all articles. Whoops!
+
 0.0.2.5 (03/02/2019)
 
 New:
