@@ -55,8 +55,7 @@ $(function() {
 		if((items.removeInventoryLinks || items.hideSharedArticles) && window.location.pathname == "/"){
 			$('div.ad-container').remove();
 			let $articles = $('article'),
-				//$links = $articles.find('a'),
-				$headlineLinks = $articles.find('a'),
+				$headlineLinks = $articles.children('div').children('a'),
 				hostname = window.location.host.split('.');
 			
 			if(hostname.length == 2){
@@ -71,13 +70,14 @@ $(function() {
 						$($headlineLinks[i]).parents('article').hide();
 					}
 				}
-				else if(hostname != "theinventory"){
-					if($headlineLinks[i].href.indexOf("theinventory.com") > -1){
-						$($headlineLinks[i]).parents('article').hide();
+			}
+			if(hostname != "theinventory"){
+				for(let i = 0; i < $articles.length; ++i){
+					if($articles[i].attributes['data-commerce-source'].value){
+						$($articles[i]).hide();
 					}
 				}
 			}
-
 		}
 	});
 	
