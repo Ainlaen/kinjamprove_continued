@@ -9,7 +9,8 @@ Changes:
   
 Fixes:
   Blockquotes and lists should now be created properly.
-  Stored posts, times, and blocked users should no longer be able to overwrite themselves with old versions.
+  Blockquote encoding for new posts should now match the format used by Kinja.
+  Stored posts, times, and blocked users should no longer be able to overwrite themselves with old values.
   Hiding shared and TheInventory.com articles updated for changes to Kinja.
 
 
