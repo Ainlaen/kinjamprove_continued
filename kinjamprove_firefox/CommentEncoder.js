@@ -300,7 +300,12 @@ var CommentEncoder = (function(){
 				return exportHeader(node, adjustedLevel, containers);
 			case 'blockquote':
 				containers.push({ type: 'BlockQuote' });
-				return exportParagraph(node, containers);
+				// 0.0.2.8 Now matches expected values for blockquotes.
+				var parts = [];
+				for(let i = 0; i < node.children.length; ++i){
+					parts.push(exportParagraph(node.children[i],containers));
+				}
+				return parts;
 			case 'figure':
 				return renderPostBodyPartImage(node);
 			case 'aside': 

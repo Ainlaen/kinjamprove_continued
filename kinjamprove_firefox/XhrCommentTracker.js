@@ -1313,11 +1313,13 @@ XhrCommentTracker.prototype = {
 			var $discussionHeader = commentTracker.$discussionRegion.find('div.discussion-header'),
 				$discussionRegion = commentTracker.$discussionRegion,
 				postId = commentTracker.postId,
-				$kinjamproveDiscussionHeaderPanel = $('<div>', { 'class': 'kinjamprove-discussion-header-container' });
+				$kinjamproveDiscussionHeaderPanel = $('<div>', { 'class': 'kinjamprove-discussion-header-container' }),
+				$authorsList = createAuthorsList();
 
 			createKinjamproveDiscussionHeaderLi(postId, $discussionHeader.find('ul'));
 			
 			addDiscussionRegionEvents($discussionRegion, postId);
+			$discussionHeader.append($authorsList);
 			$discussionHeader.append($kinjamproveDiscussionHeaderPanel);
 		}
 		
@@ -1372,14 +1374,13 @@ XhrCommentTracker.prototype = {
 		if(commentTracker.$authorDatalist){
 			commentTracker.$authorDatalist.remove();
 		}
-		let $kinjamproveFooter = $('div.kinjamprove-footer'),
-			$authorlistInput = $kinjamproveFooter.find('input#kinjamprove-authorlist-input');
+		let $sharingFooter = $('div.sharingfooter__wrapper'),
+			$authorlistInput = commentTracker.$discussionRegion.find('input#kinjamprove-authorlist-input');
 		
 		commentTracker.$authorDatalist = commentTracker.createAuthorDatalist();
 		$authorlistInput.append(commentTracker.$authorDatalist);
 		$authorlistInput.val('');
-		$authorlistInput.parent().show();
-		$('button.kinjamprove-store-load-time-button').show();
+
 		if(commentTracker.$failedStaffLoadSpan){
 			commentTracker.$discussionRegion.find('div.discussion-header').append(commentTracker.$failedStaffLoadSpan);
 		}

@@ -1,30 +1,13 @@
 var BG = chrome.extension.getBackgroundPage();
-// console.log('background page (aka "BG"):', BG); 
-// console.log('BG.sessionStorage:', BG.sessionStorage);
+
 
 function restoreState() {
 	chrome.storage.sync.get({
 		paused: false,
-		hideSidebar: false,
 	}, function(items) {
-		// console.log('items:', items);
-		
 		var isPaused = items.paused;
 
 		restorePauseState(isPaused);
-
-		// if (isPaused) { 
-		// 	pauseButton.innerText = 'Unpause Kinjamprove';
-		// 	pauseButton.value = 'paused';
-		// 	// icon = '/icons/kinjamprove-logo-symmetrical-black-32.png';
-		// } else {
-		// 	pauseButton.innerText = 'Pause Kinjamprove';
-		// 	pauseButton.value = 'unpaused';
-		// 	// icon = '/icons/kinjamprove-logo-symmetrical-green-32.png';
-		// }
-
-		// console.log('pauseButton.innerText:', pauseButton.innerText);
-		// console.log('pauseButton.value:', pauseButton.value);
 	});
 }
 
@@ -59,8 +42,6 @@ function togglePause(event) {
 		innerText = 'Unpause Kinjamprove';
 		value = 'paused';
 	}
-
-	//ga('send', 'event', 'Button', 'click', value)//, 'opt_label', opt_value, {'nonInteraction': 1});
 	
 	message = value.charAt(0).toUpperCase()  + value.substring(1) + ' Kinjamprove';
 	chrome.storage.sync.set({
@@ -84,7 +65,6 @@ function togglePause(event) {
 }
 
 function openOptions(event){
-	//chrome.runtime.openOptionsPage();
 	window.open(chrome.runtime.getURL('options.html'));
 }
 
@@ -105,7 +85,5 @@ document.addEventListener('DOMContentLoaded', function() {
 	document.getElementById('pauseButton').addEventListener('click', togglePause);
 	document.getElementById('optionsButton').addEventListener('click', openOptions);
 	document.getElementById('colorsButton').addEventListener('click', showColorsPanel);
-
-
 });
 

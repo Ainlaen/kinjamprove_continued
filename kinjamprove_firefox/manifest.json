@@ -2,12 +2,12 @@
 	"manifest_version": 2,
 	"name": "Kinjamprove Continued",
 	"description": "Kinja with threaded replies, enhanced filters, additional comment sorting, user blocking, and other improvements.",
-	"version": "0.0.2.7",
+	"version": "0.0.2.8",
 	"background": {
 		"scripts": [ "background.js" ]
 	},
 	"content_scripts": [ {
-		"js": [ "jquery-3.3.1.js", "mutation-summary.js", "vanilla-picker.js", "CommentEditorAPI.js", "CommentEncoder.js", "XhrCommentTracker.js", "kinjamproveUtilities.js", "CommentClass.js", "CommentDropdown.js", "CommentDomCreator.js", "kinjamprove.js"],
+		"js": [ "jquery-3.4.0.js", "mutation-summary.js", "vanilla-picker.js", "CommentEditorAPI.js", "CommentEncoder.js", "XhrCommentTracker.js", "kinjamproveUtilities.js", "CommentClass.js", "CommentDropdown.js", "CommentDomCreator.js", "kinjamprove.js"],
 		"matches": [ "*://*.kinja.com/*", "*://*.avclub.com/*", "*://*.jezebel.com/*", "*://*.jalopnik.com/*", "*://*.gizmodo.com/*", "*://*.deadspin.com/*", "*://*.kotaku.com/*", "*://*.lifehacker.com/*", "*://*.theroot.com/*", "*://*.splinternews.com/*", "*://*.earther.com/*", "*://*.thetakeout.com/*", "*://*.clickhole.com/*", "*://*.theinventory.com/*" ]
 	} ],
    "content_security_policy": "script-src 'self'; object-src 'self'; default-src 'self'; img-src 'self' data: https://i.kinja-img.com/; connect-src 'self' https://kinja.com; frame-src 'self' https://kinja.com https://*.youtube.com;",

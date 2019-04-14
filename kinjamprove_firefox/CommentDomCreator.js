@@ -633,9 +633,9 @@ function createPostBody(comment) {
 		}
 	}
 	
-	postBody = mergeConsecutiveTags(postBody, 'ul');
-	postBody = mergeConsecutiveTags(postBody, 'ol');
-	postBody = mergeConsecutiveTags(postBody, 'blockquote');
+	postBody = mergeConsecutiveTags(postBody, 'UL');
+	postBody = mergeConsecutiveTags(postBody, 'OL');
+	postBody = mergeConsecutiveTags(postBody, 'BLOCKQUOTE');
 	return postBody;
 }
 
@@ -686,8 +686,6 @@ function createPostBodyParagraphParts(bodyPartValues, p){
 		var bodyPartValue = bodyPartValues[i],
 			bodyPartType = bodyPartValue.type,
 			innerElement = null;
-
-
 
 		switch (bodyPartType) {
 			case 'LineBreak': 
@@ -781,51 +779,37 @@ function createPostBodyHorizontalRule(commentBodyPart) {
 			return '<hr/>';
 	}	
 }
-
+// 0.0.2.8 Changed to match new method of post body construction from 0.0.2.5
 function mergeConsecutiveTags(postBodyArr, tag) {
-	var curPos = 0, 
-		endPos = 0,
-		newArr = [], 
-		temp = '',
-		openingTag = '<'+tag+'>',
-		closingTag = '</'+tag+'>';
-// 			closingRegex = new RegExp(closingTag, 'g'),
-// 			regexGlobal = new RegExp('<\/?'+tag+'>', 'g');
+	var newPostBodyArr = [],
+		temp = document.createElement(tag);
+	if(postBodyArr.length > 1){ 
+		if(postBodyArr[0].nodeName == tag){
+			temp.appendChild(postBodyArr[0].children[0]);
+		}
 		
-
-	while (curPos < postBodyArr.length) {
-		temp = postBodyArr[curPos];
-
-		if (isTag(temp)) {
-			endPos = curPos + 1;
-			temp = temp.replace(closingTag, '');
-// 				temp = temp.split(closingTag).join('');
-			while (endPos < postBodyArr.length && isTag(postBodyArr[endPos])) {
-// 					temp += postBodyArr[endPos].replace(regexGlobal, '');
-				temp += postBodyArr[endPos].split(openingTag).join('').split(closingTag).join('');
-				endPos++;
-				curPos++;
+		for(var i = 1; i <= postBodyArr.length; ++i){
+			if(postBodyArr[i-1].nodeName == tag){
+				if(postBodyArr[i] && postBodyArr[i].nodeName == tag){
+					temp.appendChild(postBodyArr[i].children[0]);
+				}else{
+					if(temp.children.length){
+						newPostBodyArr.push(temp);
+						temp = document.createElement(tag);
+					} else {
+						newPostBodyArr.push(postBodyArr[i-1]);
+					}
+				} 
+			}else {
+				newPostBodyArr.push(postBodyArr[i-1]);
 			}
-			temp += closingTag;
 		}
-		newArr.push(temp);
-		curPos++;
+	} else {
+		return postBodyArr;
 	}
 	
-	for (var i = 0; i < newArr.length; i++) {
-		var temp = newArr[i];
-		if (typeof temp === 'string') {
-			temp.replace('>>', '>');
-		}
-	}
+	return newPostBodyArr;
 
-	return newArr;
-	
-
-	function isTag(bodyPart) {
-		return (typeof bodyPart === 'string' && 
-			bodyPart.indexOf('<' + tag + '>') > -1);
-	}
 }
 	
 	
