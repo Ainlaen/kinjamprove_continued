@@ -5,6 +5,7 @@ New:
 
 Changes:
   Moved author list and store load time button from the footer to the discussion header (top of the comments section).
+  Updated to version 3.4.0 of JQuery.
   
 Fixes:
   Blockquotes and lists should now be created properly.
