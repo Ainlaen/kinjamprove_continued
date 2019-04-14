@@ -385,11 +385,6 @@ function onBlockUserClick(event) {
 		authorId = $comment.attr('data-authorId'),
 		authorName = $comment.attr('data-authorname');
 
-	// var trackerCategory = 'Block User',
-		// trackerAction = 'confirm',
-		// trackerLabel = 'Block User - ' + authorName;
-	
-
 	if (authorId === Utilities.getUserAuthorId()) {
 		console.log("User can not block themself.");
 		return;
@@ -411,23 +406,27 @@ function onBlockUserClick(event) {
 	//trackEvent(trackerCategory, trackerAction, trackerLabel);
 	
 	console.log('Kinjamprove: Blocking user "' + authorName + '" (authorId="' + authorId + '")');
+	var blockedUser = { authorId: authorName };
 	
-	var blockedUser = { authorId: authorName },
-		blockedUsers = (kinjamprove.options.blockedUsers.length) ? JSON.parse(kinjamprove.options.blockedUsers) : { };
+	chrome.storage.sync.get({
+		blockedUsers: '{}',
+	}, function(items){
+		var blockedUsers = JSON.parse(items.blockedUsers);
 		
-	blockedUsers[authorId] = authorName;
-	blockedUsers = JSON.stringify(blockedUsers);
-	if (!blockedUsers.length) {
-		blockedUsers = '{}';
-	}
-	
-	chrome.storage.sync.set({
-		blockedUsers: blockedUsers
-	}, function() {
-		console.log('Kinjamprove: Adding new user to blocked users in storage: "', blockedUser, '"');
-		console.log('Kinjamprove: updated blockedUsers:', blockedUsers);
-		kinjamprove.options.blockedUsers = blockedUsers;
-		blockUserPosts(authorId);
+		blockedUsers[authorId] = authorName;
+		blockedUsers = JSON.stringify(blockedUsers);
+		if (!blockedUsers.length) {
+			blockedUsers = '{}';
+		}
+		
+		chrome.storage.sync.set({
+			blockedUsers: blockedUsers
+		}, function() {
+			console.log('Kinjamprove: Adding new user to blocked users in storage: "', blockedUser, '"');
+			console.log('Kinjamprove: updated blockedUsers:', blockedUsers);
+			kinjamprove.options.blockedUsers = blockedUsers;
+			blockUserPosts(authorId);
+		});
 	});
 }
 
@@ -1084,28 +1083,42 @@ function onDismissDropdownClick() {
 			
 }
 
+// 0.0.2.8 Make sure values from other instances aren't overwritten.
 function onSaveCommentIdLiClick(){
 	var $this = $(this),
-		saved_comment_ids = kinjamprove.options.saved_comment_ids,
 		postId = $this.closest('ul').attr('data-postid');
 	
-	saved_comment_ids[postId] = 1;
-	
-	chrome.storage.sync.set({'saved_comment_ids':JSON.stringify(saved_comment_ids)});
-	$this.siblings('.kinjamprove-delete-comment-id').removeClass('hide');
-	$this.addClass('hide');
-	$this.closest('article').addClass('kinjamprove-saved');
+	chrome.storage.sync.get({
+		saved_comment_ids: '{}'
+	},function(items){
+		var saved_comment_ids = JSON.parse(items.saved_comment_ids);
+		
+		saved_comment_ids[postId] = 1;
+		chrome.storage.sync.set({'saved_comment_ids':JSON.stringify(saved_comment_ids)});
+		kinjamprove.options.saved_comment_ids = saved_comment_ids;
+		$this.siblings('.kinjamprove-delete-comment-id').removeClass('hide');
+		$this.addClass('hide');
+		$this.closest('article').addClass('kinjamprove-saved');
+	});
 }
 
+// 0.0.2.8 Make sure values from other instances aren't overwritten.
 function onDeleteCommentIdLiClick() {
 	var $this = $(this),
-		saved_comment_ids = kinjamprove.options.saved_comment_ids,
 		postId = $this.closest('ul').attr('data-postid');
-	
-	delete saved_comment_ids[postId];
 		
-	chrome.storage.sync.set({'saved_comment_ids':JSON.stringify(saved_comment_ids)});
-	$this.siblings('.kinjamprove-save-comment-id').removeClass('hide');
-	$this.addClass('hide');
-	$this.closest('article').removeClass('kinjamprove-saved');
+	chrome.storage.sync.get({
+		saved_comment_ids: '{}'
+	},function(items){
+		var saved_comment_ids = JSON.parse(items.saved_comment_ids);
+		
+		delete saved_comment_ids[postId];
+		
+		chrome.storage.sync.set({'saved_comment_ids':JSON.stringify(saved_comment_ids)});
+		kinjamprove.options.saved_comment_ids = saved_comment_ids;
+		$this.siblings('.kinjamprove-save-comment-id').removeClass('hide');
+		$this.addClass('hide');
+		$this.closest('article').removeClass('kinjamprove-saved');
+	});
+
 }

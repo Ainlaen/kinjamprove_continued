@@ -14,7 +14,8 @@ var kinjamprove = {
 		storedArticleLoadTimes: undefined,
 		colors: undefined,
 		useDefaultColors: undefined,
-		saved_comment_ids: undefined
+		saved_comment_ids: undefined,
+		hideKinjamproveFooter: undefined
 	},
 	userLikedPostIdsMap: new Map(),
 	userFlaggedPostIdsMap: new Map(),
@@ -55,7 +56,6 @@ $(function() {
 		if((items.removeInventoryLinks || items.hideSharedArticles) && window.location.pathname == "/"){
 			$('div.ad-container').remove();
 			let $articles = $('article'),
-				$headlineLinks = $articles.children('div').children('a'),
 				hostname = window.location.host.split('.');
 			
 			if(hostname.length == 2){
@@ -63,17 +63,16 @@ $(function() {
 			}else{
 				hostname = hostname[1];
 			}
-			
-			for(let i = 0; i < $headlineLinks.length; ++i){
-				if(items.hideSharedArticles){
-					if($headlineLinks[i].href.indexOf(hostname) == -1){
-						$($headlineLinks[i]).parents('article').hide();
+			// 0.0.2.8 Kinja changed their layout again. Looking at new 'data-model' value to determine article type now.
+			if(items.hideSharedArticles){
+				for(let i = 0; i < $articles.length; ++i){
+					if($articles[i].attributes['data-model'].value.indexOf(hostname) == -1){
+						$($articles[i]).hide();
 					}
 				}
-			}
-			if(hostname != "theinventory"){
+			} else if(hostname != "theinventory"){
 				for(let i = 0; i < $articles.length; ++i){
-					if($articles[i].attributes['data-commerce-source'].value){
+					if($articles[i].attributes['data-model'].value.indexOf('theinventory') != -1){
 						$($articles[i]).hide();
 					}
 				}
@@ -151,6 +150,7 @@ $(function() {
 		hidePendingReplies: false,
 		hideSocialMediaButtons: false,
 		hideSidebar: false,
+		hideKinjamproveFooter: false,
 		localizePublishTime: false,
 		blockedUsers: '{}',
 		paused: false,
@@ -219,6 +219,9 @@ function optionsCallback(items) {
 		$('div.page').after($sharingFooterContainer);
 		$sharingFooterContainer.append($('<div>',{class:'sharingfooter_wrapper'}));
 	}
+	if(kinjamprove.options.hideKinjamproveFooter){
+		$sharingFooterContainer.hide();
+	}
 	let $sharingFooter = $('div.sharingfooter__wrapper');
 	addNavButtons($sharingFooter);
 	kinjamprove.options.colors = JSON.parse(kinjamprove.options.colors);
@@ -267,8 +270,10 @@ function optionsCallback(items) {
 	}
 	
 	chrome.runtime.onMessage.addListener(function(message, messenger){
-			if(messenger.id == chrome.runtime.id && message == 'showColorPanel'){
-				showColorPanel();
+			if(messenger.id == chrome.runtime.id){
+				if(message == 'showColorPanel'){
+					showColorPanel();
+				}
 			}
 	});
 } 
@@ -432,17 +437,16 @@ function updatePageArticle(summaries) {
 			$article = $discussionRegion.siblings('.branch-wrapper').find('article'),
 			postId = Number.parseInt($article.attr('data-id')),
 			$kinjamproveDiscussionHeaderPanel = $('<div>', { 'class': 'kinjamprove-discussion-header-container' });
-			//referralId = window.location.pathname.replace(/.*?([0-9]{6,})$/g, '$1');
-		
-		// if (!isNaN(Number.parseInt(referralId))) {
-			// referralId = Number.parseInt(referralId);
-		// }
+
 		if(!kinjamprove.headers[postId]){
+			var $authorsList = createAuthorsList();
+			
 			kinjamprove.headers[postId] = true;
 			createKinjamproveDiscussionHeaderLi(postId, $discussionHeader.find('ul'));
 			//console.log('kinjamprove.options.sortOrder=' + kinjamprove.options.sortOrder);
 			
 			addDiscussionRegionEvents($discussionRegion, postId);
+			$discussionHeader.append($authorsList);
 			$discussionHeader.append($kinjamproveDiscussionHeaderPanel);
 			//console.log('$discussionHeader added:', $discussionHeader);
 		}
@@ -750,19 +754,18 @@ function createKinjamproveReloadButton($discussionRegion, loadTime) {
 			title: 'Reload'
 		},
 		kinjamproveReloadButtonText = 'Reload Comments',
-		kinjamproveReloadButton = createElement('button', kinjamproveReloadButtonObj, kinjamproveReloadButtonText);
-
-		var currentTimeFormatted = new Date(loadTime),
-			lastReloadTimeSpanClass = 'kinjamprove-last-load-time',
-			lastReloadTimeSpanObj = { 
-				'class':  lastReloadTimeSpanClass
-			},
-			lastReloadTimeText = 'Last loaded at ' + currentTimeFormatted.toLocaleString() + '.';
-
-		var lastReloadTimeSpan = createElement('span', lastReloadTimeSpanObj, lastReloadTimeText);
-
-		var reloadButtonContainerDiv = createElement('div', { 'class': 'kinjamprove-reload-button-container' });
-		appendNodesToElement(reloadButtonContainerDiv, [ lastReloadTimeSpan, kinjamproveReloadButton ]);
+		kinjamproveReloadButton = createElement('button', kinjamproveReloadButtonObj, kinjamproveReloadButtonText),
+		storeButton = createStoreLoadTimeButton(), 
+		currentTimeFormatted = new Date(loadTime),
+		lastReloadTimeSpanClass = 'kinjamprove-last-load-time',
+		lastReloadTimeSpanObj = { 
+			'class':  lastReloadTimeSpanClass
+		},
+		lastReloadTimeText = 'Last loaded at ' + currentTimeFormatted.toLocaleString() + '.',
+		lastReloadTimeSpan = createElement('span', lastReloadTimeSpanObj, lastReloadTimeText),
+		reloadButtonContainerDiv = createElement('div', { 'class': 'kinjamprove-reload-button-container' });
+		
+	appendNodesToElement(reloadButtonContainerDiv, [ lastReloadTimeSpan,storeButton, kinjamproveReloadButton ]);
 
 	// return kinjamproveReloadButton;
 	return reloadButtonContainerDiv;
@@ -807,73 +810,95 @@ function createStoreLoadTimeButton(){
 
 	
 	storeLoadTimeButton.addEventListener('click', function(){
-		let storedArticleLoadTimes = kinjamprove.options.storedArticleLoadTimes,
-			starterId = Utilities.getStarterIdOfFirstStory(),
-			commentTracker = kinjamprove.commentTrackers[starterId],
-			hostname = window.location.hostname,
-			storedLocal = false,
-			time = commentTracker.newestPostTime,
-			string;
-			
-		hostname = hostname.substring(0, hostname.lastIndexOf('.'));
-		if(hostname.substring(0, 3) == "www"){
-			hostname = hostname.substring(4);
+		if(kinjamprove.options.storedLocal){
+			chrome.storage.local.get({
+				storedArticleLoadTimes: '{}'
+			}, function(localItems){
+				storeLoadTimes(JSON.parse(localItems.storedArticleLoadTimes));
+			});
+		}else{
+			storeLoadTimes();
 		}
 		
-		if(!time){
-			time = commentTracker.lastLoadTime || Date.now();
-		}
-		
-		storedArticleLoadTimes[starterId] = {
-			postTime: time, 
-			headline: kinjamprove.kinja.postMeta.post.headline, 
-			url: kinjamprove.kinja.postMeta.post.permalink, 
-			hostname: hostname
-		};
-		
-		let numKeys = Object.keys(storedArticleLoadTimes).length;
-		
-		string = JSON.stringify(storedArticleLoadTimes);
-		
-		if(numKeys > 35){
-			chrome.storage.local.set({'storedArticleLoadTimes': string});
-			storedLocal = true;
-			let truncatedList = {},
-				counter = 0,
-				toStore = numKeys - 35;
-			
-			for(let articleId in storedArticleLoadTimes){
-				++counter;
-				if(counter > toStore){
-					truncatedList[articleId] = storedArticleLoadTimes[articleId];
+		function storeLoadTimes(localStored = null){
+			chrome.storage.sync.get({
+				storedArticleLoadTimes: '{}'
+			},function(items){
+				let storedArticleLoadTimes = JSON.parse(items.storedArticleLoadTimes),
+					starterId = Utilities.getStarterIdOfFirstStory(),
+					commentTracker = kinjamprove.commentTrackers[starterId],
+					hostname = window.location.hostname,
+					storedLocal = false,
+					time = commentTracker.newestPostTime,
+					string;
+					
+				if(localStored){
+					for(let i in localStored){
+						if(!storedArticleLoadTimes[i]){
+							storedArticleLoadTimes[i] = localStored[i];
+						}
+					}
 				}
-			}
-			
-			string = JSON.stringify(truncatedList);
+
+				hostname = hostname.substring(0, hostname.lastIndexOf('.'));
+				if(hostname.substring(0, 3) == "www"){
+					hostname = hostname.substring(4);
+				}
+				
+				if(!time){
+					time = commentTracker.lastLoadTime || Date.now();
+				}
+				
+				
+				storedArticleLoadTimes[starterId] = {
+					postTime: time, 
+					headline: kinjamprove.kinja.postMeta.post.headline, 
+					url: kinjamprove.kinja.postMeta.post.permalink, 
+					hostname: hostname
+				};
+				
+				let numKeys = Object.keys(storedArticleLoadTimes).length;
+				
+				string = JSON.stringify(storedArticleLoadTimes);
+				
+				if(numKeys > 35){
+					chrome.storage.local.set({'storedArticleLoadTimes': string});
+					storedLocal = true;
+					let truncatedList = {},
+						counter = 0,
+						toStore = numKeys - 35;
+					
+					for(let articleId in storedArticleLoadTimes){
+						++counter;
+						if(counter > toStore){
+							truncatedList[articleId] = storedArticleLoadTimes[articleId];
+						}
+					}
+					
+					string = JSON.stringify(truncatedList);
+				}
+				
+				chrome.storage.sync.set({'storedArticleLoadTimes': string, 'itemsStoredLocal':storedLocal});
+				$(storeLoadTimeButton).text('Load Time Saved')
+				$(storeLoadTimeButton).toggleClass('store-button-clicked');
+				setTimeout(function(){
+					$(storeLoadTimeButton).text('Store Load Time');
+					$(storeLoadTimeButton).toggleClass('store-button-clicked');
+				},2000);
+			});
 		}
-		
-		chrome.storage.sync.set({'storedArticleLoadTimes': string, 'itemsStoredLocal':storedLocal});
-	});
+	});
+	
 	
 	return storeLoadTimeButton;
 }
 
-
-function addNavButtons($elem) {
-	var $backToTopButton = 
-		$('<button>', { 'class': 'kinjamprove-return-to-top-button' })
-			.text('To top of article')
-			.click(function() {
-				window.scrollTo(0, 0);
-			});
-
-	var storeLoadTimeButton = createStoreLoadTimeButton(),
-		backToTopDiscussionRegionButton = createElement('button', { 'class': 'kinjamprove-back-to-discussion-region-top' }, 'To top of comments'),
-		$authorListSpan = $('<span>', {'class': 'kinjamprove-authorlist-span'}),
+function createAuthorsList(){
+	var $authorListDiv = $('<div>', {'class': 'kinjamprove-authorlist-div'}),
 		$authorListLabel = $('<label>', {'for':'kinjamprove-authorlist-input', 'class':'kinjamprove-authorlist-label'}).text('Comment Authors: '),
 		$authorListInput = $('<input>', {'list':'kinjamprove-author-datalist', 'id':'kinjamprove-authorlist-input','name':'kinjamprove-authorlist-input'}),
 		$authorSelectButton = $('<button>', {'class':'kinjamprove-authorlist-button', 'title':'Click to show all of this author\'s posts on this article.'});
-	
+		
 	$authorListInput.val('Author List Not Yet Loaded');
 	$authorListInput.keyup(function(event){
 		if(event.keyCode === 13){
@@ -883,7 +908,7 @@ function addNavButtons($elem) {
 	$authorListInput.focus(function(event){
 		$(this).val('');
 	});
-
+		
 	$authorSelectButton.text('Select');
 	$authorSelectButton.click(function(event){
 		var $authorListInput = $(this).siblings('input'),
@@ -903,9 +928,21 @@ function addNavButtons($elem) {
 		}
 	});
 		
-	$authorListSpan.append($authorListLabel);
-	$authorListSpan.append($authorListInput);
-	$authorListSpan.append($authorSelectButton);
+	$authorListDiv.append($authorListLabel);
+	$authorListDiv.append($authorListInput);
+	$authorListDiv.append($authorSelectButton);
+	return $authorListDiv;
+}
+
+function addNavButtons($elem) {
+	var $backToTopButton = 
+		$('<button>', { 'class': 'kinjamprove-return-to-top-button' })
+			.text('To top of article')
+			.click(function() {
+				window.scrollTo(0, 0);
+			});
+
+	var backToTopDiscussionRegionButton = createElement('button', { 'class': 'kinjamprove-back-to-discussion-region-top' }, 'To top of comments');
 
 	backToTopDiscussionRegionButton.addEventListener('click', function() {
 		var $discussionRegion = getDiscussionRegionOfCurrentLocation(),
@@ -932,8 +969,7 @@ function addNavButtons($elem) {
 			scrollTop: $discussionRegion.offset().top + 'px'
 		}, 'fast');   
 	});
-	$elem.prepend($authorListSpan);
-	$elem.prepend($(storeLoadTimeButton));
+
 	$elem.prepend($(backToTopDiscussionRegionButton));
 	$elem.prepend($backToTopButton);
 }

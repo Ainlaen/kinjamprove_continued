@@ -299,6 +299,7 @@ div.kinjamprove-discussion-header-panel {
 div.kinjamprove-discussion-header-container {
 	width: -webkit-fill-available;
 	width: -moz-available; 
+	margin-top: 0.5em;
 }
 
 span.kinjamprove-hide-pending-comments-span {
@@ -391,8 +392,7 @@ input:focus + .slider {
 
 .kinjamprove-loadMoreCommentsButton,
 .kinjamprove-reload-button,
-.kinjamprove-return-to-top-button,
-.kinjamprove-back-to-discussion-region-top {
+.kinjamprove-return-to-top-button {
 	width: -webkit-fill-available;
 	width: -moz-available;
 	border-radius: 3px;
@@ -452,8 +452,8 @@ input:focus + .slider {
 .kinjamprove-back-to-discussion-region-top:focus,
 .kinjamprove-store-load-time-button,
 .kinjamprove-store-load-time-button:focus,
-.kinjamprove-authorlist-span,
-.kinjamprove-authorlist-span:focus{
+.kinjamprove-authorlist-div,
+.kinjamprove-authorlist-div:focus{
 	background-color: white;
 	border-color: orange;
 	border-width: 1px;
@@ -473,15 +473,18 @@ input:focus + .slider {
 }
 
 .kinjamprove-back-to-discussion-region-top,
-.kinjamprove-back-to-discussion-region-top:focus {
-    width: 170px;
+.kinjamprove-back-to-discussion-region-top:focus{
+	background-image: url('chrome-extension://__MSG_@@extension_id__/icons/kinjamprove-logo-21x40-green-flipped.png');
+    background-position-x: 100%;
+    width: 11.3em;
 	text-align: left;
 }
 
 .kinjamprove-store-load-time-button,
 .kinjamprove-store-load-time-button:focus {
-    width: 150px;
-	text-align: left;
+	cursor: pointer !important;
+	position: relative;
+	left: 54%;
 }
 
 .kinjamprove-return-to-top-button:hover,
@@ -509,11 +512,9 @@ input:focus + .slider {
 	color: black;
 }
 
-.kinjamprove-authorlist-span{
+.kinjamprove-authorlist-div{
 	display: inline-block !important;
 	width: 36em;
-	background-image: url('chrome-extension://__MSG_@@extension_id__/icons/kinjamprove-logo-21x40-green-flipped.png');
-    background-position-x: 100%;
 }
 
 li.kinjamprove-block-user > a, li.kinjamprove_save > a {
@@ -547,26 +548,24 @@ li.kinjamprove_save > a:before{
 
 
 .kinjamprove-authorlist-label{
-	display: inherit;
+	display: inline;
 	font-weight: bold;
-	width: 155px;
 }
 
 .kinjamprove-authorlist-label:before{
 	content: "📝";
-	margin: 0 5px;
 	color: black;
 }
 
 #kinjamprove-authorlist-input{
-	width: 50%;
+	width: 20em;
 }
 
 .kinjamprove-authorlist-button{
 	background-color: rgb(51, 153, 255);
     color: aliceblue;
     border-radius: 10px;
-    width: 12%;
+    width: 4em;
     margin-left: 5px;
 }
 
@@ -1153,4 +1152,12 @@ div.kinjamprove-footer-container {
 	line-height: 38px;
 	vertical-align: middle;
 	font-size: 13px;
+}
+
+button.store-button-clicked,
+button.store-button-clicked:hover,
+button.store-button-clicked:focus,
+button.store-button-clicked:active{
+	color: red !important;
+	cursor: progress !important;
 }

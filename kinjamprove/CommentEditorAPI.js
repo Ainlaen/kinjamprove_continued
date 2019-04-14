@@ -219,7 +219,7 @@ CommentEditorAPI.prototype = {
             if (parentDisplayName.length) {
                 $authorDisplayNameSpan.text(parentDisplayName);
             }
-            this.$kinjamprovePublishButton.text('Publish Reply')
+            this.$kinjamprovePublishButton.text('Publish')
         }
 
         if (!$commentEditorPlaceholder.length) {
@@ -343,7 +343,7 @@ CommentEditorAPI.prototype = {
                             console.error(error);
 							alert('Error editing comment: ' + error);
 							$kinjamprovePublishButton.toggleClass('publishing');
-							$kinjamprovePublishButton.text('Publish Reply');
+							$kinjamprovePublishButton.text('Publish');
                             $kinjamprovePublishButton.one('click', onKinjamprovePublishButtonClick);
                         });
                 }

@@ -1313,11 +1313,13 @@ XhrCommentTracker.prototype = {
 			var $discussionHeader = commentTracker.$discussionRegion.find('div.discussion-header'),
 				$discussionRegion = commentTracker.$discussionRegion,
 				postId = commentTracker.postId,
-				$kinjamproveDiscussionHeaderPanel = $('<div>', { 'class': 'kinjamprove-discussion-header-container' });
+				$kinjamproveDiscussionHeaderPanel = $('<div>', { 'class': 'kinjamprove-discussion-header-container' }),
+				$authorsList = createAuthorsList();
 
 			createKinjamproveDiscussionHeaderLi(postId, $discussionHeader.find('ul'));
 			
 			addDiscussionRegionEvents($discussionRegion, postId);
+			$discussionHeader.append($authorsList);
 			$discussionHeader.append($kinjamproveDiscussionHeaderPanel);
 		}
 		
@@ -1373,7 +1375,7 @@ XhrCommentTracker.prototype = {
 			commentTracker.$authorDatalist.remove();
 		}
 		let $sharingFooter = $('div.sharingfooter__wrapper'),
-			$authorlistInput = $sharingFooter.find('input#kinjamprove-authorlist-input');
+			$authorlistInput = commentTracker.$discussionRegion.find('input#kinjamprove-authorlist-input');
 
 		commentTracker.$authorDatalist = commentTracker.createAuthorDatalist();
 		$authorlistInput.append(commentTracker.$authorDatalist);
