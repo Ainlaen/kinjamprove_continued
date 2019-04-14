@@ -1,3 +1,17 @@
+0.0.2.8 (04/14/2019)
+
+New:
+  Added option to hide footer to the options page.
+
+Changes:
+  Moved author list and store load time button from the footer to the discussion header (top of the comments section).
+  
+Fixes:
+  Blockquotes and lists should now be created properly.
+  Stored posts, times, and blocked users should no longer be able to overwrite themselves with old versions.
+  Hiding shared and TheInventory.com articles updated for changes to Kinja.
+
+
 0.0.2.7 (03/28/2019)
 
 Fixes: 
@@ -15,6 +29,7 @@ Fixes:
 
 Known issues:
   Hiding shared articles hides all articles. Whoops!
+
 
 0.0.2.5 (03/02/2019)
 
