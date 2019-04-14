@@ -221,6 +221,7 @@ function optionsCallback(items) {
 	
 	if(kinjamprove.options.hideKinjamproveFooter){
 		$sharingFooterContainer.hide();
+	}
 	let $sharingFooter = $('div.sharingfooter__wrapper'),
 		$kinjamproveFooter = $('<div>', {'class':'kinjamprove-footer'});
 	$sharingFooter.prepend($kinjamproveFooter);
@@ -277,7 +278,7 @@ function optionsCallback(items) {
 				showColorPanel();
 			}
 	});
-} 
+}
 
 function kinjamproveFunc() {
 	var firstStoryStarterId,
@@ -901,7 +902,7 @@ function createStoreLoadTimeButton(){
 	return storeLoadTimeButton;
 }
 
-function createAuthorsList(){	
+function createAuthorsList(){
 	var $authorListDiv = $('<div>', {'class': 'kinjamprove-authorlist-div'}),
 		$authorListLabel = $('<label>', {'for':'kinjamprove-authorlist-input', 'class':'kinjamprove-authorlist-label'}).text('Comment Authors: '),
 		$authorListInput = $('<input>', {'list':'kinjamprove-author-datalist', 'id':'kinjamprove-authorlist-input','name':'kinjamprove-authorlist-input'}),
