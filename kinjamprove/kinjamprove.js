@@ -879,7 +879,7 @@ function createStoreLoadTimeButton(){
 				}
 				
 				chrome.storage.sync.set({'storedArticleLoadTimes': string, 'itemsStoredLocal':storedLocal});
-				$(storeLoadTimeButton).text('Load Time Saved')
+				$(storeLoadTimeButton).text('Saved')
 				$(storeLoadTimeButton).toggleClass('store-button-clicked');
 				setTimeout(function(){
 					$(storeLoadTimeButton).text('Store Load Time');
@@ -899,7 +899,6 @@ function createAuthorsList(){
 		$authorListInput = $('<input>', {'list':'kinjamprove-author-datalist', 'id':'kinjamprove-authorlist-input','name':'kinjamprove-authorlist-input'}),
 		$authorSelectButton = $('<button>', {'class':'kinjamprove-authorlist-button', 'title':'Click to show all of this author\'s posts on this article.'});
 		
-	$authorListInput.val('Author List Not Yet Loaded');
 	$authorListInput.keyup(function(event){
 		if(event.keyCode === 13){
 			$(this).siblings('button.kinjamprove-authorlist-button').click();
