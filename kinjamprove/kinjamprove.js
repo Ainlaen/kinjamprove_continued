@@ -79,7 +79,6 @@ $(function() {
 				}
 			}
 			if(items.hideVideos){
-			if(items.hideVideos){
 				var element = document.createElement('style');
 				element.setAttribute('type', 'text/css');
 
