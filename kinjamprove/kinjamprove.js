@@ -51,9 +51,10 @@ $(function() {
 	
 	chrome.storage.sync.get({
 		removeInventoryLinks: false,
-		hideSharedArticles: false
+		hideSharedArticles: false,
+		hideVideos: false
 	}, function(items){
-		if((items.removeInventoryLinks || items.hideSharedArticles) && window.location.pathname == "/"){
+		if((items.removeInventoryLinks || items.hideSharedArticles || items.hideVideos) && window.location.pathname == "/"){
 			$('div.ad-container').remove();
 			let $articles = $('article'),
 				hostname = window.location.host.split('.');
@@ -76,6 +77,19 @@ $(function() {
 						$($articles[i]).hide();
 					}
 				}
+			}
+			if(items.hideVideos){
+			if(items.hideVideos){
+				var element = document.createElement('style');
+				element.setAttribute('type', 'text/css');
+
+				if ('textContent' in element) {
+				  element.textContent = 'div.instream-native-video--frontpage{display:none;}';
+				} else {
+				  element.styleSheet.cssText = 'div.instream-native-video--frontpage{display:none;}';
+				}
+
+				document.getElementsByTagName('head')[0].appendChild(element);
 			}
 		}
 	});

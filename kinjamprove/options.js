@@ -37,6 +37,7 @@ function save_options() {
 		clearSaved = document.getElementById('clear').checked,
 		storedLocal = false,
 		removeInventoryLinks = document.getElementById('removeInventoryLinks').checked,
+		hideVideos = document.getElementById('hideVideos').checked,
 		hideSharedArticles = document.getElementById('hideSharedArticles').checked,
 		increaseWidth = document.getElementById('increaseWidth').checked,
 		string;
@@ -111,6 +112,7 @@ function save_options() {
 		itemsStoredLocal: storedLocal,
 		removeInventoryLinks: removeInventoryLinks,
 		hideSharedArticles: hideSharedArticles,
+		hideVideos: hideVideos,
 		increaseWidth: increaseWidth
 	}, updateStatus);
 	
@@ -147,6 +149,7 @@ function restore_options() {
 		saved_comment_ids: '{}',
 		removeInventoryLinks: false,
 		hideSharedArticles: false,
+		hideVideos: false,
 		increaseWidth: false
 	}, setValues);
 		
@@ -185,6 +188,7 @@ function restore_options() {
 		document.getElementById('defaultToCommunity').checked = items.defaultToCommunity;
 		document.getElementById('minCommentsToLoad').value = items.minCommentsToLoad;
 		document.getElementById('increaseWidth').checked = items.increaseWidth;
+		document.getElementById('hideVideos').checked = items.hideVideos;
 	}
 } // end of restore_options
 		
