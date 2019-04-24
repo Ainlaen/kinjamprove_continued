@@ -935,6 +935,10 @@ function createComment(postBody, defaultBlogId, images, original, parentId, toke
 			}else{
 				commentTracker.authorMap.set(newComment.authorId, [newComment.id]);
 			}
+			if(!newComment.author){
+				newComment.author = kinjamprove.accountState;
+			}
+			
 			
 			if ($parentPost && $parentPost.length) {
 				var $editorPlaceholder = $parentPost.siblings('.js_editor-placeholder'),
