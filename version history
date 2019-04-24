@@ -1,3 +1,9 @@
+0.0.2.10 (04/24/2019)
+
+Fixes:
+  Resolved an error caused by unexpected return values when posting a comment.
+  
+
 0.0.2.9 (04/20/2019)
 
 New:
