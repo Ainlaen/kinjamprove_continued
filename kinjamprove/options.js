@@ -25,6 +25,7 @@ function toggleTabs(){
 
 // Saves options to chrome.storage.sync.
 function save_options() {
+	$('button#save').removeClass('highlight_save');
 	var sortOrder = document.getElementById('sortOrder').value,
 		blockedUsers = document.getElementById('blockedUsers').value,
 		hidePendingReplies = document.getElementById('hidePendingReplies').checked,
@@ -189,6 +190,19 @@ function restore_options() {
 		document.getElementById('minCommentsToLoad').value = items.minCommentsToLoad;
 		document.getElementById('increaseWidth').checked = items.increaseWidth;
 		document.getElementById('hideVideos').checked = items.hideVideos;
+		
+		$checked = $('#hideElementsTable').find('input:checked');
+		$checked.parents('tr').addClass('highlight');
+		$('td>input:checkbox').change(
+			function(){
+				$(this).parents('tr').toggleClass('highlight');
+			}
+		);
+		$('input, select').change(
+			function(){
+				$('button#save').addClass('highlight_save');
+			}
+		);
 	}
 } // end of restore_options
 		
@@ -241,7 +255,7 @@ function onToggleBlockButtonClick() {
 	if (toggleState.indexOf('unblock') > -1) {
 		// console.log('blockedUsers:', blockedUsers);
 		delete blockedUsersObj[id];
-
+		$('button#save').addClass('highlight_save');
 		blockedUsersElem.value = JSON.stringify(blockedUsersObj);
 		// document.getElementById('blockedUsers').value = JSON.stringify(blockedUsers);
 		// toggleState = 'block';
@@ -305,6 +319,7 @@ function onToggleRemoveButtonClick() {
 		row = cell.parentElement;
 	
 	if(toggleState.indexOf('remove') > -1){
+		$('button#save').addClass('highlight_save');
 		loadTimesToRemove.push(id);
 		this.dataset['toggleState'] = 'restore';
 		this.innerText ="Restore";

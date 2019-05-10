@@ -1,3 +1,16 @@
+0.0.2.11 (05/10/2019)
+
+Fixes: 
+	Workaround for Origin/CORS issue with new version of Chrome.
+	Native reply to post button should always be hidden now.
+	No longer incorrectly identifies user as story author when looking at own permalinked comments.
+	Fixes to how various articles in the main list are hidden to match changes in Kinja layout.
+	
+Changes: 
+	Updated to version 3.4.1 of JQuery.
+	Changes to CSS of the options page.
+
+
 0.0.2.10 (04/24/2019)
 
 Fixes:

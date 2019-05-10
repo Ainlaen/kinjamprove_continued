@@ -35,6 +35,26 @@ chrome.runtime.onInstalled.addListener(function(details) {
 	
 });
 
+// Workaround for origin POST request issue: https://bugs.chromium.org/p/chromium/issues/detail?id=944704
+chrome.webRequest.onBeforeSendHeaders.addListener(
+	function(details) {
+		// details holds all request information. 
+		if(details.initiator == "chrome-extension://"+chrome.runtime.id && details.method == "POST"){
+			for (var i = 0; i < details.requestHeaders.length; ++i) {
+				// Find and change the particular header.
+				if (details.requestHeaders[i].name.toLowerCase() == 'origin') {
+					details.requestHeaders[i].value ="https://kinja.com";
+					break;
+				}
+			}
+		}
+		return { requestHeaders: details.requestHeaders };
+	},
+	{urls:['<all_urls>']},
+	//{urls: ["*://*.kinja.com/api/*", "*://*.avclub.com/api/*", "*://*.jezebel.com/api/*", "*://*.jalopnik.com/api/*", "*://*.gizmodo.com/api/*", "*://*.deadspin.com/api/*", "*://*.kotaku.com/api/*", "*://*.lifehacker.com/api/*", "*://*.theroot.com/api/*", "*://*.splinternews.com/api/*", "*://*.thetakeout.com/api/*", "*://*.clickhole.com/api/*", "*://*.theinventory.com/api/*"]},
+	['requestHeaders', 'blocking']
+);
+
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	//console.log('Kinjamprove: Background received request:', request, 'sender:', sender);
 

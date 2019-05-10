@@ -544,7 +544,7 @@ function followUser(targetUserId, userId, token) {
 		requestPayload = {
 			target: targetUserId,
 			targetType: 'User',
-			token: token,
+			// token: token,
 			userId: (userId || kinjamprove.accountState.authorId)
 		},
 		requestPayloadStr = JSON.stringify(requestPayload);
@@ -677,7 +677,7 @@ function unfollowUser(targetUserId, userId, token) {
 		requestPayload = {
 			target: targetUserId,
 			targetType: 'User',
-			token: token,
+			// token: token,
 			userId: userId
 		},
 		requestPayloadStr = JSON.stringify(requestPayload);
@@ -854,7 +854,7 @@ function unflagPost(postId, token) {
 		unflagUrl = window.location.origin + unflagPathname,
 		requestPayload = {
 			postId: postId,
-			token: token
+			// token: token
 		},
 		requestPayloadStr = JSON.stringify(requestPayload);
 
@@ -1024,7 +1024,7 @@ function flagPost(postId, reason, token) {
 		requestPayload = {
 			postId: postId,
 			reason: reason,
-			token: token
+			// token: token
 		},
 		requestPayloadStr = JSON.stringify(requestPayload);
 
