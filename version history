@@ -1,3 +1,10 @@
+0.0.2.12 (05/14/2019)
+
+Fixes: 
+	No longer runs on Q&A features.
+	Lowered size of API comment requests. Should prevent errors when loading articles with tons of comments. (Thanks, GoT)
+
+
 0.0.2.11 (05/10/2019)
 
 Fixes: 

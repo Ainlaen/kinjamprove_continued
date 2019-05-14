@@ -1,4 +1,4 @@
-var kinjamprove = { 
+﻿var kinjamprove = { 
 	commentTrackers: {},
 	headers: {},
 	options: { 
@@ -98,8 +98,8 @@ $(function(){
 	});
 	
 	
-	if (!pageHasDiscussionRegion || $('section.discussion-region--liveblog').length ) {
-		console.log("Kinjamprove: Page does not have discussion region or is a liveblog.");
+	if (!pageHasDiscussionRegion || $('section.discussion-region--liveblog').length || $('div.qanda-wrapper').length) {
+		console.log("Kinjamprove: Page does not have discussion region, is a liveblog, or is a Q&A.");
 		return;
 	}
 	

@@ -191,17 +191,17 @@ XhrCommentTracker.prototype = {
 				}
 			}
 
-
+			var getAtOnce = 50;
 			while (numOfCommentsRemaining > 0) {
-				var url = CommentApiURLFactory.getAPIBaseURLFromID(articleId, currentIndex, 100, 500, false),
+				var url = CommentApiURLFactory.getAPIBaseURLFromID(articleId, currentIndex, getAtOnce, 500, false),
 					promise = CommentPromiseFactory.getItemsPromise(url); 		
 
 				//console.log(promise);
 
 				promises.push(promise);
 
-				currentIndex += 100;
-				numOfCommentsRemaining -= 100;
+				currentIndex += getAtOnce;
+				numOfCommentsRemaining -= getAtOnce;
 			}
 
 			return promises;
