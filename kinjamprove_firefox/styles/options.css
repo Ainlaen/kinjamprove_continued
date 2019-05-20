@@ -10,7 +10,8 @@ div.flex{
 
 p#save-notice{
 	text-align: center;
-}					
+}
+
 div.tabs {
 	position: fixed;
     width: 100%;
@@ -102,12 +103,21 @@ div#fixed{
 #hideElementsTable, 
 #hideElementsTable th,
 #hideElementsTable td,
-#hideElementsTable tr, {
-	border: 1px solid black;
+#hideElementsTable tr {
+	border-top: 1px solid black;
 	border-collapse: collapse;
 }
 #hideElementsTable th {
 	text-align: left;
+}
+
+tr.highlight{
+	background: lightgrey;
+}
+
+.highlight_save {
+	background: #06ec06;
+	cursor: pointer;
 }
 
 .unblockCol,

@@ -56,10 +56,11 @@ $(function() {
 	}, function(items){
 		if((items.removeInventoryLinks || items.hideSharedArticles || items.hideVideos) && window.location.pathname == "/"){
 			$('div.ad-container').remove();
+			$('div.ad-mobile').hide();
 			let $articles = $('article'),
-															 
+				
 				hostname = window.location.host.split('.');
-			
+   
 			if(hostname.length == 2){
 				hostname = hostname[0];
 			}else{
@@ -67,41 +68,43 @@ $(function() {
 			}
 			// 0.0.2.8 Kinja changed their layout again. Looking at new 'data-model' value to determine article type now.
 			if(items.hideSharedArticles){
+				$a = $articles.children('div').children('a');
+				for(let i = 0; i < $a.length; ++i){
+		 
+					if($a[i].href.indexOf(hostname) == -1){
+						$($a[i]).parents('article').hide();
+					}
+				}
+ 
+			}  
+			if(items.removeInventoryLinks && hostname != "theinventory"){
 				for(let i = 0; i < $articles.length; ++i){
-								 
-					if($articles[i].attributes['data-model'].value.indexOf(hostname) == -1){
+					console.log($articles[i]);
+					if($articles[i].attributes['data-commerce-source'].value){
 						$($articles[i]).hide();
 					}
 				}
-	
-			} else if(hostname != "theinventory"){
-				for(let i = 0; i < $articles.length; ++i){
-					if($articles[i].attributes['data-model'].value.indexOf('theinventory') != -1){
-						$($articles[i]).hide();
-					}
-				}
+
 			}
 			if(items.hideVideos){
-				var element = document.createElement('style');
-				element.setAttribute('type', 'text/css');
+				$articles.parent().children('div').hide();
+				// var element = document.createElement('style');
+				// element.setAttribute('type', 'text/css');
 
-				if ('textContent' in element) {
-				  element.textContent = 'div.instream-native-video--frontpage{display:none;}';
-				} else {
-				  element.styleSheet.cssText = 'div.instream-native-video--frontpage{display:none;}';
-				}
+				// if ('textContent' in element) {
+				  // element.textContent = 'div.instream-native-video--frontpage{display:none;}';
+				// } else {
+				  // element.styleSheet.cssText = 'div.instream-native-video--frontpage{display:none;}';
+				// }
 
-				document.getElementsByTagName('head')[0].appendChild(element);
-			}			
+				// document.getElementsByTagName('head')[0].appendChild(element);
+			}
 		}
 	});
-	
-	
-	if (!pageHasDiscussionRegion || $('section.discussion-region--liveblog').length ) {
-		console.log("Kinjamprove: Page does not have discussion region or is a liveblog.");
+	if (!pageHasDiscussionRegion || $('section.discussion-region--liveblog').length || $('div.qanda-wrapper').length) {
+		console.log("Kinjamprove: Page does not have discussion region, is a liveblog, or is a Q&A.");
 		return;
 	}
-	
 	document.addEventListener('kinjamproveGlobalPasser', function(response) {
 		if(response.detail){
 			kinjamprove.kinja = response.detail.kinja;
@@ -330,7 +333,7 @@ function kinjamproveFunc() {
 				notArticle = true;
 			}
 
-			userIsAuthor = kinjamprove.kinja.meta.starterAuthorId == kinjamprove.accountState.authorId;
+			userIsAuthor = kinjamprove.kinja.meta.post.author.id == kinjamprove.accountState.authorId;
 			
 			if(!userIsAuthor){
 				for(let i = 0; !userIsAuthor && i < kinjamprove.kinja.postMeta.post.authors.length; ++i){
@@ -359,6 +362,15 @@ function kinjamproveFunc() {
 			commentTracker.userIsAuthor = userIsAuthor;
 			commentTracker.userIsStaff = userIsStaff;
 			commentTracker.notArticle = notArticle;
+			var replyToPostButtonContainer = $('div.js_reply-button-container');
+			if(replyToPostButtonContainer.length && !$('button.kinjamprove-reply-to-blog-button').length){
+				var nativeReplyToPostButton = replyToPostButtonContainer[0].childNodes[0],
+					$nativeReplyToPostButton = $(nativeReplyToPostButton),
+					$kinjamproveReplyToPostButton = createKinjamproveReplyButton($nativeReplyToPostButton);
+
+				$nativeReplyToPostButton.after($kinjamproveReplyToPostButton);
+				$nativeReplyToPostButton.hide();
+			}
 
 			if(kinjamprove.options.storedArticleLoadTimes[firstStoryStarterId]){
 				commentTracker.newestPostTime = kinjamprove.options.storedArticleLoadTimes[firstStoryStarterId].postTime;

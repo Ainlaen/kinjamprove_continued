@@ -386,7 +386,7 @@ var CommentApiURLFactory = (function(){
 		},
 
 		getUpdateCommentURL: function(postId) {
-			return ORIGIN + '/api/core/post/' + postId + '/update?';
+			return ORIGIN + '/api/core/post/' + postId + '/update';
 		},
 
 		getDeleteCommentURL: function(postId) {
@@ -806,7 +806,7 @@ function postCreateComment(postBody, defaultBlogId, images, original, parentId, 
 			images: images, 
 			original: original, 
 			parentId: parentId, 
-			token: token 
+			//token: token 
 		},
 		requestPayloadStr = JSON.stringify(requestPayload);
 		
@@ -1080,14 +1080,14 @@ function deleteComment(postId, kinjaToken) {
 }
 
 function getUpdateCommentURL(postId) {
-	return window.location.origin + '/api/core/post/' + postId + '/update?';
+	return window.location.origin + '/api/core/post/' + postId + '/update';
 }
 
 function getCreateCommentURL(parentId, hidePendingReplies) {
 	var origin = window.location.origin,
 		apiPathname = '/api/core/post/' + parentId + '/replyWithApprovals',
 		queryStrParameters = '?hidePendingReplies=' + hidePendingReplies,
-		createCommentURL = origin + apiPathname + queryStrParameters;
+		createCommentURL = origin + apiPathname;// + queryStrParameters;
 		
 	return createCommentURL;
 }
@@ -1146,6 +1146,6 @@ function getCreateCommentPayload($textEditor, parentCommentId) {
 		images: [],
 		original: $('textarea:hidden').val(),
 		parentId: parentCommentId,
-		token: Utilities.getKinjaToken(), 
+		//token: Utilities.getKinjaToken(), 
 	});
 }
