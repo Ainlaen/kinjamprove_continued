@@ -2,7 +2,7 @@
    "manifest_version": 2,
    "name": "Kinjamprove Continued",
    "description": "Kinja with threaded replies, enhanced filters, additional comment sorting, user blocking, and other improvements.",
-   "version": "0.0.2.12",
+   "version": "0.0.2.13",
    "background": {
       "persistent": true,
       "scripts": [ "background.js" ]

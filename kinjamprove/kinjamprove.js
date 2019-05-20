@@ -364,7 +364,7 @@ function kinjamproveFunc() {
 					$kinjamproveReplyToPostButton = createKinjamproveReplyButton($nativeReplyToPostButton);
 
 				$nativeReplyToPostButton.after($kinjamproveReplyToPostButton);
-				$nativeReplyToPostButton.remove();
+				$nativeReplyToPostButton.hide();
 			}
 			if(kinjamprove.options.storedArticleLoadTimes[firstStoryStarterId]){
 				commentTracker.newestPostTime = kinjamprove.options.storedArticleLoadTimes[firstStoryStarterId].postTime;
@@ -536,7 +536,7 @@ function updatePageArticle(summaries) {
 			$kinjamproveReplyToPostButton = createKinjamproveReplyButton($nativeReplyToPostButton);
 
 		$nativeReplyToPostButton.after($kinjamproveReplyToPostButton);
-		$nativeReplyToPostButton.remove();
+		$nativeReplyToPostButton.hide();
 	});
 	
 	blogPublishTimeSummary.added.forEach(function(blogPublishTime) {
