@@ -1,3 +1,9 @@
+0.0.2.13 (05/20/2019)
+
+Fixes: 
+	No longer deletes the native reply button. This should make it possible to actually open the editor and post comments again.
+
+
 0.0.2.12 (05/14/2019)
 
 Fixes: 
