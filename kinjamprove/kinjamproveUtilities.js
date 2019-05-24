@@ -335,7 +335,11 @@ var CommentApiURLFactory = (function(){
 		  MAX_NUM_OF_COMMENTS_PER_REQUEST = 100;
 
 	var createURL = function(pathname, queryParameters) {
-		return ORIGIN + pathname + '?' + $.param(queryParameters);
+		var str = '';
+		if(queryParameters){
+			str = '?' + $.param(queryParameters);
+		}
+		return ORIGIN + pathname + str;
 	};
 
 	return {
@@ -380,7 +384,8 @@ var CommentApiURLFactory = (function(){
 			// parentId = parentId || Utilities.getStarterIdOfCurrentPage();
 			hidePendingReplies = hidePendingReplies || false;
 			var apiPathname = '/api/core/post/' + parentId + '/replyWithApprovals',
-				queryParameters = { hidePendingReplies: hidePendingReplies };
+				queryParameters = false; 
+				//{ hidePendingReplies: hidePendingReplies };
 	
 
 			return createURL(apiPathname, queryParameters);
@@ -412,7 +417,7 @@ var CommentApiURLFactory = (function(){
 			kinjaToken = kinjaToken || Utilities.getKinjaToken();
 
 			var apiPathname = '/ajax/post/' + postId + '/likeAndApprove',
-				queryParameters = { token: kinjaToken };
+				queryParameters = false;//{};
 
 			return createURL(apiPathname, queryParameters);
 		},
@@ -494,7 +499,7 @@ var CommentApiURLFactory = (function(){
 			var apiPathname = '/ajax/post/'+postId+'/followAndApprove/blog/'+targetBlogId+'/by/'+blogId,
 				queryParameters = {
 					authorId: authorId,
-					token: token
+					//token: token
 				};
 			return createURL(apiPathname, queryParameters);
 		},
@@ -502,10 +507,9 @@ var CommentApiURLFactory = (function(){
 		getBlogUnfollowURL: function(token){
 			token = token || Utilities.getKinjaToken();
 			
-			var apiPathname = '/api/profile/blogfollow/unfollow',
-				queryParameters = {
-					token: token
-				};
+			var //apiPathname = '/api/profile/blogfollow/unfollow',
+				apiPathname = '/api/profile/approve/unwhitelistUser',
+				queryParameters = false;//{token: token };
 			return createURL(apiPathname, queryParameters);
 		},
 		
@@ -513,16 +517,15 @@ var CommentApiURLFactory = (function(){
 			token = token || Utilities.getKinjaToken();
 		
 			var apiPathname = '/api/profile/blogblock/block',
-				queryParameters = {
-					token: token
-				};
+				queryParameters = false;//{token: token};
 			return createURL(apiPathname, queryParameters);
 		},
 		
 		getBlogFollowedByURL: function(blogId){
 			blogId = blogId || Utilities.getBlogId();
-			
-			var apiPathname = '/api/profile/blogfollow/views/followedBy',
+			//https://alfredwasmymothersname.kinja.com/api/profile/approve/whitelistedUsers?blogId=1637000466
+			var //apiPathname = '/api/profile/blogfollow/views/followedBy',
+				apiPathname = '/api/profile/approve/whitelistedUsers',
 				queryParameters = {
 					blogId: blogId
 				};
@@ -1085,7 +1088,7 @@ function getUpdateCommentURL(postId) {
 function getCreateCommentURL(parentId, hidePendingReplies) {
 	var origin = window.location.origin,
 		apiPathname = '/api/core/post/' + parentId + '/replyWithApprovals',
-		queryStrParameters = '?hidePendingReplies=' + hidePendingReplies,
+		//queryStrParameters = '?hidePendingReplies=' + hidePendingReplies,
 		createCommentURL = origin + apiPathname;// + queryStrParameters;
 		
 	return createCommentURL;

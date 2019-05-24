@@ -63,7 +63,6 @@ $(function(){
 			}else{
 				hostname = hostname[1];
 			}
-			// 0.0.2.8 Kinja changed their layout again. Looking at new 'data-model' value to determine article type now.
 			if(items.hideSharedArticles){
 				$a = $articles.children('div').children('a');
 				for(let i = 0; i < $a.length; ++i){
