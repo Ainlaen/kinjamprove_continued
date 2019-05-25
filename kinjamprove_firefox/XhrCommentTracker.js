@@ -138,7 +138,7 @@ XhrCommentTracker.prototype = {
 			var data = result.data;
 			
 			for (var i = 0; i < data.length; i++){
-				kinjamprove.blogsFollowed[data[i]] = 1;
+				kinjamprove.blogsFollowed[data[i].defaultBlogId] = 1;
 			}
 			
 			return _this;
@@ -306,7 +306,8 @@ XhrCommentTracker.prototype = {
 						avatar: { 
 							id: '17jcxp06aqnkmpng',
 							format: 'png'
-						}
+						},
+						defaultBlogId: '',
 					}
 				}else{ 
 					if (!baseComment.author.avatar) {
@@ -317,7 +318,7 @@ XhrCommentTracker.prototype = {
 					}
 					if(!baseComment.author.displayName){
 						baseComment.author.displayName = '';
-						var authorBlogId = baseComment.authorBlogId,
+						var authorBlogId = baseComment.author.defaultBlogId,
 							blogs = baseComment.blogs;
 						for (var i = 0; i < blogs.length; i++) {
 							if (blogs[i].id === authorBlogId) {
@@ -366,7 +367,8 @@ XhrCommentTracker.prototype = {
 							avatar: { 
 								id: '17jcxp06aqnkmpng',
 								format: 'png'
-							}
+							},
+							defaultBlogId:'',
 						}
 					}else{ 
 						if (!reply.author.avatar) {
@@ -377,7 +379,7 @@ XhrCommentTracker.prototype = {
 						}
 						if(!reply.author.displayName){
 							reply.author.displayName = '';
-							var authorBlogId = reply.authorBlogId,
+							var authorBlogId = reply.author.defaultBlogId,
 								blogs = reply.blogs;
 							for (var i = 0; i < blogs.length; i++) {
 								if (blogs[i].id === authorBlogId) {
@@ -458,7 +460,7 @@ XhrCommentTracker.prototype = {
 						reply.articleClass += ' kinjamprove-flagged-comment';
 					}
 					
-					if(kinjamprove.blogsFollowed[reply.authorBlogId]){
+					if(kinjamprove.blogsFollowed[reply.author.defaultBlogId]){
 						reply.followedByBlog = true;
 					}
 
@@ -559,7 +561,7 @@ XhrCommentTracker.prototype = {
 						++_this.approvedNewPosts;
 					}
 				}
-				if(kinjamprove.blogsFollowed[baseComment.authorBlogId]){
+				if(kinjamprove.blogsFollowed[baseComment.author.defaultBlogId]){
 					baseComment.followedByBlog = true;
 				}
 				baseComment.setThreadVals();

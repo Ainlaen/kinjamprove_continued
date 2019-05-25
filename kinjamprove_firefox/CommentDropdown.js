@@ -544,7 +544,6 @@ function followUser(targetUserId, userId, token) {
 		requestPayload = {
 			target: targetUserId,
 			targetType: 'User',
-			//token: token,
 			userId: (userId || kinjamprove.accountState.authorId)
 		},
 		requestPayloadStr = JSON.stringify(requestPayload);
@@ -564,9 +563,10 @@ function onFollowForBlogLiClick(event) {
 		userId = kinjamprove.accountState.authorId,
 		commentTracker = kinjamprove.commentTrackers[starterId],
 		targetComment = commentTracker.commentsMap.get(postId),
-		targetBlogId = targetComment.authorBlogId;
+		targetBlogId = targetComment.authorBlogId,
+		targetAuthorId = targetComment.authorId;
 	
-	followUserForBlog(starterId, targetBlogId, kinjamprove.kinja.meta.blog.id, userId, postId).then(function(result){
+	followUserForBlog(starterId, targetAuthorId, kinjamprove.kinja.meta.blog.id, userId, postId).then(function(result){
 		var newFollowedAuthorCommentIds = commentTracker.authorMap.get(targetComment.authorId);
 		kinjamprove.blogsFollowed[targetBlogId] = 1;
 		
@@ -588,16 +588,17 @@ function onFollowForBlogLiClick(event) {
 	
 }
 
-function followUserForBlog(starterId, targetBlogId, blogId, authorId, postId, token) {
+function followUserForBlog(starterId, targetAuthorId, blogId, authorId, postId, token) {
 	token = token || kinjamprove.token.token;
 	
-	var followPathname = '/ajax/post/'+starterId+'/followAndApprove/blog/'+targetBlogId+'/by/'+blogId,
-		followQueryStr = '?authorId='+authorId,
-		followUrl = window.location.origin + followPathname + followQueryStr,
+	var //followPathname = '/ajax/post/'+starterId+'/followAndApprove/blog/'+targetBlogId+'/by/'+blogId,
+		followPathname = '/ajax/post/whitelistAndApprove',
+		//followQueryStr = '?authorId='+authorId,
+		followUrl = window.location.origin + followPathname,// + followQueryStr,
 		requestPayload = {
-			authorId: authorId,
+			//authorId: authorId,
 			blogId: blogId,
-			targetBlogId: targetBlogId,
+			userId: targetAuthorId,
 			postId: postId
 		},
 		requestPayloadStr = JSON.stringify(requestPayload);
@@ -677,7 +678,7 @@ function unfollowUser(targetUserId, userId, token) {
 		requestPayload = {
 			target: targetUserId,
 			targetType: 'User',
-			//token: token,
+			// token: token,
 			userId: userId
 		},
 		requestPayloadStr = JSON.stringify(requestPayload);
@@ -695,9 +696,10 @@ function onUnfollowForBlogLiClick(event) {
 		postId = parseInt($article.attr("data-id")),
 		commentTracker = kinjamprove.commentTrackers[starterId],
 		targetComment = commentTracker.commentsMap.get(postId),
+		targetAuthorId = targetComment.authorId,
 		targetBlogId = targetComment.authorBlogId;
 		
-	unfollowUserForBlog(kinjamprove.kinja.meta.blog.id, targetBlogId).then(function(result){
+	unfollowUserForBlog(kinjamprove.kinja.meta.blog.id, targetAuthorId).then(function(result){
 		
 		var unfollowedAuthorCommentIds = commentTracker.authorMap.get(targetComment.authorId);
 		
@@ -720,14 +722,15 @@ function onUnfollowForBlogLiClick(event) {
 	});
 }
 
-function unfollowUserForBlog(blogId, targetBlogId, token) {
+function unfollowUserForBlog(blogId, targetAuthorId, token) {
 	token = token || kinjamprove.token.token;
 	
-	var unfollowPathname = '/api/profile/blogfollow/unfollow',
+	var //unfollowPathname = '/api/profile/blogfollow/unfollow',
+		unfollowPathname = '/api/profile/approve/unwhitelistUser',
 		unfollowUrl = window.location.origin + unfollowPathname,
 		requestPayload = {
 			sourceBlogId: blogId,
-			targetBlogId: targetBlogId
+			targetUserId: targetAuthorId
 		},
 		requestPayloadStr = JSON.stringify(requestPayload);
 
@@ -748,9 +751,10 @@ function onBlockForBlogLiClick(event){
 		postId = parseInt($article.attr("data-id")),
 		commentTracker = kinjamprove.commentTrackers[starterId],
 		targetComment = commentTracker.commentsMap.get(postId),
-		targetBlogId = targetComment.authorBlogId;
+		targetBlogId = targetComment.authorBlogId,
+		targetAuthorId = targetComment.authorId;
 
-	blockUserForBlog(kinjamprove.kinja.meta.blog.id, targetBlogId).then(function(result){
+	blockUserForBlog(kinjamprove.kinja.meta.blog.id, targetAuthorId).then(function(result){
 		
 		var blockedAuthorCommentIds = commentTracker.authorMap.get(targetComment.authorId);
 		
@@ -781,15 +785,20 @@ function onBlockForBlogLiClick(event){
 
 }
 
-function blockUserForBlog(blogId, targetBlogId, token) {
+function blockUserForBlog(blogId, targetAuthorId, token) {
 	token = token || kinjamprove.token.token;
 	
-	var blockPathname = '/api/profile/blogblock/block',
+	var //blockPathname = '/api/profile/blogblock/block',
+		blockPathname = '/api/profile/block/block',
 		blockUrl = window.location.origin + blockPathname,
 		requestPayload = {
-			blocked: targetBlogId,
-			blocking: blogId
+			userId: targetAuthorId,
+			blogId: blogId,
 		},
+		// requestPayload = {
+			// blocked: targetBlogId,
+			// blocking: blogId
+		// },
 		requestPayloadStr = JSON.stringify(requestPayload);
 
 	return postJSON(blockUrl, requestPayloadStr,{'Authorization':'Bearer '+token});
@@ -854,7 +863,7 @@ function unflagPost(postId, token) {
 		unflagUrl = window.location.origin + unflagPathname,
 		requestPayload = {
 			postId: postId,
-			//token: token
+			// token: token
 		},
 		requestPayloadStr = JSON.stringify(requestPayload);
 
@@ -1024,7 +1033,7 @@ function flagPost(postId, reason, token) {
 		requestPayload = {
 			postId: postId,
 			reason: reason,
-			//token: token
+			// token: token
 		},
 		requestPayloadStr = JSON.stringify(requestPayload);
 
