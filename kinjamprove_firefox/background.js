@@ -1,6 +1,6 @@
 const ICON_PATH = '/icons/';
 const ACTIVE_ICON_NAME = 'kinjamprove-logo-green-transparent-background-32x32.png';
-const PAUSED_ICON_NAME = 'kinjamprove-logo-symmetrical-black-transparent-background-32x32.png';
+const PAUSED_ICON_NAME = 'kinjamprove-logo-green-transparent-background-cross-32x32.png';
 const ACTIVE_ICON_PATH = ICON_PATH + ACTIVE_ICON_NAME; 
 const PAUSED_ICON_PATH = ICON_PATH + PAUSED_ICON_NAME;
 

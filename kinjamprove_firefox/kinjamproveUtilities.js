@@ -44,8 +44,10 @@ var Utilities = (function() {
 		},
 		
 		userIsBlogOwner: function() {
-			var blogOwnerId = kinjamprove.kinja.meta.blogOwner.id;
-				//Utilities.getKinjamproveWindowVariablesContainerJSON().kinja.meta.blogOwner.id;
+			if (!kinjamprove.kinja.meta || !kinjamprove.kinja.meta.blog){
+				return false;
+			}
+			var blogOwnerId = kinjamprove.kinja.meta.blog.ownerId;
 
 			return blogOwnerId === Utilities.getUserAuthorId();
 		},
