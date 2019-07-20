@@ -1,3 +1,9 @@
+0.0.2.16 (07/20/2019)
+
+New: 
+	Added option to disable loading timeouts. This may resolve issues with users having frequent timeouts on slower connections/systems.
+
+
 0.0.2.15 (07/07/2019)
 
 Fixes:
