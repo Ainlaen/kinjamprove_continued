@@ -41,6 +41,7 @@ function save_options() {
 		hideVideos = document.getElementById('hideVideos').checked,
 		hideSharedArticles = document.getElementById('hideSharedArticles').checked,
 		increaseWidth = document.getElementById('increaseWidth').checked,
+		removeTimeout = document.getElementById('removeTimeout').checked,
 		string;
 	
 	if (!blockedUsers.length) {
@@ -114,7 +115,8 @@ function save_options() {
 		removeInventoryLinks: removeInventoryLinks,
 		hideSharedArticles: hideSharedArticles,
 		hideVideos: hideVideos,
-		increaseWidth: increaseWidth
+		increaseWidth: increaseWidth,
+		removeTimeout: removeTimeout
 	}, updateStatus);
 	
 
@@ -151,7 +153,8 @@ function restore_options() {
 		removeInventoryLinks: false,
 		hideSharedArticles: false,
 		hideVideos: false,
-		increaseWidth: false
+		increaseWidth: false,
+		removeTimeout: false
 	}, setValues);
 		
 	function setValues(items) { 
@@ -190,6 +193,7 @@ function restore_options() {
 		document.getElementById('minCommentsToLoad').value = items.minCommentsToLoad;
 		document.getElementById('increaseWidth').checked = items.increaseWidth;
 		document.getElementById('hideVideos').checked = items.hideVideos;
+		document.getElementById('removeTimeout').checked = items.removeTimeout;
 		
 		$checked = $('#hideElementsTable').find('input:checked');
 		$checked.parents('tr').addClass('highlight');

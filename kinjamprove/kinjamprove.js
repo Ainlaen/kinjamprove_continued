@@ -51,7 +51,8 @@ $(function(){
 	chrome.storage.sync.get({
 		removeInventoryLinks: false,
 		hideSharedArticles: false,
-		hideVideos: false
+		hideVideos: false,
+		removeTimeout: false
 	}, function(items){
 		if((items.removeInventoryLinks || items.hideSharedArticles || items.hideVideos) && window.location.pathname == "/"){
 			$('div.ad-container').remove();
@@ -94,6 +95,101 @@ $(function(){
 				// document.getElementsByTagName('head')[0].appendChild(element);
 			}
 		}
+		if(pageHasDiscussionRegion){
+			
+			document.addEventListener('kinjamproveGlobalPasser', function(response) {
+				if(response.detail){
+					kinjamprove.kinja = response.detail.kinja;
+					kinjamprove.userData = response.detail.account;
+					kinjamprove.accountState = kinjamprove.userData.data.accountState;
+					kinjamprove.token = kinjamprove.userData.data.token;
+					kinjamprove.kinja.meta.authors	= kinjamprove.kinja.postMeta.authors;
+					kinjamprove.kinja.meta.curatedReplyCounts = kinjamprove.kinja.postMeta.curatedReplyCounts;
+					kinjamprove.kinja.meta.discussionSettings = kinjamprove.kinja.postMeta.discussionSettings;
+					kinjamprove.kinja.meta.post = kinjamprove.kinja.postMeta.post;
+					kinjamprove.kinja.meta.postId = kinjamprove.kinja.postMeta.postId;
+					kinjamprove.kinja.meta.starterAuthorId = kinjamprove.kinja.postMeta.starterAuthorId;
+					kinjamprove.kinja.meta.starterId = kinjamprove.kinja.postMeta.starterId;					
+				}
+			}, true);
+
+			var passGlobals = document.createElement('script');
+			if(items.removeTimeout){
+				passGlobals.textContent = '('+function(){
+					if(kinja && _user){
+						var newEvent = new CustomEvent('kinjamproveGlobalPasser', JSON.parse(JSON.stringify({detail:{kinja: kinja, account: _user}})));
+						document.dispatchEvent(newEvent);
+					}else{
+						var waitOnVariablesToLoad = setInterval(function(){
+								if(kinja && _user){
+									clearInterval(waitOnVariablesToLoad);
+									var newEvent = new CustomEvent('kinjamproveGlobalPasser', JSON.parse(JSON.stringify({detail:{kinja: kinja, account: _user}})));
+									document.dispatchEvent(newEvent);
+								} 
+							},100);
+					}
+					
+					// Disable Kinja native waypoints. Called after comments section is loaded.
+					document.addEventListener('disableWaypoints', function(response) {
+						if(window.Waypoint){
+							window.Waypoint.disableAll();
+						}
+					});
+					// Clear confirmation for navigating away from page.
+					document.addEventListener('clearOnbeforeunload', function(response) {
+						window.onbeforeunload = null;
+					});
+					// Prevent blocking mousewheel listeners from firing.
+					window.addEventListener('mousewheel', function (event) {
+						event.stopPropagation();
+					}, {capture: true, passive: true});
+					window.addEventListener('DOMMouseScroll', function (event) {
+						event.stopPropagation();
+					}, {capture: true, passive: true});
+
+				}+')();';
+			} else {
+				passGlobals.textContent = '('+function(){
+					if(kinja && _user){
+						var newEvent = new CustomEvent('kinjamproveGlobalPasser', JSON.parse(JSON.stringify({detail:{kinja: kinja, account: _user}})));
+						document.dispatchEvent(newEvent);
+					}else{
+						var ticks = 0,
+							waitOnVariablesToLoad = setInterval(function(){
+								if(kinja && _user){
+									clearInterval(waitOnVariablesToLoad);
+									var newEvent = new CustomEvent('kinjamproveGlobalPasser', JSON.parse(JSON.stringify({detail:{kinja: kinja, account: _user}})));
+									document.dispatchEvent(newEvent);
+								} else if(ticks > 200){
+									clearInterval(waitOnVariablesToLoad);
+								}
+								++ticks;
+							},25);
+					}
+					
+					// Disable Kinja native waypoints. Called after comments section is loaded.
+					document.addEventListener('disableWaypoints', function(response) {
+						if(window.Waypoint){
+							window.Waypoint.disableAll();
+						}
+					});
+					// Clear confirmation for navigating away from page.
+					document.addEventListener('clearOnbeforeunload', function(response) {
+						window.onbeforeunload = null;
+					});
+					// Prevent blocking mousewheel listeners from firing.
+					window.addEventListener('mousewheel', function (event) {
+						event.stopPropagation();
+					}, {capture: true, passive: true});
+					window.addEventListener('DOMMouseScroll', function (event) {
+						event.stopPropagation();
+					}, {capture: true, passive: true});
+
+				}+')();';
+			}
+			(document.head||document.documentElement).appendChild(passGlobals);
+			passGlobals.parentNode.removeChild(passGlobals);
+		}
 	});
 	
 	
@@ -102,62 +198,7 @@ $(function(){
 		return;
 	}
 	
-	document.addEventListener('kinjamproveGlobalPasser', function(response) {
-		if(response.detail){
-			kinjamprove.kinja = response.detail.kinja;
-			kinjamprove.userData = response.detail.account;
-			kinjamprove.accountState = kinjamprove.userData.data.accountState;
-			kinjamprove.token = kinjamprove.userData.data.token;
-			kinjamprove.kinja.meta.authors	= kinjamprove.kinja.postMeta.authors;
-			kinjamprove.kinja.meta.curatedReplyCounts = kinjamprove.kinja.postMeta.curatedReplyCounts;
-			kinjamprove.kinja.meta.discussionSettings = kinjamprove.kinja.postMeta.discussionSettings;
-			kinjamprove.kinja.meta.post = kinjamprove.kinja.postMeta.post;
-			kinjamprove.kinja.meta.postId = kinjamprove.kinja.postMeta.postId;
-			kinjamprove.kinja.meta.starterAuthorId = kinjamprove.kinja.postMeta.starterAuthorId;
-			kinjamprove.kinja.meta.starterId = kinjamprove.kinja.postMeta.starterId;					
-		}
-	}, true);
 
-	var passGlobals = document.createElement('script');
-	passGlobals.textContent = '('+function(){
-		if(kinja && _user){
-			var newEvent = new CustomEvent('kinjamproveGlobalPasser', JSON.parse(JSON.stringify({detail:{kinja: kinja, account: _user}})));
-			document.dispatchEvent(newEvent);
-		}else{
-			var ticks = 0,
-				waitOnVariablesToLoad = setInterval(function(){
-					if(kinja && _user){
-						clearInterval(waitOnVariablesToLoad);
-						var newEvent = new CustomEvent('kinjamproveGlobalPasser', JSON.parse(JSON.stringify({detail:{kinja: kinja, account: _user}})));
-						document.dispatchEvent(newEvent);
-					} else if(ticks > 200){
-						clearInterval(waitOnVariablesToLoad);
-					}
-					++ticks;
-				},25);
-		}
-		
-		// Disable Kinja native waypoints. Called after comments section is loaded.
-		document.addEventListener('disableWaypoints', function(response) {
-			if(window.Waypoint){
-				window.Waypoint.disableAll();
-			}
-		});
-		// Clear confirmation for navigating away from page.
-		document.addEventListener('clearOnbeforeunload', function(response) {
-			window.onbeforeunload = null;
-		});
-		// Prevent blocking mousewheel listeners from firing.
-		window.addEventListener('mousewheel', function (event) {
-			event.stopPropagation();
-		}, {capture: true, passive: true});
-		window.addEventListener('DOMMouseScroll', function (event) {
-			event.stopPropagation();
-		}, {capture: true, passive: true});
-
-	}+')();';
-	(document.head||document.documentElement).appendChild(passGlobals);
-	passGlobals.parentNode.removeChild(passGlobals);
 	
 	chrome.storage.sync.get({
 		colors: JSON.stringify(kinjamprove.defaultColors),
@@ -175,7 +216,8 @@ $(function(){
 		minCommentsToLoad: 50,
 		storedArticleLoadTimes: '{}',
 		itemsStoredLocal: false, 
-		saved_comment_ids: '{}'
+		saved_comment_ids: '{}',
+		removeTimeout: false
 	}, optionsCallback);
 	
 	$('body')
@@ -375,15 +417,17 @@ function kinjamproveFunc() {
 	        });
 					
 		}else if (kinjamproveWindowVarTicks > 240) {
-			console.log('Kinjamprove: kinjamproveWindowVarTicks timed out; clearing interval');
-			clearInterval(kinjamproveWindowVarContainerTextInterval);
-			kinjamprove.waiting = false;
-			$spinner.hide();
-			let $repliesWrapper = $('div.js_replies-wrapper'),
-				$failSpan = $("<span>", {'class': 'kinjamprove-failure', 'text': 'Kinjamprove timed out while loading. Please refresh the page to load comments.'});
-			$repliesWrapper.append($failSpan);
+			if(!kinjamprove.options.removeTimeout){
+				console.log('Kinjamprove: kinjamproveWindowVarTicks timed out; clearing interval');
+				clearInterval(kinjamproveWindowVarContainerTextInterval);
+				kinjamprove.waiting = false;
+				$spinner.hide();
+				let $repliesWrapper = $('div.js_replies-wrapper'),
+					$failSpan = $("<span>", {'class': 'kinjamprove-failure', 'text': 'Kinjamprove timed out while loading. Please refresh the page to load comments.'});
+				$repliesWrapper.append($failSpan);
+			}
 		} else {
-			if (kinjamproveWindowVarTicks % 40 === 0) {
+			if (kinjamproveWindowVarTicks % 40 === 0 && !kinjamprove.options.removeTimeout) {
 				console.log('Kinjamprove: Waiting for kinjamprove-window-variables-container... ' + kinjamproveWindowVarTicks);
 			}
 			if(kinjamproveWindowVarTicks == 10){
@@ -394,7 +438,7 @@ function kinjamproveFunc() {
 			kinjamproveWindowVarTicks++;
 		}
 	
-	}, 25);
+	}, (kinjamprove.options.removeTimeout ? 50 : 25));
 
 	var articleObserver = new MutationSummary({
 		callback: updatePageArticle,
